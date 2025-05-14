@@ -47,13 +47,22 @@ type AboutFormValues = z.infer<typeof aboutSchema>;
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
 // Sample About data (replace with localStorage or other storage)
+// const defaultAboutData = {
+//   name: "Dr. Melquizedequi Cabral dos Santos",
+//   title: "Professor Associado - Universidade Federal do Piauí",
+//   bio: "Pesquisador e professor com foco em Ciência da Computação, Inteligência Artificial e Processamento de Linguagem Natural.",
+//   education: "Doutor em Ciência da Computação pela Universidade Federal de Pernambuco (2011)\nMestre em Ciência da Computação pela Universidade Federal de Pernambuco (2007)\nGraduado em Ciência da Computação pela Universidade Federal do Piauí (2005)",
+//   experience: "Professor Associado na Universidade Federal do Piauí desde 2011\nLíder do grupo de pesquisa em Processamento de Linguagem Natural\nMembro do comitê científico de diversas conferências nacionais e internacionais",
+//   publications: "Mais de 50 artigos publicados em periódicos e conferências internacionais\nAutor de 3 capítulos de livros na área de Inteligência Artificial\nEditor convidado para edições especiais em revistas científicas",
+// };
+
 const defaultAboutData = {
   name: "Dr. Melquizedequi Cabral dos Santos",
   title: "Professor Associado - Universidade Federal do Piauí",
-  bio: "Pesquisador e professor com foco em Ciência da Computação, Inteligência Artificial e Processamento de Linguagem Natural.",
-  education: "Doutor em Ciência da Computação pela Universidade Federal de Pernambuco (2011)\nMestre em Ciência da Computação pela Universidade Federal de Pernambuco (2007)\nGraduado em Ciência da Computação pela Universidade Federal do Piauí (2005)",
-  experience: "Professor Associado na Universidade Federal do Piauí desde 2011\nLíder do grupo de pesquisa em Processamento de Linguagem Natural\nMembro do comitê científico de diversas conferências nacionais e internacionais",
-  publications: "Mais de 50 artigos publicados em periódicos e conferências internacionais\nAutor de 3 capítulos de livros na área de Inteligência Artificial\nEditor convidado para edições especiais em revistas científicas",
+  bio: "Pesquisador e especialista em cibersegurança com foco em técnicas avançadas de proteção de dados e desenvolvimento de soluções de segurança para redes e sistemas. Experiência em algoritmos de machine learning aplicados à detecção de intrusão e análise de vulnerabilidades.",
+  education: "Doutorado em Ciência da Computação - 2018-2022 - Universidade de São Paulo (USP) - Tese: \"Algoritmos de Aprendizado Profundo para Detecção Avançada de Intrusões em Redes de Alta Velocidade\"\nMestrado em Segurança Computacional - 2016-2018 - Universidade Estadual de Campinas (UNICAMP) - Dissertação: \"Métodos Avançados de Criptografia Aplicados à Proteção de Dados em Sistemas Distribuídos\"\nGraduação em Ciência da Computação - 2012-2016 - Instituto Tecnológico de Aeronáutica (ITA) - Trabalho de Conclusão de Curso: \"Desenvolvimento de Sistema de Análise de Vulnerabilidades em Redes Corporativas\"\nCertificações Profissionais - DIVERSAS - - Certified Information Systems Security Professional (CISSP); Offensive Security Certified Professional (OSCP); Certified Ethical Hacker (CEH); GIAC Security Essentials (GSEC)",
+  experience: "Pesquisador Sênior em Cibersegurança - 2022-PRESENTE - Instituto de Pesquisas Avançadas em Tecnologia (IPAT) - Liderança em projetos de pesquisa em segurança de redes e sistemas; Desenvolvimento de novos algoritmos para detecção de ataques avançados; Coordenação de equipe multidisciplinar com foco em segurança de dados\nConsultor de Segurança da Informação - 2019-2022 - CyberShield Technologies - Realização de testes de penetração em sistemas críticos; Análise e mitigação de vulnerabilidades em aplicações corporativas; Implementação de soluções de proteção para infraestruturas complexas\nPesquisador Associado - 2016-2019 - Laboratório de Segurança em Computação (LabSEC) - Pesquisa em técnicas de machine learning para análise de malware; Desenvolvimento de ferramentas para análise automática de ameaças; Publicação de artigos científicos em periódicos de alto impacto",
+  publications: "2023 - Deep Learning-Based Anomaly Detection for Zero-Day Attack Identification in High-Speed Networks - Journal of Cybersecurity Research, Vol. 15, Issue 4\n2022 - A Novel Approach for Malware Classification Using Convolutional Neural Networks and Binary Visualization - IEEE Transactions on Information Security, Vol. 44, Issue 2\n2021 - Quantum-Resistant Cryptographic Protocols for Secure IoT Communications - International Journal of Network Security, Vol. 32, Issue 8\n2020 - Advanced Persistent Threats Detection Using Machine Learning Techniques - Computers & Security Journal, Vol. 89",
 };
 
 // Sample Projects data from the existing page
