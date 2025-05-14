@@ -8,20 +8,68 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Book, FileCode, Briefcase, GraduationCap, Award, User } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 
+// Função auxiliar para carregar dados do localStorage
+const loadData = (key, defaultValue) => {
+  if (typeof window === 'undefined') return defaultValue;
+  
+  const saved = localStorage.getItem(key);
+  if (saved) {
+    try {
+      return JSON.parse(saved);
+    } catch (err) {
+      console.error(`Erro ao analisar ${key} do localStorage:`, err);
+    }
+  }
+  return defaultValue;
+};
+
+// Dados padrão para skills (caso não existam no localStorage)
+const defaultSkills = [
+  { name: "Python", level: 92 },
+  { name: "Machine Learning", level: 85 },
+  { name: "Cybersecurity", level: 90 },
+  { name: "Data Science", level: 88 },
+  { name: "Network Security", level: 86 },
+  { name: "Web Development", level: 78 },
+  { name: "Blockchain", level: 75 },
+  { name: "Cloud Computing", level: 80 }
+];
+
+// Dados padrão para o about (usado apenas como fallback)
+const defaultAboutData = {
+  name: "Dr. Melquizedequi Cabral dos Santos",
+  title: "Professor Associado - Universidade Federal do Piauí",
+  bio: "Pesquisador e professor com foco em Ciência da Computação, Inteligência Artificial e Processamento de Linguagem Natural.",
+  education: "Doutor em Ciência da Computação pela Universidade Federal de Pernambuco (2011)\nMestre em Ciência da Computação pela Universidade Federal de Pernambuco (2007)\nGraduado em Ciência da Computação pela Universidade Federal do Piauí (2005)",
+  experience: "Professor Associado na Universidade Federal do Piauí desde 2011\nLíder do grupo de pesquisa em Processamento de Linguagem Natural\nMembro do comitê científico de diversas conferências nacionais e internacionais",
+  publications: "Mais de 50 artigos publicados em periódicos e conferências internacionais\nAutor de 3 capítulos de livros na área de Inteligência Artificial\nEditor convidado para edições especiais em revistas científicas",
+};
 
 const About = () => {
   const [activeTab, setActiveTab] = useState("profile");
+  const [aboutData, setAboutData] = useState(defaultAboutData);
+  const [skills, setSkills] = useState(defaultSkills);
+  
+  // Carregar dados do localStorage quando o componente montar
+  useEffect(() => {
+    const savedAboutData = loadData('admin-about-data', defaultAboutData);
+    setAboutData(savedAboutData);
+    
+    // Se você decidir adicionar skills ao admin posteriormente
+    const savedSkills = loadData('admin-skills-data', defaultSkills);
+    setSkills(savedSkills);
+  }, []);
 
-  const skills = [
-    { name: "Python", level: 92 },
-    { name: "Machine Learning", level: 85 },
-    { name: "Cybersecurity", level: 90 },
-    { name: "Data Science", level: 88 },
-    { name: "Network Security", level: 86 },
-    { name: "Web Development", level: 78 },
-    { name: "Blockchain", level: 75 },
-    { name: "Cloud Computing", level: 80 }
-  ];
+  // Função para formatar texto com quebras de linha
+  const formatText = (text) => {
+    if (!text) return [];
+    return text.split('\n').filter(line => line.trim() !== '');
+  };
+
+  // Formatar dados para as diferentes seções
+  const educationItems = formatText(aboutData.education);
+  const experienceItems = formatText(aboutData.experience);
+  const publicationItems = formatText(aboutData.publications);
 
   return (
     <Layout title="IDENTITY PROFILE" showBackButton={true}>
@@ -80,7 +128,7 @@ const About = () => {
                   <div>
                     <h3 className="text-xl text-white font-mono mb-2">BIO // <span className="text-cyber-neon">ACCESS GRANTED</span></h3>
                     <p className="text-cyber-blue/80">
-                      Pesquisador e especialista em cibersegurança com foco em técnicas avançadas de proteção de dados e desenvolvimento de soluções de segurança para redes e sistemas. Experiência em algoritmos de machine learning aplicados à detecção de intrusão e análise de vulnerabilidades.
+                      {aboutData.bio}
                     </p>
                   </div>
                   
@@ -88,23 +136,20 @@ const About = () => {
                     <h3 className="text-xl text-white font-mono mb-2">CONTACT // <span className="text-cyber-neon">SECURE CHANNELS</span></h3>
                     <ul className="space-y-2 text-cyber-blue/80">
                       <li className="flex items-center">
+                        <span className="w-24 font-mono">NAME:</span>
+                        <span className="text-cyber-neon">{aboutData.name}</span>
+                      </li>
+                      <li className="flex items-center">
+                        <span className="w-24 font-mono">TITLE:</span>
+                        <span>{aboutData.title}</span>
+                      </li>
+                      <li className="flex items-center">
                         <span className="w-24 font-mono">EMAIL:</span>
                         <span className="text-cyber-neon">secure@cyberdomain.net</span>
                       </li>
                       <li className="flex items-center">
                         <span className="w-24 font-mono">LOCATION:</span>
                         <span>São Paulo, Brasil</span>
-                      </li>
-                      <li className="flex items-center">
-                        <span className="w-24 font-mono">LATTES:</span>
-                        <a 
-                          href="https://lattes.cnpq.br/2915812289846388"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-cyber-neon hover:underline"
-                        >
-                          CV Lattes
-                        </a>
                       </li>
                     </ul>
                   </div>
@@ -133,59 +178,24 @@ const About = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-6">
-                <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl text-white font-mono">Doutorado em Ciência da Computação</h3>
-                    <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">2018-2022</Badge>
+                {educationItems.map((item, index) => (
+                  <div key={index} className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-xl text-white font-mono">{item.split(' - ')[0] || item}</h3>
+                      {item.split(' - ')[1] && (
+                        <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">
+                          {item.split(' - ')[1]}
+                        </Badge>
+                      )}
+                    </div>
+                    {item.split(' - ')[2] && (
+                      <p className="text-cyber-blue mt-1">{item.split(' - ')[2]}</p>
+                    )}
+                    {item.split(' - ')[3] && (
+                      <p className="mt-3 text-cyber-blue/80">{item.split(' - ')[3]}</p>
+                    )}
                   </div>
-                  <p className="text-cyber-blue mt-1">Universidade de São Paulo (USP)</p>
-                  <p className="mt-3 text-cyber-blue/80">
-                    Tese: "Algoritmos de Aprendizado Profundo para Detecção Avançada de Intrusões em Redes de Alta Velocidade"
-                  </p>
-                </div>
-                
-                <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl text-white font-mono">Mestrado em Segurança Computacional</h3>
-                    <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">2016-2018</Badge>
-                  </div>
-                  <p className="text-cyber-blue mt-1">Universidade Estadual de Campinas (UNICAMP)</p>
-                  <p className="mt-3 text-cyber-blue/80">
-                    Dissertação: "Métodos Avançados de Criptografia Aplicados à Proteção de Dados em Sistemas Distribuídos"
-                  </p>
-                </div>
-                
-                <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl text-white font-mono">Graduação em Ciência da Computação</h3>
-                    <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">2012-2016</Badge>
-                  </div>
-                  <p className="text-cyber-blue mt-1">Instituto Tecnológico de Aeronáutica (ITA)</p>
-                  <p className="mt-3 text-cyber-blue/80">
-                    Trabalho de Conclusão de Curso: "Desenvolvimento de Sistema de Análise de Vulnerabilidades em Redes Corporativas"
-                  </p>
-                </div>
-                
-                <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-xl text-white font-mono">Certificações Profissionais</h3>
-                    <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">DIVERSAS</Badge>
-                  </div>
-                  <div className="mt-3 space-y-2">
-                    <p className="text-cyber-blue/80">
-                      <span className="text-cyber-neon">•</span> Certified Information Systems Security Professional (CISSP)
-                    </p>
-                    <p className="text-cyber-blue/80">
-                      <span className="text-cyber-neon">•</span> Offensive Security Certified Professional (OSCP)
-                    </p>
-                    <p className="text-cyber-blue/80">
-                      <span className="text-cyber-neon">•</span> Certified Ethical Hacker (CEH)
-                    </p>
-                    <p className="text-cyber-blue/80">
-                      <span className="text-cyber-neon">•</span> GIAC Security Essentials (GSEC)
-                    </p>
-                  </div>
-                </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -197,62 +207,28 @@ const About = () => {
               <CardTitle className="text-2xl text-cyber-neon font-mono">03 // PROFESSIONAL PROTOCOLS</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                <div className="flex justify-between items-start">
-                  <h3 className="text-xl text-white font-mono">Pesquisador Sênior em Cibersegurança</h3>
-                  <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">2022-PRESENTE</Badge>
+              {experienceItems.map((item, index) => (
+                <div key={index} className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
+                  <div className="flex justify-between items-start">
+                    <h3 className="text-xl text-white font-mono">{item.split(' - ')[0] || item}</h3>
+                    {item.split(' - ')[1] && (
+                      <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">
+                        {item.split(' - ')[1]}
+                      </Badge>
+                    )}
+                  </div>
+                  {item.split(' - ')[2] && (
+                    <p className="text-cyber-blue mt-1">{item.split(' - ')[2]}</p>
+                  )}
+                  <div className="mt-3 space-y-2">
+                    {item.split(' - ')[3] && item.split(' - ')[3].split(';').map((duty, idx) => (
+                      <p key={idx} className="text-cyber-blue/80">
+                        <span className="text-cyber-neon">•</span> {duty.trim()}
+                      </p>
+                    ))}
+                  </div>
                 </div>
-                <p className="text-cyber-blue mt-1">Instituto de Pesquisas Avançadas em Tecnologia (IPAT)</p>
-                <div className="mt-3 space-y-2">
-                  <p className="text-cyber-blue/80">
-                    <span className="text-cyber-neon">•</span> Liderança em projetos de pesquisa em segurança de redes e sistemas
-                  </p>
-                  <p className="text-cyber-blue/80">
-                    <span className="text-cyber-neon">•</span> Desenvolvimento de novos algoritmos para detecção de ataques avançados
-                  </p>
-                  <p className="text-cyber-blue/80">
-                    <span className="text-cyber-neon">•</span> Coordenação de equipe multidisciplinar com foco em segurança de dados
-                  </p>
-                </div>
-              </div>
-              
-              <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                <div className="flex justify-between items-start">
-                  <h3 className="text-xl text-white font-mono">Consultor de Segurança da Informação</h3>
-                  <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">2019-2022</Badge>
-                </div>
-                <p className="text-cyber-blue mt-1">CyberShield Technologies</p>
-                <div className="mt-3 space-y-2">
-                  <p className="text-cyber-blue/80">
-                    <span className="text-cyber-neon">•</span> Realização de testes de penetração em sistemas críticos
-                  </p>
-                  <p className="text-cyber-blue/80">
-                    <span className="text-cyber-neon">•</span> Análise e mitigação de vulnerabilidades em aplicações corporativas
-                  </p>
-                  <p className="text-cyber-blue/80">
-                    <span className="text-cyber-neon">•</span> Implementação de soluções de proteção para infraestruturas complexas
-                  </p>
-                </div>
-              </div>
-              
-              <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                <div className="flex justify-between items-start">
-                  <h3 className="text-xl text-white font-mono">Pesquisador Associado</h3>
-                  <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">2016-2019</Badge>
-                </div>
-                <p className="text-cyber-blue mt-1">Laboratório de Segurança em Computação (LabSEC)</p>
-                <div className="mt-3 space-y-2">
-                  <p className="text-cyber-blue/80">
-                    <span className="text-cyber-neon">•</span> Pesquisa em técnicas de machine learning para análise de malware
-                  </p>
-                  <p className="text-cyber-blue/80">
-                    <span className="text-cyber-neon">•</span> Desenvolvimento de ferramentas para análise automática de ameaças
-                  </p>
-                  <p className="text-cyber-blue/80">
-                    <span className="text-cyber-neon">•</span> Publicação de artigos científicos em periódicos de alto impacto
-                  </p>
-                </div>
-              </div>
+              ))}
             </CardContent>
           </Card>
         </TabsContent>
@@ -265,65 +241,17 @@ const About = () => {
             <CardContent className="space-y-4">
               <div className="space-y-4">
                 <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                  <h3 className="text-xl text-white font-mono mb-2">Artigos em Periódicos</h3>
+                  <h3 className="text-xl text-white font-mono mb-2">Publicações e Artigos</h3>
                   <ul className="space-y-4">
-                    <li className="border-l-2 border-cyber-blue pl-4 py-1">
-                      <p className="text-cyber-blue font-mono">2023</p>
-                      <p className="text-white">Deep Learning-Based Anomaly Detection for Zero-Day Attack Identification in High-Speed Networks</p>
-                      <p className="text-cyber-blue/80 text-sm mt-1">Journal of Cybersecurity Research, Vol. 15, Issue 4</p>
-                    </li>
-                    <li className="border-l-2 border-cyber-blue pl-4 py-1">
-                      <p className="text-cyber-blue font-mono">2022</p>
-                      <p className="text-white">A Novel Approach for Malware Classification Using Convolutional Neural Networks and Binary Visualization</p>
-                      <p className="text-cyber-blue/80 text-sm mt-1">IEEE Transactions on Information Security, Vol. 44, Issue 2</p>
-                    </li>
-                    <li className="border-l-2 border-cyber-blue pl-4 py-1">
-                      <p className="text-cyber-blue font-mono">2021</p>
-                      <p className="text-white">Quantum-Resistant Cryptographic Protocols for Secure IoT Communications</p>
-                      <p className="text-cyber-blue/80 text-sm mt-1">International Journal of Network Security, Vol. 32, Issue 8</p>
-                    </li>
-                    <li className="border-l-2 border-cyber-blue pl-4 py-1">
-                      <p className="text-cyber-blue font-mono">2020</p>
-                      <p className="text-white">Advanced Persistent Threats Detection Using Machine Learning Techniques</p>
-                      <p className="text-cyber-blue/80 text-sm mt-1">Computers & Security Journal, Vol. 89</p>
-                    </li>
-                  </ul>
-                </div>
-                
-                <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                  <h3 className="text-xl text-white font-mono mb-2">Conferências Internacionais</h3>
-                  <ul className="space-y-4">
-                    <li className="border-l-2 border-cyber-orange pl-4 py-1">
-                      <p className="text-cyber-orange font-mono">2023</p>
-                      <p className="text-white">Adversarial Machine Learning for Robust Intrusion Detection Systems</p>
-                      <p className="text-cyber-blue/80 text-sm mt-1">International Conference on Network and Systems Security (NSS)</p>
-                    </li>
-                    <li className="border-l-2 border-cyber-orange pl-4 py-1">
-                      <p className="text-cyber-orange font-mono">2022</p>
-                      <p className="text-white">Real-time Network Traffic Analysis Using Graph Neural Networks</p>
-                      <p className="text-cyber-blue/80 text-sm mt-1">IEEE Symposium on Security and Privacy (S&P)</p>
-                    </li>
-                    <li className="border-l-2 border-cyber-orange pl-4 py-1">
-                      <p className="text-cyber-orange font-mono">2021</p>
-                      <p className="text-white">Blockchain-based Framework for Secure Firmware Updates in IoT Devices</p>
-                      <p className="text-cyber-blue/80 text-sm mt-1">ACM Conference on Computer and Communications Security (CCS)</p>
-                    </li>
-                  </ul>
-                </div>
-                
-                <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                  <h3 className="text-xl text-white font-mono mb-2">Patentes e Propriedade Intelectual</h3>
-                  <ul className="space-y-4">
-                    <li className="border-l-2 border-cyber-neon pl-4 py-1">
-                      <p className="text-cyber-neon font-mono">2022</p>
-                      <p className="text-white">Sistema de Detecção de Intrusão Baseado em Análise Comportamental e Aprendizado Profundo</p>
-                      <p className="text-cyber-blue/80 text-sm mt-1">Patente Nº BR10202200XXXX</p>
-                    </li>
-                    <li className="border-l-2 border-cyber-neon pl-4 py-1">
-                      <p className="text-cyber-neon font-mono">2021</p>
-                      <p className="text-white">Método para Identificação Automática de Vulnerabilidades em Aplicações Web</p>
-                      <p className="text-cyber-blue/80 text-sm mt-1">Patente Nº BR10202100XXXX</p>
-                    </li>
+                    {publicationItems.map((item, index) => (
+                      <li key={index} className="border-l-2 border-cyber-blue pl-4 py-1">
+                        <p className="text-cyber-blue font-mono">{item.split(' - ')[0] || '2023'}</p>
+                        <p className="text-white">{item.split(' - ')[1] || item}</p>
+                        {item.split(' - ')[2] && (
+                          <p className="text-cyber-blue/80 text-sm mt-1">{item.split(' - ')[2]}</p>
+                        )}
+                      </li>
+                    ))}
                   </ul>
                 </div>
               </div>
@@ -394,32 +322,6 @@ const About = () => {
                   <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">PyTorch</Badge>
                   <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">Docker</Badge>
                   <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">Kubernetes</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">AWS</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">Linux</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">Blockchain</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">Network Analysis</Badge>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-xl text-white font-mono mb-4">Certifications & Awards</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-cyber-black/40 border border-cyber-neon/30 p-3 rounded-md flex items-center">
-                    <Award size={24} className="text-cyber-orange mr-3" />
-                    <span className="text-cyber-blue">Best Paper Award - Cybersecurity Conference 2022</span>
-                  </div>
-                  <div className="bg-cyber-black/40 border border-cyber-neon/30 p-3 rounded-md flex items-center">
-                    <Award size={24} className="text-cyber-orange mr-3" />
-                    <span className="text-cyber-blue">Young Researcher Award - INFOCOM 2021</span>
-                  </div>
-                  <div className="bg-cyber-black/40 border border-cyber-neon/30 p-3 rounded-md flex items-center">
-                    <Award size={24} className="text-cyber-orange mr-3" />
-                    <span className="text-cyber-blue">Top Security Researcher - CyberShield 2020</span>
-                  </div>
-                  <div className="bg-cyber-black/40 border border-cyber-neon/30 p-3 rounded-md flex items-center">
-                    <Award size={24} className="text-cyber-orange mr-3" />
-                    <span className="text-cyber-blue">Innovation Prize - Brazilian Computing Society</span>
-                  </div>
                 </div>
               </div>
             </CardContent>
