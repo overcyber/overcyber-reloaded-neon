@@ -30,7 +30,49 @@ const aboutSchema = z.object({
   experience: z.string().min(5, "Experience must be at least 5 characters"),
   publications: z.string().min(5, "Publications must be at least 5 characters"),
 });
+// Esquema para a aba de perfil
+const profileSchema = z.object({
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
+  title: z.string().min(2, "Título deve ter pelo menos 2 caracteres"),
+  bio: z.string().min(10, "Bio deve ter pelo menos 10 caracteres"),
+  email: z.string().email("Email inválido"),
+  location: z.string().min(2, "Localização deve ter pelo menos 2 caracteres"),
+  lattes: z.string().url("URL do Lattes inválida"),
+  profileImage: z.string().url("URL da imagem de perfil inválida"),
+  researchFocus: z.string().min(5, "Áreas de pesquisa são obrigatórias")
+});
 
+// Esquema para educação (array)
+const educationItemSchema = z.object({
+  title: z.string().min(3, "Título deve ter pelo menos 3 caracteres"),
+  period: z.string().min(2, "Período é obrigatório"),
+  institution: z.string().optional(),
+  description: z.string().optional(),
+  certifications: z.string().optional()
+});
+
+// Esquema para experiência (array)
+const experienceItemSchema = z.object({
+  title: z.string().min(3, "Cargo deve ter pelo menos 3 caracteres"),
+  period: z.string().min(2, "Período é obrigatório"),
+  company: z.string().min(2, "Empresa/Instituição é obrigatória"),
+  duties: z.string().min(5, "Responsabilidades são obrigatórias")
+});
+
+// Esquema para publicações
+const publicationsSchema = z.object({
+  articles: z.string().min(5, "Artigos em periódicos são obrigatórios"),
+  conferences: z.string().min(5, "Conferências são obrigatórias"),
+  patents: z.string().min(5, "Patentes são obrigatórias")
+});
+
+// Esquema para habilidades
+const skillsSchema = z.object({
+  coreSkills: z.string().min(5, "Habilidades principais são obrigatórias"),
+  advancedSkills: z.string().min(5, "Habilidades avançadas são obrigatórias"),
+  technologies: z.string().min(5, "Tecnologias são obrigatórias"),
+  awards: z.string().min(5, "Prêmios e certificações são obrigatórios")
+});
 // Project schema
 const projectSchema = z.object({
   id: z.number().optional(),
@@ -44,6 +86,12 @@ const projectSchema = z.object({
 });
 
 type AboutFormValues = z.infer<typeof aboutSchema>;
+// Tipos inferidos dos esquemas
+type ProfileFormValues = z.infer<typeof profileSchema>;
+type EducationItemFormValues = z.infer<typeof educationItemSchema>;
+type ExperienceItemFormValues = z.infer<typeof experienceItemSchema>;
+type PublicationsFormValues = z.infer<typeof publicationsSchema>;
+type SkillsFormValues = z.infer<typeof skillsSchema>;
 type ProjectFormValues = z.infer<typeof projectSchema>;
 
 // Sample About data (replace with localStorage or other storage)
@@ -56,14 +104,182 @@ type ProjectFormValues = z.infer<typeof projectSchema>;
 //   publications: "Mais de 50 artigos publicados em periódicos e conferências internacionais\nAutor de 3 capítulos de livros na área de Inteligência Artificial\nEditor convidado para edições especiais em revistas científicas",
 // };
 
+// Dados padrão para o About
 const defaultAboutData = {
   name: "Dr. Melquizedequi Cabral dos Santos",
   title: "Professor Associado - Universidade Federal do Piauí",
   bio: "Pesquisador e especialista em cibersegurança com foco em técnicas avançadas de proteção de dados e desenvolvimento de soluções de segurança para redes e sistemas. Experiência em algoritmos de machine learning aplicados à detecção de intrusão e análise de vulnerabilidades.",
-  education: "Doutorado em Ciência da Computação - 2018-2022 - Universidade de São Paulo (USP) - Tese: \"Algoritmos de Aprendizado Profundo para Detecção Avançada de Intrusões em Redes de Alta Velocidade\"\nMestrado em Segurança Computacional - 2016-2018 - Universidade Estadual de Campinas (UNICAMP) - Dissertação: \"Métodos Avançados de Criptografia Aplicados à Proteção de Dados em Sistemas Distribuídos\"\nGraduação em Ciência da Computação - 2012-2016 - Instituto Tecnológico de Aeronáutica (ITA) - Trabalho de Conclusão de Curso: \"Desenvolvimento de Sistema de Análise de Vulnerabilidades em Redes Corporativas\"\nCertificações Profissionais - DIVERSAS - - Certified Information Systems Security Professional (CISSP); Offensive Security Certified Professional (OSCP); Certified Ethical Hacker (CEH); GIAC Security Essentials (GSEC)",
-  experience: "Pesquisador Sênior em Cibersegurança - 2022-PRESENTE - Instituto de Pesquisas Avançadas em Tecnologia (IPAT) - Liderança em projetos de pesquisa em segurança de redes e sistemas; Desenvolvimento de novos algoritmos para detecção de ataques avançados; Coordenação de equipe multidisciplinar com foco em segurança de dados\nConsultor de Segurança da Informação - 2019-2022 - CyberShield Technologies - Realização de testes de penetração em sistemas críticos; Análise e mitigação de vulnerabilidades em aplicações corporativas; Implementação de soluções de proteção para infraestruturas complexas\nPesquisador Associado - 2016-2019 - Laboratório de Segurança em Computação (LabSEC) - Pesquisa em técnicas de machine learning para análise de malware; Desenvolvimento de ferramentas para análise automática de ameaças; Publicação de artigos científicos em periódicos de alto impacto",
-  publications: "2023 - Deep Learning-Based Anomaly Detection for Zero-Day Attack Identification in High-Speed Networks - Journal of Cybersecurity Research, Vol. 15, Issue 4\n2022 - A Novel Approach for Malware Classification Using Convolutional Neural Networks and Binary Visualization - IEEE Transactions on Information Security, Vol. 44, Issue 2\n2021 - Quantum-Resistant Cryptographic Protocols for Secure IoT Communications - International Journal of Network Security, Vol. 32, Issue 8\n2020 - Advanced Persistent Threats Detection Using Machine Learning Techniques - Computers & Security Journal, Vol. 89",
+  email: "secure@cyberdomain.net",
+  location: "São Paulo, Brasil",
+  lattes: "https://lattes.cnpq.br/2915812289846388",
+  profileImage: "https://avatars.githubusercontent.com/u/583231",
+  researchFocus: [
+    "Cibersegurança", 
+    "Machine Learning", 
+    "Análise de Vulnerabilidades", 
+    "Redes Neurais", 
+    "Detecção de Intrusão", 
+    "Segurança de Dados"
+  ]
 };
+
+// Dados padrão para educação
+const defaultEducationData = [
+  {
+    title: "Doutorado em Ciência da Computação",
+    period: "2018-2022",
+    institution: "Universidade de São Paulo (USP)",
+    description: "Tese: \"Algoritmos de Aprendizado Profundo para Detecção Avançada de Intrusões em Redes de Alta Velocidade\""
+  },
+  {
+    title: "Mestrado em Segurança Computacional",
+    period: "2016-2018",
+    institution: "Universidade Estadual de Campinas (UNICAMP)",
+    description: "Dissertação: \"Métodos Avançados de Criptografia Aplicados à Proteção de Dados em Sistemas Distribuídos\""
+  },
+  {
+    title: "Graduação em Ciência da Computação",
+    period: "2012-2016",
+    institution: "Instituto Tecnológico de Aeronáutica (ITA)",
+    description: "Trabalho de Conclusão de Curso: \"Desenvolvimento de Sistema de Análise de Vulnerabilidades em Redes Corporativas\""
+  },
+  {
+    title: "Certificações Profissionais",
+    period: "DIVERSAS",
+    institution: "",
+    certifications: [
+      "Certified Information Systems Security Professional (CISSP)",
+      "Offensive Security Certified Professional (OSCP)",
+      "Certified Ethical Hacker (CEH)",
+      "GIAC Security Essentials (GSEC)"
+    ]
+  }
+];
+
+// Dados padrão para experiência
+const defaultExperienceData = [
+  {
+    title: "Pesquisador Sênior em Cibersegurança",
+    period: "2022-PRESENTE",
+    company: "Instituto de Pesquisas Avançadas em Tecnologia (IPAT)",
+    duties: [
+      "Liderança em projetos de pesquisa em segurança de redes e sistemas",
+      "Desenvolvimento de novos algoritmos para detecção de ataques avançados",
+      "Coordenação de equipe multidisciplinar com foco em segurança de dados"
+    ]
+  },
+  {
+    title: "Consultor de Segurança da Informação",
+    period: "2019-2022",
+    company: "CyberShield Technologies",
+    duties: [
+      "Realização de testes de penetração em sistemas críticos",
+      "Análise e mitigação de vulnerabilidades em aplicações corporativas",
+      "Implementação de soluções de proteção para infraestruturas complexas"
+    ]
+  },
+  {
+    title: "Pesquisador Associado",
+    period: "2016-2019",
+    company: "Laboratório de Segurança em Computação (LabSEC)",
+    duties: [
+      "Pesquisa em técnicas de machine learning para análise de malware",
+      "Desenvolvimento de ferramentas para análise automática de ameaças",
+      "Publicação de artigos científicos em periódicos de alto impacto"
+    ]
+  }
+];
+
+// Dados padrão para publicações
+const defaultPublicationsData = {
+  articles: [
+    {
+      year: "2023",
+      title: "Deep Learning-Based Anomaly Detection for Zero-Day Attack Identification in High-Speed Networks",
+      journal: "Journal of Cybersecurity Research, Vol. 15, Issue 4"
+    },
+    {
+      year: "2022",
+      title: "A Novel Approach for Malware Classification Using Convolutional Neural Networks and Binary Visualization",
+      journal: "IEEE Transactions on Information Security, Vol. 44, Issue 2"
+    },
+    {
+      year: "2021",
+      title: "Quantum-Resistant Cryptographic Protocols for Secure IoT Communications",
+      journal: "International Journal of Network Security, Vol. 32, Issue 8"
+    },
+    {
+      year: "2020",
+      title: "Advanced Persistent Threats Detection Using Machine Learning Techniques",
+      journal: "Computers & Security Journal, Vol. 89"
+    }
+  ],
+  conferences: [
+    {
+      year: "2023",
+      title: "Adversarial Machine Learning for Robust Intrusion Detection Systems",
+      conference: "International Conference on Network and Systems Security (NSS)"
+    },
+    {
+      year: "2022",
+      title: "Real-time Network Traffic Analysis Using Graph Neural Networks",
+      conference: "IEEE Symposium on Security and Privacy (S&P)"
+    },
+    {
+      year: "2021",
+      title: "Blockchain-based Framework for Secure Firmware Updates in IoT Devices",
+      conference: "ACM Conference on Computer and Communications Security (CCS)"
+    }
+  ],
+  patents: [
+    {
+      year: "2022",
+      title: "Sistema de Detecção de Intrusão Baseado em Análise Comportamental e Aprendizado Profundo",
+      number: "Patente Nº BR10202200XXXX"
+    },
+    {
+      year: "2021",
+      title: "Método para Identificação Automática de Vulnerabilidades em Aplicações Web",
+      number: "Patente Nº BR10202100XXXX"
+    }
+  ]
+};
+
+// Dados padrão para habilidades
+const defaultSkillsData = {
+  coreSkills: [
+    { name: "Python", level: 92 },
+    { name: "Machine Learning", level: 85 },
+    { name: "Cybersecurity", level: 90 },
+    { name: "Data Science", level: 88 }
+  ],
+  advancedSkills: [
+    { name: "Network Security", level: 86 },
+    { name: "Web Development", level: 78 },
+    { name: "Blockchain", level: 75 },
+    { name: "Cloud Computing", level: 80 }
+  ],
+  technologies: [
+    "Python", "C/C++", "JavaScript", "Rust", "TensorFlow", 
+    "PyTorch", "Docker", "Kubernetes", "AWS", "Linux", 
+    "Blockchain", "Network Analysis"
+  ],
+  awards: [
+    "Best Paper Award - Cybersecurity Conference 2022",
+    "Young Researcher Award - INFOCOM 2021",
+    "Top Security Researcher - CyberShield 2020",
+    "Innovation Prize - Brazilian Computing Society"
+  ]
+};
+
+// const defaultAboutData = {
+//   name: "Dr. Melquizedequi Cabral dos Santos",
+//   title: "Professor Associado - Universidade Federal do Piauí",
+//   bio: "Pesquisador e especialista em cibersegurança com foco em técnicas avançadas de proteção de dados e desenvolvimento de soluções de segurança para redes e sistemas. Experiência em algoritmos de machine learning aplicados à detecção de intrusão e análise de vulnerabilidades.",
+//   education: "Doutorado em Ciência da Computação - 2018-2022 - Universidade de São Paulo (USP) - Tese: \"Algoritmos de Aprendizado Profundo para Detecção Avançada de Intrusões em Redes de Alta Velocidade\"\nMestrado em Segurança Computacional - 2016-2018 - Universidade Estadual de Campinas (UNICAMP) - Dissertação: \"Métodos Avançados de Criptografia Aplicados à Proteção de Dados em Sistemas Distribuídos\"\nGraduação em Ciência da Computação - 2012-2016 - Instituto Tecnológico de Aeronáutica (ITA) - Trabalho de Conclusão de Curso: \"Desenvolvimento de Sistema de Análise de Vulnerabilidades em Redes Corporativas\"\nCertificações Profissionais - DIVERSAS - - Certified Information Systems Security Professional (CISSP); Offensive Security Certified Professional (OSCP); Certified Ethical Hacker (CEH); GIAC Security Essentials (GSEC)",
+//   experience: "Pesquisador Sênior em Cibersegurança - 2022-PRESENTE - Instituto de Pesquisas Avançadas em Tecnologia (IPAT) - Liderança em projetos de pesquisa em segurança de redes e sistemas; Desenvolvimento de novos algoritmos para detecção de ataques avançados; Coordenação de equipe multidisciplinar com foco em segurança de dados\nConsultor de Segurança da Informação - 2019-2022 - CyberShield Technologies - Realização de testes de penetração em sistemas críticos; Análise e mitigação de vulnerabilidades em aplicações corporativas; Implementação de soluções de proteção para infraestruturas complexas\nPesquisador Associado - 2016-2019 - Laboratório de Segurança em Computação (LabSEC) - Pesquisa em técnicas de machine learning para análise de malware; Desenvolvimento de ferramentas para análise automática de ameaças; Publicação de artigos científicos em periódicos de alto impacto",
+//   publications: "2023 - Deep Learning-Based Anomaly Detection for Zero-Day Attack Identification in High-Speed Networks - Journal of Cybersecurity Research, Vol. 15, Issue 4\n2022 - A Novel Approach for Malware Classification Using Convolutional Neural Networks and Binary Visualization - IEEE Transactions on Information Security, Vol. 44, Issue 2\n2021 - Quantum-Resistant Cryptographic Protocols for Secure IoT Communications - International Journal of Network Security, Vol. 32, Issue 8\n2020 - Advanced Persistent Threats Detection Using Machine Learning Techniques - Computers & Security Journal, Vol. 89",
+// };
 
 // Sample Projects data from the existing page
 const defaultProjects = [
@@ -158,7 +374,250 @@ const Admin: React.FC = () => {
       readme: "",
     },
   });
+// novas funcionalidades
 
+
+const [profileData, setProfileData] = useState(() => loadData('admin-about-data', defaultAboutData));
+const [educationData, setEducationData] = useState(() => loadData('admin-education-data', defaultEducationData));
+const [experienceData, setExperienceData] = useState(() => loadData('admin-experience-data', defaultExperienceData));
+const [publicationsData, setPublicationsData] = useState(() => loadData('admin-publications-data', defaultPublicationsData));
+const [skillsData, setSkillsData] = useState(() => loadData('admin-skills-data', defaultSkillsData));
+
+// Forms adicionais
+const profileForm = useForm<ProfileFormValues>({
+  resolver: zodResolver(profileSchema),
+  defaultValues: {
+    name: profileData.name,
+    title: profileData.title,
+    bio: profileData.bio,
+    email: profileData.email,
+    location: profileData.location,
+    lattes: profileData.lattes,
+    profileImage: profileData.profileImage,
+    researchFocus: profileData.researchFocus.join(', ')
+  }
+});
+
+const educationForm = useForm<{ items: string }>({
+  resolver: zodResolver(z.object({ items: z.string().min(10) })),
+  defaultValues: {
+    items: formatEducationData(educationData)
+  }
+});
+
+const experienceForm = useForm<{ items: string }>({
+  resolver: zodResolver(z.object({ items: z.string().min(10) })),
+  defaultValues: {
+    items: formatExperienceData(experienceData)
+  }
+});
+
+const publicationsForm = useForm<PublicationsFormValues>({
+  resolver: zodResolver(publicationsSchema),
+  defaultValues: {
+    articles: formatArticlesData(publicationsData.articles),
+    conferences: formatConferencesData(publicationsData.conferences),
+    patents: formatPatentsData(publicationsData.patents)
+  }
+});
+
+const skillsForm = useForm<SkillsFormValues>({
+  resolver: zodResolver(skillsSchema),
+  defaultValues: {
+    coreSkills: formatSkillsData(skillsData.coreSkills),
+    advancedSkills: formatSkillsData(skillsData.advancedSkills),
+    technologies: skillsData.technologies.join(', '),
+    awards: skillsData.awards.join('\n')
+  }
+});
+
+// Funções auxiliares para formatar os dados
+function formatEducationData(data) {
+  return data.map(item => {
+    let text = `${item.title} | ${item.period} | ${item.institution || ''} | ${item.description || ''}`;
+    if (item.certifications) {
+      text += ` | ${item.certifications.join('; ')}`;
+    }
+    return text;
+  }).join('\n');
+}
+
+function parseEducationData(text) {
+  return text.split('\n').filter(line => line.trim()).map(line => {
+    const parts = line.split('|').map(part => part.trim());
+    const result = {
+      title: parts[0] || '',
+      period: parts[1] || '',
+      institution: parts[2] || '',
+      description: parts[3] || ''
+    };
+    
+    if (parts[4]) {
+      result.certifications = parts[4].split(';').map(cert => cert.trim());
+    }
+    
+    return result;
+  });
+}
+
+function formatExperienceData(data) {
+  return data.map(item => {
+    return `${item.title} | ${item.period} | ${item.company} | ${item.duties.join('; ')}`;
+  }).join('\n');
+}
+
+function parseExperienceData(text) {
+  return text.split('\n').filter(line => line.trim()).map(line => {
+    const parts = line.split('|').map(part => part.trim());
+    return {
+      title: parts[0] || '',
+      period: parts[1] || '',
+      company: parts[2] || '',
+      duties: (parts[3] || '').split(';').map(duty => duty.trim())
+    };
+  });
+}
+
+function formatArticlesData(data) {
+  return data.map(item => {
+    return `${item.year} | ${item.title} | ${item.journal}`;
+  }).join('\n');
+}
+
+function formatConferencesData(data) {
+  return data.map(item => {
+    return `${item.year} | ${item.title} | ${item.conference}`;
+  }).join('\n');
+}
+
+function formatPatentsData(data) {
+  return data.map(item => {
+    return `${item.year} | ${item.title} | ${item.number}`;
+  }).join('\n');
+}
+
+function parsePublicationsData(articles, conferences, patents) {
+  return {
+    articles: articles.split('\n').filter(line => line.trim()).map(line => {
+      const parts = line.split('|').map(part => part.trim());
+      return {
+        year: parts[0] || '',
+        title: parts[1] || '',
+        journal: parts[2] || ''
+      };
+    }),
+    conferences: conferences.split('\n').filter(line => line.trim()).map(line => {
+      const parts = line.split('|').map(part => part.trim());
+      return {
+        year: parts[0] || '',
+        title: parts[1] || '',
+        conference: parts[2] || ''
+      };
+    }),
+    patents: patents.split('\n').filter(line => line.trim()).map(line => {
+      const parts = line.split('|').map(part => part.trim());
+      return {
+        year: parts[0] || '',
+        title: parts[1] || '',
+        number: parts[2] || ''
+      };
+    })
+  };
+}
+
+function formatSkillsData(data) {
+  return data.map(item => {
+    return `${item.name} | ${item.level}`;
+  }).join('\n');
+}
+
+function parseSkillsData(coreText, advancedText, technologiesText, awardsText) {
+  return {
+    coreSkills: coreText.split('\n').filter(line => line.trim()).map(line => {
+      const parts = line.split('|').map(part => part.trim());
+      return {
+        name: parts[0] || '',
+        level: parseInt(parts[1] || '0')
+      };
+    }),
+    advancedSkills: advancedText.split('\n').filter(line => line.trim()).map(line => {
+      const parts = line.split('|').map(part => part.trim());
+      return {
+        name: parts[0] || '',
+        level: parseInt(parts[1] || '0')
+      };
+    }),
+    technologies: technologiesText.split(',').map(tech => tech.trim()),
+    awards: awardsText.split('\n').filter(line => line.trim())
+  };
+}
+
+// Handlers para salvar os formulários
+const onProfileSubmit = (data: ProfileFormValues) => {
+  const updatedProfile = {
+    ...profileData,
+    name: data.name,
+    title: data.title,
+    bio: data.bio,
+    email: data.email,
+    location: data.location,
+    lattes: data.lattes,
+    profileImage: data.profileImage,
+    researchFocus: data.researchFocus.split(',').map(item => item.trim())
+  };
+  
+  setProfileData(updatedProfile);
+  saveData('admin-about-data', updatedProfile);
+  
+  toast({
+    title: "Perfil atualizado",
+    description: "As informações do perfil foram salvas com sucesso.",
+  });
+};
+
+const onEducationSubmit = (data: { items: string }) => {
+  const updatedEducation = parseEducationData(data.items);
+  setEducationData(updatedEducation);
+  saveData('admin-education-data', updatedEducation);
+  
+  toast({
+    title: "Educação atualizada",
+    description: "As informações sobre educação foram salvas com sucesso.",
+  });
+};
+
+const onExperienceSubmit = (data: { items: string }) => {
+  const updatedExperience = parseExperienceData(data.items);
+  setExperienceData(updatedExperience);
+  saveData('admin-experience-data', updatedExperience);
+  
+  toast({
+    title: "Experiência atualizada",
+    description: "As informações sobre experiência profissional foram salvas com sucesso.",
+  });
+};
+
+const onPublicationsSubmit = (data: PublicationsFormValues) => {
+  const updatedPublications = parsePublicationsData(data.articles, data.conferences, data.patents);
+  setPublicationsData(updatedPublications);
+  saveData('admin-publications-data', updatedPublications);
+  
+  toast({
+    title: "Publicações atualizadas",
+    description: "As informações sobre publicações foram salvas com sucesso.",
+  });
+};
+
+const onSkillsSubmit = (data: SkillsFormValues) => {
+  const updatedSkills = parseSkillsData(data.coreSkills, data.advancedSkills, data.technologies, data.awards);
+  setSkillsData(updatedSkills);
+  saveData('admin-skills-data', updatedSkills);
+  
+  toast({
+    title: "Habilidades atualizadas",
+    description: "As informações sobre habilidades foram salvas com sucesso.",
+  });
+};
   const navigate = useNavigate();
 
   // Get user's IP address
@@ -417,9 +876,39 @@ useEffect(() => {
             >
               PROJECTS
             </TabsTrigger>
+            <TabsTrigger 
+              value="profile"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
+            >
+              PERFIL
+            </TabsTrigger>
+            <TabsTrigger 
+              value="education"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
+            >
+              EDUCAÇÃO
+            </TabsTrigger>
+            <TabsTrigger 
+              value="experience"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
+            >
+              EXPERIÊNCIA
+            </TabsTrigger>
+            <TabsTrigger 
+              value="publications"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
+            >
+              PUBLICAÇÕES
+            </TabsTrigger>
+            <TabsTrigger 
+              value="skills"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
+            >
+              HABILIDADES
+            </TabsTrigger>
           </TabsList>
           
-          <TabsContent value="about">
+{/*           <TabsContent value="about">
             <Card className="neo-blur border border-cyber-neon/30">
               <CardHeader>
                 <CardTitle>Edit About Page</CardTitle>
@@ -443,6 +932,452 @@ useEffect(() => {
                         </FormItem>
                       )}
                     />
+                    */}
+                <TabsContent value="profile">
+                  <Card className="neo-blur border border-cyber-neon/30">
+                    <CardHeader>
+                      <CardTitle>Editar Perfil</CardTitle>
+                      <CardDescription>
+                        Atualize suas informações pessoais e profissionais.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...profileForm}>
+                        <form id="profile-form" onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
+                          <FormField
+                            control={profileForm.control}
+                            name="name"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Nome Completo</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Seu nome completo" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={profileForm.control}
+                            name="title"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Título Profissional</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Seu título profissional" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={profileForm.control}
+                            name="bio"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Biografia</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Breve biografia sobre você"
+                                    className="min-h-[100px]"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={profileForm.control}
+                              name="email"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Email</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="seu.email@dominio.com" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={profileForm.control}
+                              name="location"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Localização</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="Cidade, Estado, País" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <FormField
+                              control={profileForm.control}
+                              name="lattes"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>URL do Lattes</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="https://lattes.cnpq.br/..." {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={profileForm.control}
+                              name="profileImage"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>URL da Imagem de Perfil</FormLabel>
+                                  <FormControl>
+                                    <Input placeholder="https://example.com/imagem.jpg" {...field} />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <FormField
+                            control={profileForm.control}
+                            name="researchFocus"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Áreas de Pesquisa (separadas por vírgula)</FormLabel>
+                                <FormControl>
+                                  <Input placeholder="Cibersegurança, Machine Learning, Análise de Dados" {...field} />
+                                </FormControl>
+                                <FormMessage />
+                                <FormDescription>
+                                  Digite as áreas de pesquisa separadas por vírgula.
+                                </FormDescription>
+                              </FormItem>
+                            )}
+                          />
+                        </form>
+                      </Form>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        type="submit"
+                        form="profile-form"
+                        className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
+                      >
+                        <Save size={16} className="mr-2" />
+                        Salvar Alterações
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="education">
+                  <Card className="neo-blur border border-cyber-neon/30">
+                    <CardHeader>
+                      <CardTitle>Editar Educação</CardTitle>
+                      <CardDescription>
+                        Atualize suas informações educacionais.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...educationForm}>
+                        <form id="education-form" onSubmit={educationForm.handleSubmit(onEducationSubmit)} className="space-y-4">
+                          <FormField
+                            control={educationForm.control}
+                            name="items"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Itens de Educação</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Formato: Título | Período | Instituição | Descrição | Certificações (separadas por ;)"
+                                    className="min-h-[300px] font-mono text-sm"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                                <FormDescription>
+                                  Cada linha representa um item educacional. Use o formato:<br />
+                                  <code>Título | Período | Instituição | Descrição | Certificações (separadas por ;)</code><br />
+                                  Exemplo: Doutorado em Ciência da Computação | 2018-2022 | USP | Tese: "Título da Tese"
+                                </FormDescription>
+                              </FormItem>
+                            )}
+                          />
+                        </form>
+                      </Form>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        type="submit"
+                        form="education-form"
+                        className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
+                      >
+                        <Save size={16} className="mr-2" />
+                        Salvar Alterações
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="experience">
+                  <Card className="neo-blur border border-cyber-neon/30">
+                    <CardHeader>
+                      <CardTitle>Editar Experiência Profissional</CardTitle>
+                      <CardDescription>
+                        Atualize suas informações de experiência profissional.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...experienceForm}>
+                        <form id="experience-form" onSubmit={experienceForm.handleSubmit(onExperienceSubmit)} className="space-y-4">
+                          <FormField
+                            control={experienceForm.control}
+                            name="items"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Itens de Experiência</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Formato: Cargo | Período | Empresa | Responsabilidades (separadas por ;)"
+                                    className="min-h-[300px] font-mono text-sm"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                                <FormDescription>
+                                  Cada linha representa uma experiência profissional. Use o formato:<br />
+                                  <code>Cargo | Período | Empresa | Responsabilidade 1; Responsabilidade 2; Responsabilidade 3</code><br />
+                                  Exemplo: Pesquisador Sênior | 2022-PRESENTE | Instituto XYZ | Liderança em projetos; Desenvolvimento de algoritmos
+                                </FormDescription>
+                              </FormItem>
+                            )}
+                          />
+                        </form>
+                      </Form>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        type="submit"
+                        form="experience-form"
+                        className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
+                      >
+                        <Save size={16} className="mr-2" />
+                        Salvar Alterações
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="publications">
+                  <Card className="neo-blur border border-cyber-neon/30">
+                    <CardHeader>
+                      <CardTitle>Editar Publicações</CardTitle>
+                      <CardDescription>
+                        Atualize suas publicações acadêmicas e patentes.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...publicationsForm}>
+                        <form id="publications-form" onSubmit={publicationsForm.handleSubmit(onPublicationsSubmit)} className="space-y-6">
+                          <FormField
+                            control={publicationsForm.control}
+                            name="articles"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Artigos em Periódicos</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Formato: Ano | Título | Periódico"
+                                    className="min-h-[150px] font-mono text-sm"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                                <FormDescription>
+                                  Cada linha representa um artigo. Use o formato: <code>Ano | Título | Periódico</code>
+                                </FormDescription>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={publicationsForm.control}
+                            name="conferences"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Conferências Internacionais</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Formato: Ano | Título | Conferência"
+                                    className="min-h-[150px] font-mono text-sm"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                                <FormDescription>
+                                  Cada linha representa uma conferência. Use o formato: <code>Ano | Título | Conferência</code>
+                                </FormDescription>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={publicationsForm.control}
+                            name="patents"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Patentes e Propriedade Intelectual</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Formato: Ano | Título | Número da Patente"
+                                    className="min-h-[150px] font-mono text-sm"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                                <FormDescription>
+                                  Cada linha representa uma patente. Use o formato: <code>Ano | Título | Número da Patente</code>
+                                </FormDescription>
+                              </FormItem>
+                            )}
+                          />
+                        </form>
+                      </Form>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        type="submit"
+                        form="publications-form"
+                        className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
+                      >
+                        <Save size={16} className="mr-2" />
+                        Salvar Alterações
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="skills">
+                  <Card className="neo-blur border border-cyber-neon/30">
+                    <CardHeader>
+                      <CardTitle>Editar Habilidades</CardTitle>
+                      <CardDescription>
+                        Atualize suas habilidades técnicas e prêmios.
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Form {...skillsForm}>
+                        <form id="skills-form" onSubmit={skillsForm.handleSubmit(onSkillsSubmit)} className="space-y-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormField
+                              control={skillsForm.control}
+                              name="coreSkills"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Habilidades Principais</FormLabel>
+                                  <FormControl>
+                                    <Textarea 
+                                      placeholder="Formato: Nome | Nível (0-100)"
+                                      className="min-h-[150px] font-mono text-sm"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                  <FormDescription>
+                                    Cada linha representa uma habilidade. Use o formato: <code>Nome | Nível (0-100)</code><br />
+                                    Exemplo: Python | 92
+                                  </FormDescription>
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={skillsForm.control}
+                              name="advancedSkills"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Habilidades Avançadas</FormLabel>
+                                  <FormControl>
+                                    <Textarea 
+                                      placeholder="Formato: Nome | Nível (0-100)"
+                                      className="min-h-[150px] font-mono text-sm"
+                                      {...field}
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                  <FormDescription>
+                                    Cada linha representa uma habilidade. Use o formato: <code>Nome | Nível (0-100)</code><br />
+                                    Exemplo: Network Security | 86
+                                  </FormDescription>
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <FormField
+                            control={skillsForm.control}
+                            name="technologies"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Linguagens e Tecnologias (separadas por vírgula)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="Python, C/C++, JavaScript, Rust, TensorFlow, PyTorch, Docker, Kubernetes"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={skillsForm.control}
+                            name="awards"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Certificações e Prêmios</FormLabel>
+                                <FormControl>
+                                  <Textarea 
+                                    placeholder="Um prêmio ou certificação por linha"
+                                    className="min-h-[150px]"
+                                    {...field}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                                <FormDescription>
+                                  Cada linha representa um prêmio ou certificação.
+                                </FormDescription>
+                              </FormItem>
+                            )}
+                          />
+                        </form>
+                      </Form>
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        type="submit"
+                        form="skills-form"
+                        className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
+                      >
+                        <Save size={16} className="mr-2" />
+                        Salvar Alterações
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </TabsContent>
                     
                     <FormField
                       control={aboutForm.control}
