@@ -1,195 +1,76 @@
 
-# Guia de Gerenciamento de Conteúdo - Overcyber Website
+# Content Management System
 
-Este documento contém instruções detalhadas sobre como atualizar e gerenciar o conteúdo do blog e dos projetos no site Overcyber.
+This document explains how to use the admin panel to manage your website's content.
 
-## 1. Estrutura do Projeto
+## How to Access the Admin Panel
 
-O site é construído com:
-- React + TypeScript
-- Tailwind CSS para estilização
-- Shadcn/UI para componentes de interface
+1. Navigate to the `/admin` route of your website (e.g., `http://yoursite.com/admin`)
+2. Enter the default password: `admin123`
+3. Note: The admin panel is IP-restricted by default to localhost/development IPs
 
-Os arquivos principais para gerenciamento de conteúdo estão em:
-- `src/pages/Blog.tsx` - Página principal do blog
-- `src/pages/BlogPost.tsx` - Página individual de cada post
-- `src/pages/Projects.tsx` - Página de projetos
+## Security Considerations
 
-## 2. Como Atualizar o Blog
+- **IMPORTANT**: Change the default password in the `Admin.tsx` file
+- To add allowed IP addresses, edit the `allowedIPs` array in `Admin.tsx`
+- This is a simple authentication system. For production, consider implementing a more robust solution.
 
-### Estrutura dos Posts do Blog
+## Managing the About Page
 
-Cada post do blog é definido com a seguinte estrutura no arquivo `src/pages/Blog.tsx`:
+1. Access the admin panel and navigate to the "ABOUT PAGE" tab
+2. Update the following sections:
+   - Full Name
+   - Professional Title 
+   - Biography
+   - Education
+   - Experience
+   - Publications
+3. Click "Save Changes" to update the content
+4. The changes will be stored in the browser's localStorage
 
-```typescript
-{
-  id: 1,
-  title: "Título do Post",
-  slug: "url-amigavel-do-post",
-  excerpt: "Breve descrição do post...",
-  date: "2025-04-15",
-  readTime: "8 min read",
-  tags: ["Tag1", "Tag2", "Tag3"],
-  image: "URL_DA_IMAGEM",
-}
-```
+## Managing Projects
 
-### Para adicionar um novo post:
+1. Access the admin panel and navigate to the "PROJECTS" tab
 
-1. Abra o arquivo `src/pages/Blog.tsx`
-2. Localize o array `blogPosts`
-3. Adicione um novo objeto seguindo a estrutura acima
-4. Atribua um ID único (número incremental)
-5. Defina um slug único que será usado na URL
-6. Para o conteúdo completo do post, atualize o arquivo `src/pages/BlogPost.tsx` para incluir o conteúdo do novo post baseado no slug
+### Adding a New Project
+1. Click the "Add New Project" button
+2. Fill in the project details:
+   - Title: Your project name
+   - Tags: Comma-separated list of technologies (e.g., "Python, Machine Learning")
+   - Description: Brief overview of the project
+   - Image URL: Link to the project thumbnail image
+   - GitHub URL: Link to the project's repository
+   - Live Demo URL: (Optional) Link to a live version of the project
+   - README Content: Markdown content for the project details
+3. Click "Add Project" to save
 
-### Exemplo de adição de um novo post:
+### Editing a Project
+1. Find the project in the list and click "Edit"
+2. Modify the project details
+3. Click "Update Project" to save changes
 
-```typescript
-// Em src/pages/Blog.tsx
-const blogPosts = [
-  // Posts existentes...
-  {
-    id: 5, // Novo ID
-    title: "Novo Post de Blog",
-    slug: "novo-post-blog",
-    excerpt: "Este é um novo post sobre tecnologia...",
-    date: "2025-06-10",
-    readTime: "5 min read",
-    tags: ["Novidade", "Tecnologia"],
-    image: "https://exemplo.com/imagem.jpg",
-  },
-];
-```
+### Deleting a Project
+1. Find the project in the list and click "Delete"
+2. Confirm the deletion when prompted
 
-```typescript
-// Em src/pages/BlogPost.tsx - adicionar dentro da função que retorna o conteúdo
-if (slug === "novo-post-blog") {
-  return {
-    title: "Novo Post de Blog",
-    date: "2025-06-10",
-    readTime: "5 min read",
-    tags: ["Novidade", "Tecnologia"],
-    image: "https://exemplo.com/imagem.jpg",
-    content: `
-      # Título do Post
-      
-      Este é o conteúdo completo do post em formato Markdown.
-      
-      ## Subtítulo
-      
-      Mais conteúdo aqui...
-    `
-  };
-}
-```
+## Data Storage
 
-## 3. Como Atualizar a Seção de Projetos
+This admin system uses the browser's localStorage to persist content changes. This means:
+- Changes are stored per browser/device
+- Clearing browser data will reset the content to defaults
+- For production, consider implementing a server-based storage solution
 
-### Estrutura dos Projetos
+## Production Deployment Notes
 
-Os projetos são definidos no arquivo `src/pages/Projects.tsx` com a seguinte estrutura:
+For deploying to a production environment:
+1. Change the default password in `Admin.tsx`
+2. Update the `allowedIPs` array with your trusted IP addresses
+3. Consider implementing a more secure authentication method
+4. For persistent storage, replace localStorage with a database solution
 
-```typescript
-{
-  id: 1,
-  title: "Nome do Projeto",
-  description: "Descrição do projeto...",
-  tags: ["Tecnologia1", "Tecnologia2"],
-  image: "URL_DA_IMAGEM",
-  github: "URL_DO_GITHUB",
-  live: "URL_DO_DEMO_LIVE", // ou null se não houver
-  stars: 342,
-  forks: 87,
-  readme: `# Conteúdo do README em Markdown...`
-}
-```
+## Troubleshooting
 
-### Para adicionar um novo projeto:
-
-1. Abra o arquivo `src/pages/Projects.tsx`
-2. Localize o array `projects`
-3. Adicione um novo objeto seguindo a estrutura acima
-4. Para o README, você pode copiar diretamente o conteúdo do arquivo README.md do projeto no GitHub
-
-### Exemplo de adição de um novo projeto:
-
-```typescript
-// Em src/pages/Projects.tsx
-const projects = [
-  // Projetos existentes...
-  {
-    id: 4, // Novo ID
-    title: "Novo Projeto",
-    description: "Descrição detalhada do novo projeto...",
-    tags: ["React", "TypeScript", "API"],
-    image: "https://exemplo.com/imagem-projeto.jpg",
-    github: "https://github.com/seunome/novoprojeto",
-    live: "https://novoprojeto.com",
-    stars: 45,
-    forks: 12,
-    readme: `# Novo Projeto
-    
-    ## Introdução
-    Este é um projeto incrível que faz coisas incríveis.
-    
-    ## Características
-    * Característica 1
-    * Característica 2
-    
-    ## Como instalar
-    \`\`\`
-    npm install novoprojeto
-    \`\`\`
-    `
-  }
-];
-```
-
-## 4. Imagens e Recursos
-
-### Como adicionar novas imagens:
-
-1. **Opção 1 - URLs externas**: Use URLs de serviços de hospedagem de imagens, como Unsplash, Imgur ou seu próprio servidor
-2. **Opção 2 - Imagens locais**: Adicione as imagens à pasta `public/images/` e referencie-as como `/images/nome-da-imagem.jpg`
-
-### Recomendações para imagens:
-- Use imagens otimizadas para web (formatos WebP ou JPEG otimizado)
-- Dimensões recomendadas:
-  - Posts do blog: 800x420px (proporção 16:9)
-  - Projetos: 800x450px (proporção 16:9)
-- Tamanho máximo recomendado: 200KB por imagem
-
-## 5. Publicação das Alterações
-
-Após fazer as alterações nos arquivos mencionados acima:
-
-1. **Desenvolvimento local**:
-   - Execute `npm run dev` para testar as mudanças localmente
-   - Verifique se tudo está funcionando corretamente
-
-2. **Publicação**:
-   - Execute `npm run build` para gerar os arquivos estáticos na pasta `dist`
-   - Execute `python server.py` para servir os arquivos localmente
-   - Para publicação em produção, siga as instruções em `DEPLOY.md`
-
-## 6. Dicas para o Conteúdo
-
-### Blog:
-- Mantenha o título conciso e atrativo
-- Use tags relevantes para melhorar a descoberta
-- Escreva um resumo (excerpt) que desperte interesse
-- Organize o conteúdo completo com títulos e subtítulos claros
-
-### Projetos:
-- Inclua um README bem estruturado
-- Destaque os aspectos técnicos no início da descrição
-- Use badges no README para status do projeto
-- Inclua instruções de instalação e uso claras
-
-## 7. Suporte
-
-Em caso de dúvidas ou problemas ao atualizar o conteúdo:
-- Consulte a documentação do React e Tailwind CSS
-- Verifique a estrutura dos arquivos para entender como o conteúdo é renderizado
-- Faça backup antes de realizar grandes alterações
+If you encounter issues:
+1. Ensure you're using a supported browser with localStorage enabled
+2. Check that you're accessing from an allowed IP address
+3. If content doesn't update, try clearing your browser cache and refreshing
