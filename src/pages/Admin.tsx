@@ -153,19 +153,116 @@ const Admin: React.FC = () => {
   const navigate = useNavigate();
 
   // Get user's IP address
-  useEffect(() => {
-    const getIpAddress = async () => {
+  // useEffect(() => {
+  //   const getIpAddress = async () => {
+  //     try {
+  //       const response = await fetch('https://api.ipify.org?format=json');
+  //       const data = await response.json();
+  //       setIpAddress(data.ip);
+  //     } catch (error) {
+  //       console.error('Error fetching IP:', error);
+  //       setIpAddress('unknown');
+  //     }
+  //   };
+
+  //   getIpAddress();
+  // Get user's IP address
+useEffect(() => {
+  const getLocalIpAddress = () => {
+    return new Promise((resolve, reject) => {
+      // Usando WebRTC para tentar obter o IP local
+      const RTCPeerConnection = window.RTCPeerConnection || 
+                              window.webkitRTCPeerConnection || 
+                              window.mozRTCPeerConnection;
+      
+      if (!RTCPeerConnection) {
+        reject(new Error('WebRTC não é suportado neste navegador'));
+        return;
+      }
+      
+      const pc = new RTCPeerConnection({
+        iceServers: []
+      });
+      
+      pc.createDataChannel('');
+      
+      pc.onicecandidate = (event) => {
+        if (!event || !event.candidate) {
+          pc.close();
+          reject(new Error('Nenhum candidato ICE encontrado'));
+          return;
+        }
+        
+        const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/;
+        const ipMatch = ipRegex.exec(event.candidate.candidate);
+        
+        if (ipMatch && ipMatch[1]) {
+          const ip = ipMatch[1];
+          pc.close();
+          // Filtrar apenas IPs locais (endereços privados)
+          if (
+            ip.startsWith('10.') || 
+            ip.startsWith('192.168.') || 
+            ip.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./)
+          ) {
+            resolve(ip);
+          } else {
+            reject(new Error('IP não é local'));
+          }
+        } else {
+          pc.close();
+          reject(new Error('IP não encontrado no candidato ICE'));
+        }
+      };
+      
+      pc.createOffer()
+        .then(offer => pc.setLocalDescription(offer))
+        .catch(err => {
+          pc.close();
+          reject(err);
+        });
+        
+      // Timeout para garantir que não bloqueie indefinidamente
+      setTimeout(() => {
+        pc.close();
+        reject(new Error('Timeout ao tentar obter IP local'));
+      }, 5000);
+    });
+  };
+
+  const getOnlineIpAddress = async () => {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip;
+    } catch (error) {
+      console.error('Erro ao obter IP online:', error);
+      throw error;
+    }
+  };
+
+  const getIpAddress = async () => {
+    try {
+      // Primeiro tenta obter o IP local
+      const localIp = await getLocalIpAddress();
+      console.log('IP local encontrado:', localIp);
+      setIpAddress(localIp);
+    } catch (localError) {
+      console.error('Erro ao obter IP local, tentando IP online:', localError);
+      
+      // Se falhar, tenta obter o IP online
       try {
-        const response = await fetch('https://api.ipify.org?format=json');
-        const data = await response.json();
-        setIpAddress(data.ip);
-      } catch (error) {
-        console.error('Error fetching IP:', error);
+        const onlineIp = await getOnlineIpAddress();
+        console.log('IP online encontrado:', onlineIp);
+        setIpAddress(onlineIp);
+      } catch (onlineError) {
+        console.error('Erro ao obter IP online:', onlineError);
         setIpAddress('unknown');
       }
-    };
-
-    getIpAddress();
+    }
+  };
+  
+  getIpAddress();
     
     // Load saved data
     const savedAboutData = loadData('admin-about-data', defaultAboutData);
@@ -181,6 +278,8 @@ const Admin: React.FC = () => {
     return allowedIPs.includes(ipAddress) || 
            ipAddress === '127.0.0.1' || 
            ipAddress === 'localhost' || 
+           ipAddress === '192.168.10.21' || 
+           ipAddress === '192.168.10.18' ||       
            ipAddress === '::1';
   };
 
