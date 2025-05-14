@@ -23,53 +23,197 @@ const loadData = (key, defaultValue) => {
   return defaultValue;
 };
 
-// Dados padrão para skills (caso não existam no localStorage)
-const defaultSkills = [
-  { name: "Python", level: 92 },
-  { name: "Machine Learning", level: 85 },
-  { name: "Cybersecurity", level: 90 },
-  { name: "Data Science", level: 88 },
-  { name: "Network Security", level: 86 },
-  { name: "Web Development", level: 78 },
-  { name: "Blockchain", level: 75 },
-  { name: "Cloud Computing", level: 80 }
-];
-
-// Dados padrão para o about (usado apenas como fallback)
+// Dados padrão (serão substituídos pelos dados do localStorage se existirem)
 const defaultAboutData = {
   name: "Dr. Melquizedequi Cabral dos Santos",
   title: "Professor Associado - Universidade Federal do Piauí",
-  bio: "Pesquisador e professor com foco em Ciência da Computação, Inteligência Artificial e Processamento de Linguagem Natural.",
-  education: "Doutor em Ciência da Computação pela Universidade Federal de Pernambuco (2011)\nMestre em Ciência da Computação pela Universidade Federal de Pernambuco (2007)\nGraduado em Ciência da Computação pela Universidade Federal do Piauí (2005)",
-  experience: "Professor Associado na Universidade Federal do Piauí desde 2011\nLíder do grupo de pesquisa em Processamento de Linguagem Natural\nMembro do comitê científico de diversas conferências nacionais e internacionais",
-  publications: "Mais de 50 artigos publicados em periódicos e conferências internacionais\nAutor de 3 capítulos de livros na área de Inteligência Artificial\nEditor convidado para edições especiais em revistas científicas",
+  bio: "Pesquisador e especialista em cibersegurança com foco em técnicas avançadas de proteção de dados e desenvolvimento de soluções de segurança para redes e sistemas. Experiência em algoritmos de machine learning aplicados à detecção de intrusão e análise de vulnerabilidades.",
+  email: "secure@cyberdomain.net",
+  location: "São Paulo, Brasil",
+  lattes: "https://lattes.cnpq.br/2915812289846388",
+  profileImage: "https://avatars.githubusercontent.com/u/583231",
+  researchFocus: [
+    "Cibersegurança", 
+    "Machine Learning", 
+    "Análise de Vulnerabilidades", 
+    "Redes Neurais", 
+    "Detecção de Intrusão", 
+    "Segurança de Dados"
+  ]
+};
+
+const defaultEducationData = [
+  {
+    title: "Doutorado em Ciência da Computação",
+    period: "2018-2022",
+    institution: "Universidade de São Paulo (USP)",
+    description: "Tese: \"Algoritmos de Aprendizado Profundo para Detecção Avançada de Intrusões em Redes de Alta Velocidade\""
+  },
+  {
+    title: "Mestrado em Segurança Computacional",
+    period: "2016-2018",
+    institution: "Universidade Estadual de Campinas (UNICAMP)",
+    description: "Dissertação: \"Métodos Avançados de Criptografia Aplicados à Proteção de Dados em Sistemas Distribuídos\""
+  },
+  {
+    title: "Graduação em Ciência da Computação",
+    period: "2012-2016",
+    institution: "Instituto Tecnológico de Aeronáutica (ITA)",
+    description: "Trabalho de Conclusão de Curso: \"Desenvolvimento de Sistema de Análise de Vulnerabilidades em Redes Corporativas\""
+  },
+  {
+    title: "Certificações Profissionais",
+    period: "DIVERSAS",
+    institution: "",
+    certifications: [
+      "Certified Information Systems Security Professional (CISSP)",
+      "Offensive Security Certified Professional (OSCP)",
+      "Certified Ethical Hacker (CEH)",
+      "GIAC Security Essentials (GSEC)"
+    ]
+  }
+];
+
+const defaultExperienceData = [
+  {
+    title: "Pesquisador Sênior em Cibersegurança",
+    period: "2022-PRESENTE",
+    company: "Instituto de Pesquisas Avançadas em Tecnologia (IPAT)",
+    duties: [
+      "Liderança em projetos de pesquisa em segurança de redes e sistemas",
+      "Desenvolvimento de novos algoritmos para detecção de ataques avançados",
+      "Coordenação de equipe multidisciplinar com foco em segurança de dados"
+    ]
+  },
+  {
+    title: "Consultor de Segurança da Informação",
+    period: "2019-2022",
+    company: "CyberShield Technologies",
+    duties: [
+      "Realização de testes de penetração em sistemas críticos",
+      "Análise e mitigação de vulnerabilidades em aplicações corporativas",
+      "Implementação de soluções de proteção para infraestruturas complexas"
+    ]
+  },
+  {
+    title: "Pesquisador Associado",
+    period: "2016-2019",
+    company: "Laboratório de Segurança em Computação (LabSEC)",
+    duties: [
+      "Pesquisa em técnicas de machine learning para análise de malware",
+      "Desenvolvimento de ferramentas para análise automática de ameaças",
+      "Publicação de artigos científicos em periódicos de alto impacto"
+    ]
+  }
+];
+
+const defaultPublicationsData = {
+  articles: [
+    {
+      year: "2023",
+      title: "Deep Learning-Based Anomaly Detection for Zero-Day Attack Identification in High-Speed Networks",
+      journal: "Journal of Cybersecurity Research, Vol. 15, Issue 4"
+    },
+    {
+      year: "2022",
+      title: "A Novel Approach for Malware Classification Using Convolutional Neural Networks and Binary Visualization",
+      journal: "IEEE Transactions on Information Security, Vol. 44, Issue 2"
+    },
+    {
+      year: "2021",
+      title: "Quantum-Resistant Cryptographic Protocols for Secure IoT Communications",
+      journal: "International Journal of Network Security, Vol. 32, Issue 8"
+    },
+    {
+      year: "2020",
+      title: "Advanced Persistent Threats Detection Using Machine Learning Techniques",
+      journal: "Computers & Security Journal, Vol. 89"
+    }
+  ],
+  conferences: [
+    {
+      year: "2023",
+      title: "Adversarial Machine Learning for Robust Intrusion Detection Systems",
+      conference: "International Conference on Network and Systems Security (NSS)"
+    },
+    {
+      year: "2022",
+      title: "Real-time Network Traffic Analysis Using Graph Neural Networks",
+      conference: "IEEE Symposium on Security and Privacy (S&P)"
+    },
+    {
+      year: "2021",
+      title: "Blockchain-based Framework for Secure Firmware Updates in IoT Devices",
+      conference: "ACM Conference on Computer and Communications Security (CCS)"
+    }
+  ],
+  patents: [
+    {
+      year: "2022",
+      title: "Sistema de Detecção de Intrusão Baseado em Análise Comportamental e Aprendizado Profundo",
+      number: "Patente Nº BR10202200XXXX"
+    },
+    {
+      year: "2021",
+      title: "Método para Identificação Automática de Vulnerabilidades em Aplicações Web",
+      number: "Patente Nº BR10202100XXXX"
+    }
+  ]
+};
+
+const defaultSkillsData = {
+  coreSkills: [
+    { name: "Python", level: 92 },
+    { name: "Machine Learning", level: 85 },
+    { name: "Cybersecurity", level: 90 },
+    { name: "Data Science", level: 88 }
+  ],
+  advancedSkills: [
+    { name: "Network Security", level: 86 },
+    { name: "Web Development", level: 78 },
+    { name: "Blockchain", level: 75 },
+    { name: "Cloud Computing", level: 80 }
+  ],
+  technologies: [
+    "Python", "C/C++", "JavaScript", "Rust", "TensorFlow", 
+    "PyTorch", "Docker", "Kubernetes", "AWS", "Linux", 
+    "Blockchain", "Network Analysis"
+  ],
+  awards: [
+    "Best Paper Award - Cybersecurity Conference 2022",
+    "Young Researcher Award - INFOCOM 2021",
+    "Top Security Researcher - CyberShield 2020",
+    "Innovation Prize - Brazilian Computing Society"
+  ]
 };
 
 const About = () => {
   const [activeTab, setActiveTab] = useState("profile");
-  const [aboutData, setAboutData] = useState(defaultAboutData);
-  const [skills, setSkills] = useState(defaultSkills);
   
-  // Carregar dados do localStorage quando o componente montar
+  // Estado para armazenar os dados
+  const [aboutData, setAboutData] = useState(defaultAboutData);
+  const [educationData, setEducationData] = useState(defaultEducationData);
+  const [experienceData, setExperienceData] = useState(defaultExperienceData);
+  const [publicationsData, setPublicationsData] = useState(defaultPublicationsData);
+  const [skillsData, setSkillsData] = useState(defaultSkillsData);
+  
+  // Carrega os dados do localStorage quando o componente montar
   useEffect(() => {
     const savedAboutData = loadData('admin-about-data', defaultAboutData);
     setAboutData(savedAboutData);
     
-    // Se você decidir adicionar skills ao admin posteriormente
-    const savedSkills = loadData('admin-skills-data', defaultSkills);
-    setSkills(savedSkills);
+    const savedEducationData = loadData('admin-education-data', defaultEducationData);
+    setEducationData(savedEducationData);
+    
+    const savedExperienceData = loadData('admin-experience-data', defaultExperienceData);
+    setExperienceData(savedExperienceData);
+    
+    const savedPublicationsData = loadData('admin-publications-data', defaultPublicationsData);
+    setPublicationsData(savedPublicationsData);
+    
+    const savedSkillsData = loadData('admin-skills-data', defaultSkillsData);
+    setSkillsData(savedSkillsData);
   }, []);
-
-  // Função para formatar texto com quebras de linha
-  const formatText = (text) => {
-    if (!text) return [];
-    return text.split('\n').filter(line => line.trim() !== '');
-  };
-
-  // Formatar dados para as diferentes seções
-  const educationItems = formatText(aboutData.education);
-  const experienceItems = formatText(aboutData.experience);
-  const publicationItems = formatText(aboutData.publications);
 
   return (
     <Layout title="IDENTITY PROFILE" showBackButton={true}>
@@ -117,7 +261,7 @@ const About = () => {
                 <div className="col-span-1">
                   <div className="aspect-square relative overflow-hidden border-2 border-cyber-neon rounded-md">
                     <img 
-                      src="https://avatars.githubusercontent.com/u/583231" 
+                      src={aboutData.profileImage} 
                       alt="Profile" 
                       className="w-full h-full object-cover"
                     />
@@ -136,20 +280,23 @@ const About = () => {
                     <h3 className="text-xl text-white font-mono mb-2">CONTACT // <span className="text-cyber-neon">SECURE CHANNELS</span></h3>
                     <ul className="space-y-2 text-cyber-blue/80">
                       <li className="flex items-center">
-                        <span className="w-24 font-mono">NAME:</span>
-                        <span className="text-cyber-neon">{aboutData.name}</span>
-                      </li>
-                      <li className="flex items-center">
-                        <span className="w-24 font-mono">TITLE:</span>
-                        <span>{aboutData.title}</span>
-                      </li>
-                      <li className="flex items-center">
                         <span className="w-24 font-mono">EMAIL:</span>
-                        <span className="text-cyber-neon">secure@cyberdomain.net</span>
+                        <span className="text-cyber-neon">{aboutData.email}</span>
                       </li>
                       <li className="flex items-center">
                         <span className="w-24 font-mono">LOCATION:</span>
-                        <span>São Paulo, Brasil</span>
+                        <span>{aboutData.location}</span>
+                      </li>
+                      <li className="flex items-center">
+                        <span className="w-24 font-mono">LATTES:</span>
+                        <a 
+                          href={aboutData.lattes}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-cyber-neon hover:underline"
+                        >
+                          CV Lattes
+                        </a>
                       </li>
                     </ul>
                   </div>
@@ -159,12 +306,9 @@ const About = () => {
               <div>
                 <h3 className="text-xl text-white font-mono mb-2">RESEARCH FOCUS // <span className="text-cyber-neon">ACTIVE DOMAINS</span></h3>
                 <div className="flex flex-wrap gap-2">
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50">Cibersegurança</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50">Machine Learning</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50">Análise de Vulnerabilidades</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50">Redes Neurais</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50">Detecção de Intrusão</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50">Segurança de Dados</Badge>
+                  {aboutData.researchFocus.map((focus, index) => (
+                    <Badge key={index} className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50">{focus}</Badge>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -178,21 +322,23 @@ const About = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-6">
-                {educationItems.map((item, index) => (
+                {educationData.map((edu, index) => (
                   <div key={index} className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
                     <div className="flex justify-between items-start">
-                      <h3 className="text-xl text-white font-mono">{item.split(' - ')[0] || item}</h3>
-                      {item.split(' - ')[1] && (
-                        <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">
-                          {item.split(' - ')[1]}
-                        </Badge>
-                      )}
+                      <h3 className="text-xl text-white font-mono">{edu.title}</h3>
+                      <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">{edu.period}</Badge>
                     </div>
-                    {item.split(' - ')[2] && (
-                      <p className="text-cyber-blue mt-1">{item.split(' - ')[2]}</p>
-                    )}
-                    {item.split(' - ')[3] && (
-                      <p className="mt-3 text-cyber-blue/80">{item.split(' - ')[3]}</p>
+                    {edu.institution && <p className="text-cyber-blue mt-1">{edu.institution}</p>}
+                    {edu.description && <p className="mt-3 text-cyber-blue/80">{edu.description}</p>}
+                    
+                    {edu.certifications && (
+                      <div className="mt-3 space-y-2">
+                        {edu.certifications.map((cert, idx) => (
+                          <p key={idx} className="text-cyber-blue/80">
+                            <span className="text-cyber-neon">•</span> {cert}
+                          </p>
+                        ))}
+                      </div>
                     )}
                   </div>
                 ))}
@@ -207,23 +353,17 @@ const About = () => {
               <CardTitle className="text-2xl text-cyber-neon font-mono">03 // PROFESSIONAL PROTOCOLS</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {experienceItems.map((item, index) => (
+              {experienceData.map((exp, index) => (
                 <div key={index} className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
                   <div className="flex justify-between items-start">
-                    <h3 className="text-xl text-white font-mono">{item.split(' - ')[0] || item}</h3>
-                    {item.split(' - ')[1] && (
-                      <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">
-                        {item.split(' - ')[1]}
-                      </Badge>
-                    )}
+                    <h3 className="text-xl text-white font-mono">{exp.title}</h3>
+                    <Badge className="bg-cyber-orange/20 text-cyber-orange border border-cyber-orange/50">{exp.period}</Badge>
                   </div>
-                  {item.split(' - ')[2] && (
-                    <p className="text-cyber-blue mt-1">{item.split(' - ')[2]}</p>
-                  )}
+                  <p className="text-cyber-blue mt-1">{exp.company}</p>
                   <div className="mt-3 space-y-2">
-                    {item.split(' - ')[3] && item.split(' - ')[3].split(';').map((duty, idx) => (
+                    {exp.duties.map((duty, idx) => (
                       <p key={idx} className="text-cyber-blue/80">
-                        <span className="text-cyber-neon">•</span> {duty.trim()}
+                        <span className="text-cyber-neon">•</span> {duty}
                       </p>
                     ))}
                   </div>
@@ -241,15 +381,39 @@ const About = () => {
             <CardContent className="space-y-4">
               <div className="space-y-4">
                 <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                  <h3 className="text-xl text-white font-mono mb-2">Publicações e Artigos</h3>
+                  <h3 className="text-xl text-white font-mono mb-2">Artigos em Periódicos</h3>
                   <ul className="space-y-4">
-                    {publicationItems.map((item, index) => (
+                    {publicationsData.articles.map((article, index) => (
                       <li key={index} className="border-l-2 border-cyber-blue pl-4 py-1">
-                        <p className="text-cyber-blue font-mono">{item.split(' - ')[0] || '2023'}</p>
-                        <p className="text-white">{item.split(' - ')[1] || item}</p>
-                        {item.split(' - ')[2] && (
-                          <p className="text-cyber-blue/80 text-sm mt-1">{item.split(' - ')[2]}</p>
-                        )}
+                        <p className="text-cyber-blue font-mono">{article.year}</p>
+                        <p className="text-white">{article.title}</p>
+                        <p className="text-cyber-blue/80 text-sm mt-1">{article.journal}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
+                  <h3 className="text-xl text-white font-mono mb-2">Conferências Internacionais</h3>
+                  <ul className="space-y-4">
+                    {publicationsData.conferences.map((conf, index) => (
+                      <li key={index} className="border-l-2 border-cyber-orange pl-4 py-1">
+                        <p className="text-cyber-orange font-mono">{conf.year}</p>
+                        <p className="text-white">{conf.title}</p>
+                        <p className="text-cyber-blue/80 text-sm mt-1">{conf.conference}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
+                  <h3 className="text-xl text-white font-mono mb-2">Patentes e Propriedade Intelectual</h3>
+                  <ul className="space-y-4">
+                    {publicationsData.patents.map((patent, index) => (
+                      <li key={index} className="border-l-2 border-cyber-neon pl-4 py-1">
+                        <p className="text-cyber-neon font-mono">{patent.year}</p>
+                        <p className="text-white">{patent.title}</p>
+                        <p className="text-cyber-blue/80 text-sm mt-1">{patent.number}</p>
                       </li>
                     ))}
                   </ul>
@@ -268,7 +432,7 @@ const About = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <h3 className="text-xl text-white font-mono">Core Skills</h3>
-                  {skills.slice(0, 4).map((skill) => (
+                  {skillsData.coreSkills.map((skill) => (
                     <div key={skill.name} className="space-y-1">
                       <div className="flex justify-between">
                         <span className="text-cyber-blue font-mono">{skill.name}</span>
@@ -290,7 +454,7 @@ const About = () => {
                 
                 <div className="space-y-4">
                   <h3 className="text-xl text-white font-mono">Advanced Skills</h3>
-                  {skills.slice(4, 8).map((skill) => (
+                  {skillsData.advancedSkills.map((skill) => (
                     <div key={skill.name} className="space-y-1">
                       <div className="flex justify-between">
                         <span className="text-cyber-blue font-mono">{skill.name}</span>
@@ -314,14 +478,21 @@ const About = () => {
               <div>
                 <h3 className="text-xl text-white font-mono mb-4">Languages & Technologies</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">Python</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">C/C++</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">JavaScript</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">Rust</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">TensorFlow</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">PyTorch</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">Docker</Badge>
-                  <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">Kubernetes</Badge>
+                  {skillsData.technologies.map((tech, index) => (
+                    <Badge key={index} className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">{tech}</Badge>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-xl text-white font-mono mb-4">Certifications & Awards</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {skillsData.awards.map((award, index) => (
+                    <div key={index} className="bg-cyber-black/40 border border-cyber-neon/30 p-3 rounded-md flex items-center">
+                      <Award size={24} className="text-cyber-orange mr-3" />
+                      <span className="text-cyber-blue">{award}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardContent>
