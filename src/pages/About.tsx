@@ -1,11 +1,13 @@
 
-import { useState } from 'react';
+// import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Book, FileCode, Briefcase, GraduationCap, Award, User } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+
 
 const About = () => {
   const [activeTab, setActiveTab] = useState("profile");
