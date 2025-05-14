@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "@/components/ui/use-toast";
 import Layout from '@/components/Layout';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -22,15 +21,6 @@ const authSchema = z.object({
 });
 
 // About page schema
-const aboutSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  title: z.string().min(2, "Title must be at least 2 characters"),
-  bio: z.string().min(10, "Bio must be at least 10 characters"),
-  education: z.string().min(5, "Education must be at least 5 characters"),
-  experience: z.string().min(5, "Experience must be at least 5 characters"),
-  publications: z.string().min(5, "Publications must be at least 5 characters"),
-});
-// Esquema para a aba de perfil
 const profileSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   title: z.string().min(2, "Título deve ter pelo menos 2 caracteres"),
@@ -42,37 +32,6 @@ const profileSchema = z.object({
   researchFocus: z.string().min(5, "Áreas de pesquisa são obrigatórias")
 });
 
-// Esquema para educação (array)
-const educationItemSchema = z.object({
-  title: z.string().min(3, "Título deve ter pelo menos 3 caracteres"),
-  period: z.string().min(2, "Período é obrigatório"),
-  institution: z.string().optional(),
-  description: z.string().optional(),
-  certifications: z.string().optional()
-});
-
-// Esquema para experiência (array)
-const experienceItemSchema = z.object({
-  title: z.string().min(3, "Cargo deve ter pelo menos 3 caracteres"),
-  period: z.string().min(2, "Período é obrigatório"),
-  company: z.string().min(2, "Empresa/Instituição é obrigatória"),
-  duties: z.string().min(5, "Responsabilidades são obrigatórias")
-});
-
-// Esquema para publicações
-const publicationsSchema = z.object({
-  articles: z.string().min(5, "Artigos em periódicos são obrigatórios"),
-  conferences: z.string().min(5, "Conferências são obrigatórias"),
-  patents: z.string().min(5, "Patentes são obrigatórias")
-});
-
-// Esquema para habilidades
-const skillsSchema = z.object({
-  coreSkills: z.string().min(5, "Habilidades principais são obrigatórias"),
-  advancedSkills: z.string().min(5, "Habilidades avançadas são obrigatórias"),
-  technologies: z.string().min(5, "Tecnologias são obrigatórias"),
-  awards: z.string().min(5, "Prêmios e certificações são obrigatórios")
-});
 // Project schema
 const projectSchema = z.object({
   id: z.number().optional(),
@@ -85,26 +44,37 @@ const projectSchema = z.object({
   readme: z.string().min(10, "Readme must be at least 10 characters"),
 });
 
-type AboutFormValues = z.infer<typeof aboutSchema>;
-// Tipos inferidos dos esquemas
+// Education, Experience, Publications, and Skills schemas
+const educationSchema = z.object({
+  items: z.string().min(10, "Educação deve ter pelo menos 10 caracteres"),
+});
+
+const experienceSchema = z.object({
+  items: z.string().min(10, "Experiência deve ter pelo menos 10 caracteres"),
+});
+
+const publicationsSchema = z.object({
+  articles: z.string().min(5, "Artigos em periódicos são obrigatórios"),
+  conferences: z.string().min(5, "Conferências são obrigatórias"),
+  patents: z.string().min(5, "Patentes são obrigatórias")
+});
+
+const skillsSchema = z.object({
+  coreSkills: z.string().min(5, "Habilidades principais são obrigatórias"),
+  advancedSkills: z.string().min(5, "Habilidades avançadas são obrigatórias"),
+  technologies: z.string().min(5, "Tecnologias são obrigatórias"),
+  awards: z.string().min(5, "Prêmios e certificações são obrigatórios")
+});
+
+type AuthFormValues = z.infer<typeof authSchema>;
 type ProfileFormValues = z.infer<typeof profileSchema>;
-type EducationItemFormValues = z.infer<typeof educationItemSchema>;
-type ExperienceItemFormValues = z.infer<typeof experienceItemSchema>;
+type ProjectFormValues = z.infer<typeof projectSchema>;
+type EducationFormValues = z.infer<typeof educationSchema>;
+type ExperienceFormValues = z.infer<typeof experienceSchema>;
 type PublicationsFormValues = z.infer<typeof publicationsSchema>;
 type SkillsFormValues = z.infer<typeof skillsSchema>;
-type ProjectFormValues = z.infer<typeof projectSchema>;
 
 // Sample About data (replace with localStorage or other storage)
-// const defaultAboutData = {
-//   name: "Dr. Melquizedequi Cabral dos Santos",
-//   title: "Professor Associado - Universidade Federal do Piauí",
-//   bio: "Pesquisador e professor com foco em Ciência da Computação, Inteligência Artificial e Processamento de Linguagem Natural.",
-//   education: "Doutor em Ciência da Computação pela Universidade Federal de Pernambuco (2011)\nMestre em Ciência da Computação pela Universidade Federal de Pernambuco (2007)\nGraduado em Ciência da Computação pela Universidade Federal do Piauí (2005)",
-//   experience: "Professor Associado na Universidade Federal do Piauí desde 2011\nLíder do grupo de pesquisa em Processamento de Linguagem Natural\nMembro do comitê científico de diversas conferências nacionais e internacionais",
-//   publications: "Mais de 50 artigos publicados em periódicos e conferências internacionais\nAutor de 3 capítulos de livros na área de Inteligência Artificial\nEditor convidado para edições especiais em revistas científicas",
-// };
-
-// Dados padrão para o About
 const defaultAboutData = {
   name: "Dr. Melquizedequi Cabral dos Santos",
   title: "Professor Associado - Universidade Federal do Piauí",
@@ -272,15 +242,6 @@ const defaultSkillsData = {
   ]
 };
 
-// const defaultAboutData = {
-//   name: "Dr. Melquizedequi Cabral dos Santos",
-//   title: "Professor Associado - Universidade Federal do Piauí",
-//   bio: "Pesquisador e especialista em cibersegurança com foco em técnicas avançadas de proteção de dados e desenvolvimento de soluções de segurança para redes e sistemas. Experiência em algoritmos de machine learning aplicados à detecção de intrusão e análise de vulnerabilidades.",
-//   education: "Doutorado em Ciência da Computação - 2018-2022 - Universidade de São Paulo (USP) - Tese: \"Algoritmos de Aprendizado Profundo para Detecção Avançada de Intrusões em Redes de Alta Velocidade\"\nMestrado em Segurança Computacional - 2016-2018 - Universidade Estadual de Campinas (UNICAMP) - Dissertação: \"Métodos Avançados de Criptografia Aplicados à Proteção de Dados em Sistemas Distribuídos\"\nGraduação em Ciência da Computação - 2012-2016 - Instituto Tecnológico de Aeronáutica (ITA) - Trabalho de Conclusão de Curso: \"Desenvolvimento de Sistema de Análise de Vulnerabilidades em Redes Corporativas\"\nCertificações Profissionais - DIVERSAS - - Certified Information Systems Security Professional (CISSP); Offensive Security Certified Professional (OSCP); Certified Ethical Hacker (CEH); GIAC Security Essentials (GSEC)",
-//   experience: "Pesquisador Sênior em Cibersegurança - 2022-PRESENTE - Instituto de Pesquisas Avançadas em Tecnologia (IPAT) - Liderança em projetos de pesquisa em segurança de redes e sistemas; Desenvolvimento de novos algoritmos para detecção de ataques avançados; Coordenação de equipe multidisciplinar com foco em segurança de dados\nConsultor de Segurança da Informação - 2019-2022 - CyberShield Technologies - Realização de testes de penetração em sistemas críticos; Análise e mitigação de vulnerabilidades em aplicações corporativas; Implementação de soluções de proteção para infraestruturas complexas\nPesquisador Associado - 2016-2019 - Laboratório de Segurança em Computação (LabSEC) - Pesquisa em técnicas de machine learning para análise de malware; Desenvolvimento de ferramentas para análise automática de ameaças; Publicação de artigos científicos em periódicos de alto impacto",
-//   publications: "2023 - Deep Learning-Based Anomaly Detection for Zero-Day Attack Identification in High-Speed Networks - Journal of Cybersecurity Research, Vol. 15, Issue 4\n2022 - A Novel Approach for Malware Classification Using Convolutional Neural Networks and Binary Visualization - IEEE Transactions on Information Security, Vol. 44, Issue 2\n2021 - Quantum-Resistant Cryptographic Protocols for Secure IoT Communications - International Journal of Network Security, Vol. 32, Issue 8\n2020 - Advanced Persistent Threats Detection Using Machine Learning Techniques - Computers & Security Journal, Vol. 89",
-// };
-
 // Sample Projects data from the existing page
 const defaultProjects = [
   {
@@ -329,111 +290,9 @@ const saveData = (key: string, data: any) => {
   localStorage.setItem(key, JSON.stringify(data));
 };
 
-// Main Admin component
-const Admin: React.FC = () => {
-  // Auth state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [ipAddress, setIpAddress] = useState('');
-  const [allowedIPs, setAllowedIPs] = useState(['127.0.0.1', 'localhost', '::1']);
-  
-  // Content state
-  const [aboutData, setAboutData] = useState<AboutFormValues>(() => 
-    loadData('admin-about-data', defaultAboutData)
-  );
-  const [projects, setProjects] = useState<ProjectFormValues[]>(() => 
-    loadData('admin-projects-data', defaultProjects)
-  );
-  
-  // UI state
-  const [activeTab, setActiveTab] = useState("about");
-  const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
-  const [currentProject, setCurrentProject] = useState<ProjectFormValues | null>(null);
-  
-  // Forms
-  const authForm = useForm<{ password: string }>({
-    resolver: zodResolver(authSchema),
-    defaultValues: {
-      password: "",
-    },
-  });
-  
-  const aboutForm = useForm<AboutFormValues>({
-    resolver: zodResolver(aboutSchema),
-    defaultValues: aboutData,
-  });
-  
-  const projectForm = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      tags: "",
-      image: "",
-      github: "",
-      live: "",
-      readme: "",
-    },
-  });
-// novas funcionalidades
-
-
-const [profileData, setProfileData] = useState(() => loadData('admin-about-data', defaultAboutData));
-const [educationData, setEducationData] = useState(() => loadData('admin-education-data', defaultEducationData));
-const [experienceData, setExperienceData] = useState(() => loadData('admin-experience-data', defaultExperienceData));
-const [publicationsData, setPublicationsData] = useState(() => loadData('admin-publications-data', defaultPublicationsData));
-const [skillsData, setSkillsData] = useState(() => loadData('admin-skills-data', defaultSkillsData));
-
-// Forms adicionais
-const profileForm = useForm<ProfileFormValues>({
-  resolver: zodResolver(profileSchema),
-  defaultValues: {
-    name: profileData.name,
-    title: profileData.title,
-    bio: profileData.bio,
-    email: profileData.email,
-    location: profileData.location,
-    lattes: profileData.lattes,
-    profileImage: profileData.profileImage,
-    researchFocus: profileData.researchFocus.join(', ')
-  }
-});
-
-const educationForm = useForm<{ items: string }>({
-  resolver: zodResolver(z.object({ items: z.string().min(10) })),
-  defaultValues: {
-    items: formatEducationData(educationData)
-  }
-});
-
-const experienceForm = useForm<{ items: string }>({
-  resolver: zodResolver(z.object({ items: z.string().min(10) })),
-  defaultValues: {
-    items: formatExperienceData(experienceData)
-  }
-});
-
-const publicationsForm = useForm<PublicationsFormValues>({
-  resolver: zodResolver(publicationsSchema),
-  defaultValues: {
-    articles: formatArticlesData(publicationsData.articles),
-    conferences: formatConferencesData(publicationsData.conferences),
-    patents: formatPatentsData(publicationsData.patents)
-  }
-});
-
-const skillsForm = useForm<SkillsFormValues>({
-  resolver: zodResolver(skillsSchema),
-  defaultValues: {
-    coreSkills: formatSkillsData(skillsData.coreSkills),
-    advancedSkills: formatSkillsData(skillsData.advancedSkills),
-    technologies: skillsData.technologies.join(', '),
-    awards: skillsData.awards.join('\n')
-  }
-});
-
-// Funções auxiliares para formatar os dados
-function formatEducationData(data) {
-  return data.map(item => {
+// Helper functions for data formatting
+function formatEducationData(data: any) {
+  return data.map((item: any) => {
     let text = `${item.title} | ${item.period} | ${item.institution || ''} | ${item.description || ''}`;
     if (item.certifications) {
       text += ` | ${item.certifications.join('; ')}`;
@@ -442,10 +301,10 @@ function formatEducationData(data) {
   }).join('\n');
 }
 
-function parseEducationData(text) {
+function parseEducationData(text: string) {
   return text.split('\n').filter(line => line.trim()).map(line => {
     const parts = line.split('|').map(part => part.trim());
-    const result = {
+    const result: any = {
       title: parts[0] || '',
       period: parts[1] || '',
       institution: parts[2] || '',
@@ -460,13 +319,13 @@ function parseEducationData(text) {
   });
 }
 
-function formatExperienceData(data) {
-  return data.map(item => {
+function formatExperienceData(data: any) {
+  return data.map((item: any) => {
     return `${item.title} | ${item.period} | ${item.company} | ${item.duties.join('; ')}`;
   }).join('\n');
 }
 
-function parseExperienceData(text) {
+function parseExperienceData(text: string) {
   return text.split('\n').filter(line => line.trim()).map(line => {
     const parts = line.split('|').map(part => part.trim());
     return {
@@ -478,25 +337,25 @@ function parseExperienceData(text) {
   });
 }
 
-function formatArticlesData(data) {
-  return data.map(item => {
+function formatArticlesData(data: any) {
+  return data.map((item: any) => {
     return `${item.year} | ${item.title} | ${item.journal}`;
   }).join('\n');
 }
 
-function formatConferencesData(data) {
-  return data.map(item => {
+function formatConferencesData(data: any) {
+  return data.map((item: any) => {
     return `${item.year} | ${item.title} | ${item.conference}`;
   }).join('\n');
 }
 
-function formatPatentsData(data) {
-  return data.map(item => {
+function formatPatentsData(data: any) {
+  return data.map((item: any) => {
     return `${item.year} | ${item.title} | ${item.number}`;
   }).join('\n');
 }
 
-function parsePublicationsData(articles, conferences, patents) {
+function parsePublicationsData(articles: string, conferences: string, patents: string) {
   return {
     articles: articles.split('\n').filter(line => line.trim()).map(line => {
       const parts = line.split('|').map(part => part.trim());
@@ -525,13 +384,13 @@ function parsePublicationsData(articles, conferences, patents) {
   };
 }
 
-function formatSkillsData(data) {
-  return data.map(item => {
+function formatSkillsData(data: any) {
+  return data.map((item: any) => {
     return `${item.name} | ${item.level}`;
   }).join('\n');
 }
 
-function parseSkillsData(coreText, advancedText, technologiesText, awardsText) {
+function parseSkillsData(coreText: string, advancedText: string, technologiesText: string, awardsText: string) {
   return {
     coreSkills: coreText.split('\n').filter(line => line.trim()).map(line => {
       const parts = line.split('|').map(part => part.trim());
@@ -552,161 +411,206 @@ function parseSkillsData(coreText, advancedText, technologiesText, awardsText) {
   };
 }
 
-// Handlers para salvar os formulários
-const onProfileSubmit = (data: ProfileFormValues) => {
-  const updatedProfile = {
-    ...profileData,
-    name: data.name,
-    title: data.title,
-    bio: data.bio,
-    email: data.email,
-    location: data.location,
-    lattes: data.lattes,
-    profileImage: data.profileImage,
-    researchFocus: data.researchFocus.split(',').map(item => item.trim())
-  };
+// Main Admin component
+const Admin: React.FC = () => {
+  // Auth state
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [ipAddress, setIpAddress] = useState('');
+  const [allowedIPs, setAllowedIPs] = useState(['127.0.0.1', 'localhost', '::1']);
   
-  setProfileData(updatedProfile);
-  saveData('admin-about-data', updatedProfile);
+  // Content state
+  const [aboutData, setAboutData] = useState(() => loadData('admin-about-data', defaultAboutData));
+  const [educationData, setEducationData] = useState(() => loadData('admin-education-data', defaultEducationData));
+  const [experienceData, setExperienceData] = useState(() => loadData('admin-experience-data', defaultExperienceData));
+  const [publicationsData, setPublicationsData] = useState(() => loadData('admin-publications-data', defaultPublicationsData));
+  const [skillsData, setSkillsData] = useState(() => loadData('admin-skills-data', defaultSkillsData));
+  const [projects, setProjects] = useState(() => loadData('admin-projects-data', defaultProjects));
   
-  toast({
-    title: "Perfil atualizado",
-    description: "As informações do perfil foram salvas com sucesso.",
+  // UI state
+  const [activeTab, setActiveTab] = useState("about");
+  const [isProjectDialogOpen, setIsProjectDialogOpen] = useState(false);
+  const [currentProject, setCurrentProject] = useState<ProjectFormValues | null>(null);
+  
+  // Forms
+  const authForm = useForm<AuthFormValues>({
+    resolver: zodResolver(authSchema),
+    defaultValues: {
+      password: "",
+    },
   });
-};
-
-const onEducationSubmit = (data: { items: string }) => {
-  const updatedEducation = parseEducationData(data.items);
-  setEducationData(updatedEducation);
-  saveData('admin-education-data', updatedEducation);
   
-  toast({
-    title: "Educação atualizada",
-    description: "As informações sobre educação foram salvas com sucesso.",
+  const profileForm = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: {
+      name: aboutData.name,
+      title: aboutData.title,
+      bio: aboutData.bio,
+      email: aboutData.email,
+      location: aboutData.location,
+      lattes: aboutData.lattes,
+      profileImage: aboutData.profileImage,
+      researchFocus: aboutData.researchFocus.join(', ')
+    }
   });
-};
-
-const onExperienceSubmit = (data: { items: string }) => {
-  const updatedExperience = parseExperienceData(data.items);
-  setExperienceData(updatedExperience);
-  saveData('admin-experience-data', updatedExperience);
   
-  toast({
-    title: "Experiência atualizada",
-    description: "As informações sobre experiência profissional foram salvas com sucesso.",
+  const educationForm = useForm<EducationFormValues>({
+    resolver: zodResolver(educationSchema),
+    defaultValues: {
+      items: formatEducationData(educationData)
+    }
   });
-};
-
-const onPublicationsSubmit = (data: PublicationsFormValues) => {
-  const updatedPublications = parsePublicationsData(data.articles, data.conferences, data.patents);
-  setPublicationsData(updatedPublications);
-  saveData('admin-publications-data', updatedPublications);
   
-  toast({
-    title: "Publicações atualizadas",
-    description: "As informações sobre publicações foram salvas com sucesso.",
+  const experienceForm = useForm<ExperienceFormValues>({
+    resolver: zodResolver(experienceSchema),
+    defaultValues: {
+      items: formatExperienceData(experienceData)
+    }
   });
-};
-
-const onSkillsSubmit = (data: SkillsFormValues) => {
-  const updatedSkills = parseSkillsData(data.coreSkills, data.advancedSkills, data.technologies, data.awards);
-  setSkillsData(updatedSkills);
-  saveData('admin-skills-data', updatedSkills);
   
-  toast({
-    title: "Habilidades atualizadas",
-    description: "As informações sobre habilidades foram salvas com sucesso.",
+  const publicationsForm = useForm<PublicationsFormValues>({
+    resolver: zodResolver(publicationsSchema),
+    defaultValues: {
+      articles: formatArticlesData(publicationsData.articles),
+      conferences: formatConferencesData(publicationsData.conferences),
+      patents: formatPatentsData(publicationsData.patents)
+    }
   });
-};
+  
+  const skillsForm = useForm<SkillsFormValues>({
+    resolver: zodResolver(skillsSchema),
+    defaultValues: {
+      coreSkills: formatSkillsData(skillsData.coreSkills),
+      advancedSkills: formatSkillsData(skillsData.advancedSkills),
+      technologies: skillsData.technologies.join(', '),
+      awards: skillsData.awards.join('\n')
+    }
+  });
+  
+  const projectForm = useForm<ProjectFormValues>({
+    resolver: zodResolver(projectSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      tags: "",
+      image: "",
+      github: "",
+      live: "",
+      readme: "",
+    },
+  });
+  
   const navigate = useNavigate();
-
-  // Get user's IP address
-  // useEffect(() => {
-  //   const getIpAddress = async () => {
-  //     try {
-  //       const response = await fetch('https://api.ipify.org?format=json');
-  //       const data = await response.json();
-  //       setIpAddress(data.ip);
-  //     } catch (error) {
-  //       console.error('Error fetching IP:', error);
-  //       setIpAddress('unknown');
-  //     }
-  //   };
-
-  //   getIpAddress();
-  // Get user's IP address
-// Get user's IP address
-useEffect(() => {
-  const checkLocalhost = () => {
-    // Verifica se está acessando via localhost ou 127.0.0.1
-    const hostname = window.location.hostname;
-    const port = window.location.port ? `:${window.location.port}` : '';
-    
-    console.log('Hostname atual:', hostname);
-    console.log('Porta atual:', port);
-    
-    // Se estiver acessando localmente, define o IP como localhost
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      console.log('Acesso local detectado');
-      setIpAddress(hostname);
-      return true;
-    }
-    
-    return false;
-  };
-
-  const getOnlineIpAddress = async () => {
-    try {
-      const response = await fetch('https://api.ipify.org?format=json');
-      const data = await response.json();
-      return data.ip;
-    } catch (error) {
-      console.error('Erro ao obter IP online:', error);
-      throw error;
-    }
-  };
-
-  const getIpAddress = async () => {
-    // Primeiro verifica se é localhost
-    if (checkLocalhost()) {
-      // Se for localhost, não precisa fazer mais nada
-      return;
-    }
-    
-    // Se não for localhost, tenta obter o IP online
-    try {
-      const onlineIp = await getOnlineIpAddress();
-      console.log('IP online encontrado:', onlineIp);
-      setIpAddress(onlineIp);
-    } catch (onlineError) {
-      console.error('Erro ao obter IP online:', onlineError);
-      setIpAddress('unknown');
-    }
-  };
   
-  getIpAddress();
-    
-    // Load saved data
-    const savedAboutData = loadData('admin-about-data', defaultAboutData);
-    setAboutData(savedAboutData);
-    aboutForm.reset(savedAboutData);
-    
-    const savedProjects = loadData('admin-projects-data', defaultProjects);
-    setProjects(savedProjects);
-  }, []);
+  // Get user's IP address
+  useEffect(() => {
+    const checkLocalhost = () => {
+      // Verifica se está acessando via localhost ou 127.0.0.1
+      const hostname = window.location.hostname;
+      const port = window.location.port ? `:${window.location.port}` : '';
+      
+      console.log('Hostname atual:', hostname);
+      console.log('Porta atual:', port);
+      
+      // Se estiver acessando localmente, define o IP como localhost
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        console.log('Acesso local detectado');
+        setIpAddress(hostname);
+        return true;
+      }
+      
+      return false;
+    };
 
+    const getOnlineIpAddress = async () => {
+      try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const data = await response.json();
+        return data.ip;
+      } catch (error) {
+        console.error('Erro ao obter IP online:', error);
+        throw error;
+      }
+    };
+
+    const getIpAddress = async () => {
+      // Primeiro verifica se é localhost
+      if (checkLocalhost()) {
+        // Se for localhost, não precisa fazer mais nada
+        return;
+      }
+      
+      // Se não for localhost, tenta obter o IP online
+      try {
+        const onlineIp = await getOnlineIpAddress();
+        console.log('IP online encontrado:', onlineIp);
+        setIpAddress(onlineIp);
+      } catch (onlineError) {
+        console.error('Erro ao obter IP online:', onlineError);
+        setIpAddress('unknown');
+      }
+    };
+    
+    getIpAddress();
+
+    // Reset form values with data from localStorage
+    const loadedAboutData = loadData('admin-about-data', defaultAboutData);
+    setAboutData(loadedAboutData);
+    profileForm.reset({
+      name: loadedAboutData.name,
+      title: loadedAboutData.title,
+      bio: loadedAboutData.bio,
+      email: loadedAboutData.email,
+      location: loadedAboutData.location,
+      lattes: loadedAboutData.lattes,
+      profileImage: loadedAboutData.profileImage,
+      researchFocus: loadedAboutData.researchFocus.join(', ')
+    });
+
+    const loadedEducationData = loadData('admin-education-data', defaultEducationData);
+    setEducationData(loadedEducationData);
+    educationForm.reset({
+      items: formatEducationData(loadedEducationData)
+    });
+
+    const loadedExperienceData = loadData('admin-experience-data', defaultExperienceData);
+    setExperienceData(loadedExperienceData);
+    experienceForm.reset({
+      items: formatExperienceData(loadedExperienceData)
+    });
+
+    const loadedPublicationsData = loadData('admin-publications-data', defaultPublicationsData);
+    setPublicationsData(loadedPublicationsData);
+    publicationsForm.reset({
+      articles: formatArticlesData(loadedPublicationsData.articles),
+      conferences: formatConferencesData(loadedPublicationsData.conferences),
+      patents: formatPatentsData(loadedPublicationsData.patents)
+    });
+
+    const loadedSkillsData = loadData('admin-skills-data', defaultSkillsData);
+    setSkillsData(loadedSkillsData);
+    skillsForm.reset({
+      coreSkills: formatSkillsData(loadedSkillsData.coreSkills),
+      advancedSkills: formatSkillsData(loadedSkillsData.advancedSkills),
+      technologies: loadedSkillsData.technologies.join(', '),
+      awards: loadedSkillsData.awards.join('\n')
+    });
+
+    const loadedProjects = loadData('admin-projects-data', defaultProjects);
+    setProjects(loadedProjects);
+  }, []);
+  
   // Check if IP is allowed (localhost is always allowed for development)
   const isIPAllowed = () => {
-    return allowedIPs.includes(ipAddress) || 
-           ipAddress === '127.0.0.1' || 
-           ipAddress === 'localhost' || 
-           ipAddress === '192.168.10.21' || 
-           ipAddress === '192.168.10.18' ||       
-           ipAddress === '::1';
+    return allowedIPs.includes(ipAddress) ||
+            ipAddress === '127.0.0.1' ||
+            ipAddress === 'localhost' ||
+            ipAddress === '192.168.10.21' ||
+            ipAddress === '192.168.10.18' ||
+            ipAddress === '::1';
   };
 
   // Authentication
-  const onAuthSubmit = (data: { password: string }) => {
+  const onAuthSubmit = (data: AuthFormValues) => {
     // Simple password check (in a real app, use a more secure method)
     if (data.password === "admin123") {
       if (isIPAllowed()) {
@@ -731,13 +635,70 @@ useEffect(() => {
     }
   };
 
-  // Save About data
-  const onAboutSubmit = (data: AboutFormValues) => {
-    setAboutData(data);
-    saveData('admin-about-data', data);
+  // Form submission handlers
+  const onProfileSubmit = (data: ProfileFormValues) => {
+    const updatedProfile = {
+      ...aboutData,
+      name: data.name,
+      title: data.title,
+      bio: data.bio,
+      email: data.email,
+      location: data.location,
+      lattes: data.lattes,
+      profileImage: data.profileImage,
+      researchFocus: data.researchFocus.split(',').map(item => item.trim())
+    };
+    
+    setAboutData(updatedProfile);
+    saveData('admin-about-data', updatedProfile);
+    
     toast({
-      title: "About page updated",
-      description: "The changes have been saved successfully.",
+      title: "Perfil atualizado",
+      description: "As informações do perfil foram salvas com sucesso.",
+    });
+  };
+
+  const onEducationSubmit = (data: EducationFormValues) => {
+    const updatedEducation = parseEducationData(data.items);
+    setEducationData(updatedEducation);
+    saveData('admin-education-data', updatedEducation);
+    
+    toast({
+      title: "Educação atualizada",
+      description: "As informações sobre educação foram salvas com sucesso.",
+    });
+  };
+
+  const onExperienceSubmit = (data: ExperienceFormValues) => {
+    const updatedExperience = parseExperienceData(data.items);
+    setExperienceData(updatedExperience);
+    saveData('admin-experience-data', updatedExperience);
+    
+    toast({
+      title: "Experiência atualizada",
+      description: "As informações sobre experiência profissional foram salvas com sucesso.",
+    });
+  };
+
+  const onPublicationsSubmit = (data: PublicationsFormValues) => {
+    const updatedPublications = parsePublicationsData(data.articles, data.conferences, data.patents);
+    setPublicationsData(updatedPublications);
+    saveData('admin-publications-data', updatedPublications);
+    
+    toast({
+      title: "Publicações atualizadas",
+      description: "As informações sobre publicações foram salvas com sucesso.",
+    });
+  };
+
+  const onSkillsSubmit = (data: SkillsFormValues) => {
+    const updatedSkills = parseSkillsData(data.coreSkills, data.advancedSkills, data.technologies, data.awards);
+    setSkillsData(updatedSkills);
+    saveData('admin-skills-data', updatedSkills);
+    
+    toast({
+      title: "Habilidades atualizadas",
+      description: "As informações sobre habilidades foram salvas com sucesso.",
     });
   };
 
@@ -767,7 +728,7 @@ useEffect(() => {
     if (currentProject && currentProject.id) {
       // Edit existing project
       updatedProjects = projects.map(p => 
-        p.id === currentProject.id ? { ...data, id: currentProject.id, stars: 0, forks: 0 } : p
+        p.id === currentProject.id ? { ...data, id: currentProject.id, stars: p.stars, forks: p.forks } : p
       );
       toast({
         title: "Project updated",
@@ -865,18 +826,6 @@ useEffect(() => {
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-cyber-black border border-cyber-neon/30 p-1">
             <TabsTrigger 
-              value="about"
-              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
-            >
-              ABOUT PAGE
-            </TabsTrigger>
-            <TabsTrigger 
-              value="projects"
-              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
-            >
-              PROJECTS
-            </TabsTrigger>
-            <TabsTrigger 
               value="profile"
               className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
             >
@@ -906,487 +855,47 @@ useEffect(() => {
             >
               HABILIDADES
             </TabsTrigger>
+            <TabsTrigger 
+              value="projects"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
+            >
+              PROJETOS
+            </TabsTrigger>
           </TabsList>
           
-{/*           <TabsContent value="about">
+          <TabsContent value="profile">
             <Card className="neo-blur border border-cyber-neon/30">
               <CardHeader>
-                <CardTitle>Edit About Page</CardTitle>
+                <CardTitle>Editar Perfil</CardTitle>
                 <CardDescription>
-                  Update your personal information and professional background.
+                  Atualize suas informações pessoais e profissionais.
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Form {...aboutForm}>
-                  <form id="about-form" onSubmit={aboutForm.handleSubmit(onAboutSubmit)} className="space-y-4">
+                <Form {...profileForm}>
+                  <form id="profile-form" onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
                     <FormField
-                      control={aboutForm.control}
+                      control={profileForm.control}
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Full Name</FormLabel>
+                          <FormLabel>Nome Completo</FormLabel>
                           <FormControl>
-                            <Input placeholder="Your full name" {...field} />
+                            <Input placeholder="Seu nome completo" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    */}
-                <TabsContent value="profile">
-                  <Card className="neo-blur border border-cyber-neon/30">
-                    <CardHeader>
-                      <CardTitle>Editar Perfil</CardTitle>
-                      <CardDescription>
-                        Atualize suas informações pessoais e profissionais.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Form {...profileForm}>
-                        <form id="profile-form" onSubmit={profileForm.handleSubmit(onProfileSubmit)} className="space-y-4">
-                          <FormField
-                            control={profileForm.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Nome Completo</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Seu nome completo" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={profileForm.control}
-                            name="title"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Título Profissional</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Seu título profissional" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={profileForm.control}
-                            name="bio"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Biografia</FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Breve biografia sobre você"
-                                    className="min-h-[100px]"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={profileForm.control}
-                              name="email"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Email</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="seu.email@dominio.com" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={profileForm.control}
-                              name="location"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Localização</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="Cidade, Estado, País" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormField
-                              control={profileForm.control}
-                              name="lattes"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>URL do Lattes</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="https://lattes.cnpq.br/..." {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={profileForm.control}
-                              name="profileImage"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>URL da Imagem de Perfil</FormLabel>
-                                  <FormControl>
-                                    <Input placeholder="https://example.com/imagem.jpg" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          
-                          <FormField
-                            control={profileForm.control}
-                            name="researchFocus"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Áreas de Pesquisa (separadas por vírgula)</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Cibersegurança, Machine Learning, Análise de Dados" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                                <FormDescription>
-                                  Digite as áreas de pesquisa separadas por vírgula.
-                                </FormDescription>
-                              </FormItem>
-                            )}
-                          />
-                        </form>
-                      </Form>
-                    </CardContent>
-                    <CardFooter>
-                      <Button
-                        type="submit"
-                        form="profile-form"
-                        className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
-                      >
-                        <Save size={16} className="mr-2" />
-                        Salvar Alterações
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="education">
-                  <Card className="neo-blur border border-cyber-neon/30">
-                    <CardHeader>
-                      <CardTitle>Editar Educação</CardTitle>
-                      <CardDescription>
-                        Atualize suas informações educacionais.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Form {...educationForm}>
-                        <form id="education-form" onSubmit={educationForm.handleSubmit(onEducationSubmit)} className="space-y-4">
-                          <FormField
-                            control={educationForm.control}
-                            name="items"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Itens de Educação</FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Formato: Título | Período | Instituição | Descrição | Certificações (separadas por ;)"
-                                    className="min-h-[300px] font-mono text-sm"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                                <FormDescription>
-                                  Cada linha representa um item educacional. Use o formato:<br />
-                                  <code>Título | Período | Instituição | Descrição | Certificações (separadas por ;)</code><br />
-                                  Exemplo: Doutorado em Ciência da Computação | 2018-2022 | USP | Tese: "Título da Tese"
-                                </FormDescription>
-                              </FormItem>
-                            )}
-                          />
-                        </form>
-                      </Form>
-                    </CardContent>
-                    <CardFooter>
-                      <Button
-                        type="submit"
-                        form="education-form"
-                        className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
-                      >
-                        <Save size={16} className="mr-2" />
-                        Salvar Alterações
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="experience">
-                  <Card className="neo-blur border border-cyber-neon/30">
-                    <CardHeader>
-                      <CardTitle>Editar Experiência Profissional</CardTitle>
-                      <CardDescription>
-                        Atualize suas informações de experiência profissional.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Form {...experienceForm}>
-                        <form id="experience-form" onSubmit={experienceForm.handleSubmit(onExperienceSubmit)} className="space-y-4">
-                          <FormField
-                            control={experienceForm.control}
-                            name="items"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Itens de Experiência</FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Formato: Cargo | Período | Empresa | Responsabilidades (separadas por ;)"
-                                    className="min-h-[300px] font-mono text-sm"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                                <FormDescription>
-                                  Cada linha representa uma experiência profissional. Use o formato:<br />
-                                  <code>Cargo | Período | Empresa | Responsabilidade 1; Responsabilidade 2; Responsabilidade 3</code><br />
-                                  Exemplo: Pesquisador Sênior | 2022-PRESENTE | Instituto XYZ | Liderança em projetos; Desenvolvimento de algoritmos
-                                </FormDescription>
-                              </FormItem>
-                            )}
-                          />
-                        </form>
-                      </Form>
-                    </CardContent>
-                    <CardFooter>
-                      <Button
-                        type="submit"
-                        form="experience-form"
-                        className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
-                      >
-                        <Save size={16} className="mr-2" />
-                        Salvar Alterações
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="publications">
-                  <Card className="neo-blur border border-cyber-neon/30">
-                    <CardHeader>
-                      <CardTitle>Editar Publicações</CardTitle>
-                      <CardDescription>
-                        Atualize suas publicações acadêmicas e patentes.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Form {...publicationsForm}>
-                        <form id="publications-form" onSubmit={publicationsForm.handleSubmit(onPublicationsSubmit)} className="space-y-6">
-                          <FormField
-                            control={publicationsForm.control}
-                            name="articles"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Artigos em Periódicos</FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Formato: Ano | Título | Periódico"
-                                    className="min-h-[150px] font-mono text-sm"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                                <FormDescription>
-                                  Cada linha representa um artigo. Use o formato: <code>Ano | Título | Periódico</code>
-                                </FormDescription>
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={publicationsForm.control}
-                            name="conferences"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Conferências Internacionais</FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Formato: Ano | Título | Conferência"
-                                    className="min-h-[150px] font-mono text-sm"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                                <FormDescription>
-                                  Cada linha representa uma conferência. Use o formato: <code>Ano | Título | Conferência</code>
-                                </FormDescription>
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={publicationsForm.control}
-                            name="patents"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Patentes e Propriedade Intelectual</FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Formato: Ano | Título | Número da Patente"
-                                    className="min-h-[150px] font-mono text-sm"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                                <FormDescription>
-                                  Cada linha representa uma patente. Use o formato: <code>Ano | Título | Número da Patente</code>
-                                </FormDescription>
-                              </FormItem>
-                            )}
-                          />
-                        </form>
-                      </Form>
-                    </CardContent>
-                    <CardFooter>
-                      <Button
-                        type="submit"
-                        form="publications-form"
-                        className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
-                      >
-                        <Save size={16} className="mr-2" />
-                        Salvar Alterações
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="skills">
-                  <Card className="neo-blur border border-cyber-neon/30">
-                    <CardHeader>
-                      <CardTitle>Editar Habilidades</CardTitle>
-                      <CardDescription>
-                        Atualize suas habilidades técnicas e prêmios.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Form {...skillsForm}>
-                        <form id="skills-form" onSubmit={skillsForm.handleSubmit(onSkillsSubmit)} className="space-y-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <FormField
-                              control={skillsForm.control}
-                              name="coreSkills"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Habilidades Principais</FormLabel>
-                                  <FormControl>
-                                    <Textarea 
-                                      placeholder="Formato: Nome | Nível (0-100)"
-                                      className="min-h-[150px] font-mono text-sm"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                  <FormDescription>
-                                    Cada linha representa uma habilidade. Use o formato: <code>Nome | Nível (0-100)</code><br />
-                                    Exemplo: Python | 92
-                                  </FormDescription>
-                                </FormItem>
-                              )}
-                            />
-                            
-                            <FormField
-                              control={skillsForm.control}
-                              name="advancedSkills"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Habilidades Avançadas</FormLabel>
-                                  <FormControl>
-                                    <Textarea 
-                                      placeholder="Formato: Nome | Nível (0-100)"
-                                      className="min-h-[150px] font-mono text-sm"
-                                      {...field}
-                                    />
-                                  </FormControl>
-                                  <FormMessage />
-                                  <FormDescription>
-                                    Cada linha representa uma habilidade. Use o formato: <code>Nome | Nível (0-100)</code><br />
-                                    Exemplo: Network Security | 86
-                                  </FormDescription>
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          
-                          <FormField
-                            control={skillsForm.control}
-                            name="technologies"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Linguagens e Tecnologias (separadas por vírgula)</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    placeholder="Python, C/C++, JavaScript, Rust, TensorFlow, PyTorch, Docker, Kubernetes"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          
-                          <FormField
-                            control={skillsForm.control}
-                            name="awards"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Certificações e Prêmios</FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Um prêmio ou certificação por linha"
-                                    className="min-h-[150px]"
-                                    {...field}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                                <FormDescription>
-                                  Cada linha representa um prêmio ou certificação.
-                                </FormDescription>
-                              </FormItem>
-                            )}
-                          />
-                        </form>
-                      </Form>
-                    </CardContent>
-                    <CardFooter>
-                      <Button
-                        type="submit"
-                        form="skills-form"
-                        className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
-                      >
-                        <Save size={16} className="mr-2" />
-                        Salvar Alterações
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </TabsContent>
                     
                     <FormField
-                      control={aboutForm.control}
+                      control={profileForm.control}
                       name="title"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Professional Title</FormLabel>
+                          <FormLabel>Título Profissional</FormLabel>
                           <FormControl>
-                            <Input placeholder="Your professional title" {...field} />
+                            <Input placeholder="Seu título profissional" {...field} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -1394,16 +903,16 @@ useEffect(() => {
                     />
                     
                     <FormField
-                      control={aboutForm.control}
+                      control={profileForm.control}
                       name="bio"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Biography</FormLabel>
+                          <FormLabel>Biografia</FormLabel>
                           <FormControl>
                             <Textarea 
-                              placeholder="Brief biography about yourself" 
-                              className="min-h-[100px]" 
-                              {...field} 
+                              placeholder="Breve biografia sobre você"
+                              className="min-h-[100px]"
+                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
@@ -1411,56 +920,79 @@ useEffect(() => {
                       )}
                     />
                     
-                    <FormField
-                      control={aboutForm.control}
-                      name="education"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Education</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Your educational background" 
-                              className="min-h-[100px]" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={profileForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input placeholder="seu.email@dominio.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={profileForm.control}
+                        name="location"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Localização</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Cidade, Estado, País" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={profileForm.control}
+                        name="lattes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>URL do Lattes</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://lattes.cnpq.br/..." {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={profileForm.control}
+                        name="profileImage"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>URL da Imagem de Perfil</FormLabel>
+                            <FormControl>
+                              <Input placeholder="https://example.com/imagem.jpg" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                     
                     <FormField
-                      control={aboutForm.control}
-                      name="experience"
+                      control={profileForm.control}
+                      name="researchFocus"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Experience</FormLabel>
+                          <FormLabel>Áreas de Pesquisa (separadas por vírgula)</FormLabel>
                           <FormControl>
-                            <Textarea 
-                              placeholder="Your professional experience" 
-                              className="min-h-[100px]" 
-                              {...field} 
-                            />
+                            <Input placeholder="Cibersegurança, Machine Learning, Análise de Dados" {...field} />
                           </FormControl>
                           <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={aboutForm.control}
-                      name="publications"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Publications</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Notable publications" 
-                              className="min-h-[100px]" 
-                              {...field} 
-                            />
-                          </FormControl>
-                          <FormMessage />
+                          <FormDescription>
+                            Digite as áreas de pesquisa separadas por vírgula.
+                          </FormDescription>
                         </FormItem>
                       )}
                     />
@@ -1468,13 +1000,310 @@ useEffect(() => {
                 </Form>
               </CardContent>
               <CardFooter>
-                <Button 
-                  type="submit" 
-                  form="about-form"
+                <Button
+                  type="submit"
+                  form="profile-form"
                   className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
                 >
                   <Save size={16} className="mr-2" />
-                  Save Changes
+                  Salvar Alterações
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="education">
+            <Card className="neo-blur border border-cyber-neon/30">
+              <CardHeader>
+                <CardTitle>Editar Educação</CardTitle>
+                <CardDescription>
+                  Atualize suas informações educacionais.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...educationForm}>
+                  <form id="education-form" onSubmit={educationForm.handleSubmit(onEducationSubmit)} className="space-y-4">
+                    <FormField
+                      control={educationForm.control}
+                      name="items"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Itens de Educação</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Formato: Título | Período | Instituição | Descrição | Certificações (separadas por ;)"
+                              className="min-h-[300px] font-mono text-sm"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <FormDescription>
+                            Cada linha representa um item educacional. Use o formato:<br />
+                            <code>Título | Período | Instituição | Descrição | Certificações (separadas por ;)</code><br />
+                            Exemplo: Doutorado em Ciência da Computação | 2018-2022 | USP | Tese: "Título da Tese"
+                          </FormDescription>
+                        </FormItem>
+                      )}
+                    />
+                  </form>
+                </Form>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  type="submit"
+                  form="education-form"
+                  className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
+                >
+                  <Save size={16} className="mr-2" />
+                  Salvar Alterações
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="experience">
+            <Card className="neo-blur border border-cyber-neon/30">
+              <CardHeader>
+                <CardTitle>Editar Experiência Profissional</CardTitle>
+                <CardDescription>
+                  Atualize suas informações de experiência profissional.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...experienceForm}>
+                  <form id="experience-form" onSubmit={experienceForm.handleSubmit(onExperienceSubmit)} className="space-y-4">
+                    <FormField
+                      control={experienceForm.control}
+                      name="items"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Itens de Experiência</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Formato: Cargo | Período | Empresa | Responsabilidades (separadas por ;)"
+                              className="min-h-[300px] font-mono text-sm"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <FormDescription>
+                            Cada linha representa uma experiência profissional. Use o formato:<br />
+                            <code>Cargo | Período | Empresa | Responsabilidade 1; Responsabilidade 2; Responsabilidade 3</code><br />
+                            Exemplo: Pesquisador Sênior | 2022-PRESENTE | Instituto XYZ | Liderança em projetos; Desenvolvimento de algoritmos
+                          </FormDescription>
+                        </FormItem>
+                      )}
+                    />
+                  </form>
+                </Form>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  type="submit"
+                  form="experience-form"
+                  className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
+                >
+                  <Save size={16} className="mr-2" />
+                  Salvar Alterações
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="publications">
+            <Card className="neo-blur border border-cyber-neon/30">
+              <CardHeader>
+                <CardTitle>Editar Publicações</CardTitle>
+                <CardDescription>
+                  Atualize suas publicações acadêmicas e patentes.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...publicationsForm}>
+                  <form id="publications-form" onSubmit={publicationsForm.handleSubmit(onPublicationsSubmit)} className="space-y-6">
+                    <FormField
+                      control={publicationsForm.control}
+                      name="articles"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Artigos em Periódicos</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Formato: Ano | Título | Periódico"
+                              className="min-h-[150px] font-mono text-sm"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <FormDescription>
+                            Cada linha representa um artigo. Use o formato: <code>Ano | Título | Periódico</code>
+                          </FormDescription>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={publicationsForm.control}
+                      name="conferences"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Conferências Internacionais</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Formato: Ano | Título | Conferência"
+                              className="min-h-[150px] font-mono text-sm"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <FormDescription>
+                            Cada linha representa uma conferência. Use o formato: <code>Ano | Título | Conferência</code>
+                          </FormDescription>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={publicationsForm.control}
+                      name="patents"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Patentes e Propriedade Intelectual</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Formato: Ano | Título | Número da Patente"
+                              className="min-h-[150px] font-mono text-sm"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <FormDescription>
+                            Cada linha representa uma patente. Use o formato: <code>Ano | Título | Número da Patente</code>
+                          </FormDescription>
+                        </FormItem>
+                      )}
+                    />
+                  </form>
+                </Form>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  type="submit"
+                  form="publications-form"
+                  className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
+                >
+                  <Save size={16} className="mr-2" />
+                  Salvar Alterações
+                </Button>
+              </CardFooter>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="skills">
+            <Card className="neo-blur border border-cyber-neon/30">
+              <CardHeader>
+                <CardTitle>Editar Habilidades</CardTitle>
+                <CardDescription>
+                  Atualize suas habilidades técnicas e prêmios.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Form {...skillsForm}>
+                  <form id="skills-form" onSubmit={skillsForm.handleSubmit(onSkillsSubmit)} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={skillsForm.control}
+                        name="coreSkills"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Habilidades Principais</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Formato: Nome | Nível (0-100)"
+                                className="min-h-[150px] font-mono text-sm"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                            <FormDescription>
+                              Cada linha representa uma habilidade. Use o formato: <code>Nome | Nível (0-100)</code><br />
+                              Exemplo: Python | 92
+                            </FormDescription>
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={skillsForm.control}
+                        name="advancedSkills"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Habilidades Avançadas</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Formato: Nome | Nível (0-100)"
+                                className="min-h-[150px] font-mono text-sm"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                            <FormDescription>
+                              Cada linha representa uma habilidade. Use o formato: <code>Nome | Nível (0-100)</code><br />
+                              Exemplo: Network Security | 86
+                            </FormDescription>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={skillsForm.control}
+                      name="technologies"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Linguagens e Tecnologias (separadas por vírgula)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Python, C/C++, JavaScript, Rust, TensorFlow, PyTorch, Docker, Kubernetes"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={skillsForm.control}
+                      name="awards"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Certificações e Prêmios</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Um prêmio ou certificação por linha"
+                              className="min-h-[150px]"
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                          <FormDescription>
+                            Cada linha representa um prêmio ou certificação.
+                          </FormDescription>
+                        </FormItem>
+                      )}
+                    />
+                  </form>
+                </Form>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  type="submit"
+                  form="skills-form"
+                  className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
+                >
+                  <Save size={16} className="mr-2" />
+                  Salvar Alterações
                 </Button>
               </CardFooter>
             </Card>
@@ -1511,18 +1340,18 @@ useEffect(() => {
                         <TableCell className="font-medium">{project.title}</TableCell>
                         <TableCell>{project.tags}</TableCell>
                         <TableCell className="flex space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => openProjectDialog(project)}
                             className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
                           >
                             <Edit size={14} className="mr-1" />
                             Edit
                           </Button>
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => deleteProject(project.id || 0)}
                             className="border-destructive/50 text-destructive hover:bg-destructive/20"
                           >
@@ -1538,7 +1367,7 @@ useEffect(() => {
           </TabsContent>
         </Tabs>
       </div>
-
+      
       {/* Project Edit Dialog */}
       <Dialog open={isProjectDialogOpen} onOpenChange={setIsProjectDialogOpen}>
         <DialogContent className="max-w-3xl neo-blur border border-cyber-neon/30">
@@ -1547,7 +1376,7 @@ useEffect(() => {
               {currentProject ? `Edit Project: ${currentProject.title}` : 'Add New Project'}
             </DialogTitle>
             <DialogDescription>
-              {currentProject 
+              {currentProject
                 ? 'Update the details of your existing project.'
                 : 'Fill in the details to add a new project to your portfolio.'}
             </DialogDescription>
@@ -1650,10 +1479,10 @@ useEffect(() => {
                   <FormItem>
                     <FormLabel>README Content (Markdown)</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="# Project Title" 
-                        className="min-h-[200px] font-mono text-sm" 
-                        {...field} 
+                      <Textarea
+                        placeholder="# Project Title"
+                        className="min-h-[200px] font-mono text-sm"
+                        {...field}
                       />
                     </FormControl>
                     <FormMessage />
@@ -1664,13 +1493,13 @@ useEffect(() => {
           </Form>
           
           <DialogFooter>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setIsProjectDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               type="submit"
               form="project-form"
               className="border-cyber-neon/50 text-cyber-neon hover:bg-cyber-neon/20"
