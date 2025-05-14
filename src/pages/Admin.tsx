@@ -167,67 +167,24 @@ const Admin: React.FC = () => {
 
   //   getIpAddress();
   // Get user's IP address
+// Get user's IP address
 useEffect(() => {
-  const getLocalIpAddress = () => {
-    return new Promise((resolve, reject) => {
-      // Usando WebRTC para tentar obter o IP local
-      const RTCPeerConnection = window.RTCPeerConnection || 
-                              window.webkitRTCPeerConnection || 
-                              window.mozRTCPeerConnection;
-      
-      if (!RTCPeerConnection) {
-        reject(new Error('WebRTC não é suportado neste navegador'));
-        return;
-      }
-      
-      const pc = new RTCPeerConnection({
-        iceServers: []
-      });
-      
-      pc.createDataChannel('');
-      
-      pc.onicecandidate = (event) => {
-        if (!event || !event.candidate) {
-          pc.close();
-          reject(new Error('Nenhum candidato ICE encontrado'));
-          return;
-        }
-        
-        const ipRegex = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/;
-        const ipMatch = ipRegex.exec(event.candidate.candidate);
-        
-        if (ipMatch && ipMatch[1]) {
-          const ip = ipMatch[1];
-          pc.close();
-          // Filtrar apenas IPs locais (endereços privados)
-          if (
-            ip.startsWith('10.') || 
-            ip.startsWith('192.168.') || 
-            ip.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./)
-          ) {
-            resolve(ip);
-          } else {
-            reject(new Error('IP não é local'));
-          }
-        } else {
-          pc.close();
-          reject(new Error('IP não encontrado no candidato ICE'));
-        }
-      };
-      
-      pc.createOffer()
-        .then(offer => pc.setLocalDescription(offer))
-        .catch(err => {
-          pc.close();
-          reject(err);
-        });
-        
-      // Timeout para garantir que não bloqueie indefinidamente
-      setTimeout(() => {
-        pc.close();
-        reject(new Error('Timeout ao tentar obter IP local'));
-      }, 5000);
-    });
+  const checkLocalhost = () => {
+    // Verifica se está acessando via localhost ou 127.0.0.1
+    const hostname = window.location.hostname;
+    const port = window.location.port ? `:${window.location.port}` : '';
+    
+    console.log('Hostname atual:', hostname);
+    console.log('Porta atual:', port);
+    
+    // Se estiver acessando localmente, define o IP como localhost
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      console.log('Acesso local detectado');
+      setIpAddress(hostname);
+      return true;
+    }
+    
+    return false;
   };
 
   const getOnlineIpAddress = async () => {
@@ -242,23 +199,20 @@ useEffect(() => {
   };
 
   const getIpAddress = async () => {
+    // Primeiro verifica se é localhost
+    if (checkLocalhost()) {
+      // Se for localhost, não precisa fazer mais nada
+      return;
+    }
+    
+    // Se não for localhost, tenta obter o IP online
     try {
-      // Primeiro tenta obter o IP local
-      const localIp = await getLocalIpAddress();
-      console.log('IP local encontrado:', localIp);
-      setIpAddress(localIp);
-    } catch (localError) {
-      console.error('Erro ao obter IP local, tentando IP online:', localError);
-      
-      // Se falhar, tenta obter o IP online
-      try {
-        const onlineIp = await getOnlineIpAddress();
-        console.log('IP online encontrado:', onlineIp);
-        setIpAddress(onlineIp);
-      } catch (onlineError) {
-        console.error('Erro ao obter IP online:', onlineError);
-        setIpAddress('unknown');
-      }
+      const onlineIp = await getOnlineIpAddress();
+      console.log('IP online encontrado:', onlineIp);
+      setIpAddress(onlineIp);
+    } catch (onlineError) {
+      console.error('Erro ao obter IP online:', onlineError);
+      setIpAddress('unknown');
     }
   };
   
