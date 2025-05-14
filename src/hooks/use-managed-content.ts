@@ -30,7 +30,7 @@ export const getAboutContent = () => {
     publications: "Mais de 50 artigos publicados em periódicos e conferências internacionais\nAutor de 3 capítulos de livros na área de Inteligência Artificial\nEditor convidado para edições especiais em revistas científicas",
   };
   
-  return loadStoredContent('admin-about-data', defaultAboutData);
+  return defaultAboutData;
 };
 
 // Function to get the projects content
