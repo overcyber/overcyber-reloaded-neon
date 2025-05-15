@@ -7,34 +7,36 @@
 
 @layer base {
   :root {
-    /* Light mode - cyberpunk2077 bright theme */
-    --background: 220 33% 98%;
-    --foreground: 240 10% 3.9%;
+    /* Light mode - futuristic cyberpunk theme */
+    --background: 210 40% 98%;
+    --foreground: 220 20% 10%;
 
-    --card: 220 33% 98%;
-    --card-foreground: 240 10% 3.9%;
+    --card: 210 40% 98%;
+    --card-foreground: 220 20% 10%;
 
-    --popover: 220 33% 98%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover: 210 40% 98%;
+    --popover-foreground: 220 20% 10%;
 
-    --primary: 175 74% 39%; /* Cyber teal */
+    /* Bright futuristic teal */
+    --primary: 185 80% 45%; 
     --primary-foreground: 0 0% 98%;
 
-    --secondary: 220 14% 90%;
-    --secondary-foreground: 240 10% 3.9%;
+    --secondary: 230 20% 85%;
+    --secondary-foreground: 220 20% 10%;
 
-    --muted: 220 14% 90%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 230 20% 85%;
+    --muted-foreground: 220 10% 40%;
 
-    --accent: 22 100% 55%; /* Cyber yellow-orange */
-    --accent-foreground: 240 10% 3.9%;
+    /* Vibrant cyan for accents */
+    --accent: 195 85% 60%; 
+    --accent-foreground: 220 20% 10%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 220 14% 90%;
-    --input: 220 14% 90%;
-    --ring: 175 74% 39%; /* Cyber teal */
+    --border: 230 20% 85%;
+    --input: 230 20% 85%;
+    --ring: 185 80% 45%; /* Bright futuristic teal */
 
     --radius: 0.5rem;
   }
@@ -82,9 +84,12 @@
 
   /* Apply grid background based on theme */
   .light body {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), 
-                      linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-    background-size: 20px 20px;
+    background-image: 
+      linear-gradient(45deg, rgba(0, 180, 220, 0.03) 1px, transparent 1px), 
+      linear-gradient(135deg, rgba(0, 180, 220, 0.03) 1px, transparent 1px),
+      linear-gradient(rgba(0, 180, 220, 0.05) 1px, transparent 1px), 
+      linear-gradient(90deg, rgba(0, 180, 220, 0.05) 1px, transparent 1px);
+    background-size: 30px 30px, 30px 30px, 15px 15px, 15px 15px;
     background-attachment: fixed;
   }
 
@@ -110,16 +115,16 @@
     background-size: 200% 200%;
   }
   
+  /* Light mode glow - enhanced futuristic style */
+  .light .cyber-glow {
+    @apply relative text-foreground;
+    text-shadow: 0 0 5px rgba(0,0,0,0.2), 0 0 10px rgba(0,180,220,0.8), 0 0 15px rgba(0,180,220,0.6);
+  }
+  
   /* Dark mode glow */
   .dark .cyber-glow {
     @apply relative text-white;
     text-shadow: 0 0 5px #fff, 0 0 10px #9b87f5, 0 0 15px #8B5CF6, 0 0 20px #8B5CF6;
-  }
-  
-  /* Light mode glow */
-  .light .cyber-glow {
-    @apply relative text-foreground;
-    text-shadow: 0 0 5px rgba(0,0,0,0.2), 0 0 10px rgba(21,170,191,0.7), 0 0 15px rgba(21,170,191,0.5);
   }
   
   .cyber-button {
@@ -132,6 +137,15 @@
   
   .cyber-button:hover::before {
     @apply translate-y-0;
+  }
+  
+  /* Enhanced light mode button styles */
+  .light .cyber-button {
+    @apply border-primary text-primary relative overflow-hidden;
+  }
+  
+  .light .cyber-button::after {
+    @apply content-[''] absolute -inset-[1px] bg-gradient-to-r from-accent via-primary to-accent opacity-30 blur-sm -z-10;
   }
   
   .neon-text {
@@ -159,11 +173,22 @@
     backdrop-blur: 15px;
   }
   
+  /* Enhanced light theme blur effect */
   .light .neo-blur {
-    @apply bg-background/60 border border-primary/30;
+    @apply bg-background/60 border border-primary/20 shadow-[0_4px_15px_-5px_rgba(0,180,220,0.3)];
   }
   
   .dark .neo-blur {
     @apply bg-background/40 border border-primary/30;
+  }
+  
+  /* New futuristic card for light theme */
+  .light .cyber-card {
+    @apply bg-white/80 backdrop-blur-sm border border-primary/20 shadow-[0_5px_15px_-5px_rgba(0,180,220,0.5)] 
+           relative overflow-hidden;
+  }
+  
+  .light .cyber-card::before {
+    @apply content-[''] absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-primary/80 to-accent/80;
   }
 }

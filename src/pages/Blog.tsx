@@ -1,160 +1,109 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import Layout from '@/components/Layout';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Clock, Tag } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { useEffect, useState } from "react";
+import { Layout } from "@/components/Layout";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Link } from "react-router-dom";
+import { FileText } from "lucide-react";
 
-// Sample blog data
-const blogPosts = [
-  {
-    id: 1,
-    title: "Exploiting Zero-Day Vulnerabilities in IoT Devices",
-    slug: "exploiting-zero-day-vulnerabilities",
-    excerpt: "An in-depth analysis of recently discovered vulnerabilities in consumer IoT devices and how to protect against them.",
-    date: "2025-04-15",
-    readTime: "8 min read",
-    tags: ["Security", "IoT", "Exploit"],
-    image: "https://images.unsplash.com/photo-1518770660439-4636190af475?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 2,
-    title: "The Future of Quantum Encryption",
-    slug: "future-quantum-encryption",
-    excerpt: "Exploring how quantum computing will transform the landscape of cryptography and data security.",
-    date: "2025-03-22",
-    readTime: "12 min read",
-    tags: ["Quantum", "Encryption", "Cybersecurity"],
-    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 3,
-    title: "Building Secure APIs for the Modern Web",
-    slug: "building-secure-apis",
-    excerpt: "Best practices for designing and implementing secure APIs that can withstand today's sophisticated attacks.",
-    date: "2025-02-18",
-    readTime: "10 min read",
-    tags: ["API", "Web Security", "Development"],
-    image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 4,
-    title: "Dark Web Monitoring: Protecting Your Digital Identity",
-    slug: "dark-web-monitoring",
-    excerpt: "How to monitor the dark web to protect yourself from identity theft and credential leaks.",
-    date: "2025-01-05",
-    readTime: "7 min read",
-    tags: ["Dark Web", "Identity", "Protection"],
-    image: "https://images.unsplash.com/photo-1531297484001-80022131f5a1?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-  },
-];
+interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  image?: string;
+  createdAt: string;
+}
 
-const Blog = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  
-  const filteredPosts = blogPosts.filter(post => 
-    post.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    post.excerpt.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    post.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+export default function Blog() {
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // In a real app, this would fetch from an API
+    const loadPosts = () => {
+      try {
+        const storedPosts = localStorage.getItem("blog-posts");
+        if (storedPosts) {
+          setPosts(JSON.parse(storedPosts));
+        }
+      } catch (error) {
+        console.error("Failed to load blog posts:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadPosts();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
   return (
-    <Layout title="NEURAL ARCHIVE">
-      <div className="mb-8">
-        <div className="relative">
-          <Input
-            type="text"
-            placeholder="SEARCH ARCHIVES..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="bg-cyber-black/60 border-cyber-neon/50 font-mono text-cyber-blue focus:border-cyber-orange placeholder:text-cyber-neon/50"
-          />
-          <div className="absolute inset-0 border border-cyber-neon/30 rounded-md pointer-events-none"></div>
-        </div>
-      </div>
+    <Layout>
+      <div className="container py-10 mx-auto">
+        <h1 className="text-4xl font-bold mb-8 cyber-glow">Blog</h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredPosts.map((post) => (
-          <Link to={`/blog/${post.slug}`} key={post.id} className="group">
-            <Card className="neo-blur border border-cyber-neon/30 overflow-hidden transition-all duration-300 group-hover:border-cyber-neon/70 h-full flex flex-col">
-              <div className="relative h-48 overflow-hidden">
-                <img 
-                  src={post.image} 
-                  alt={post.title} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-cyber-black to-transparent"></div>
-              </div>
-              
-              <CardHeader className="pb-2">
-                <CardTitle className="text-xl text-white font-mono tracking-tight line-clamp-2 group-hover:text-cyber-neon transition-colors">
-                  {post.title}
-                </CardTitle>
-              </CardHeader>
-              
-              <CardContent className="pb-2 flex-grow">
-                <p className="text-cyber-blue/80 mb-4 line-clamp-2">
-                  {post.excerpt}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline" className="border-cyber-neon/50 text-cyber-neon text-xs">
-                      <Tag size={12} className="mr-1" />
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-              
-              <CardFooter className="text-xs text-cyber-blue/70 font-mono pt-2 border-t border-cyber-neon/20">
-                <div className="flex justify-between w-full">
-                  <span className="flex items-center gap-1">
-                    <CalendarDays size={12} />
-                    {post.date}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock size={12} />
-                    {post.readTime}
-                  </span>
-                </div>
-              </CardFooter>
-            </Card>
-          </Link>
-        ))}
+        {loading ? (
+          <div className="flex justify-center items-center h-40">
+            <div className="animate-pulse text-primary">Loading posts...</div>
+          </div>
+        ) : posts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {posts.map((post) => (
+              <Card key={post.id} className="neo-blur hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+                {post.image && (
+                  <div 
+                    className="h-48 w-full bg-cover bg-center rounded-t-lg border-b border-primary/20"
+                    style={{ backgroundImage: `url(${post.image})` }}
+                  />
+                )}
+                <CardHeader>
+                  <h2 className="text-2xl font-bold font-cyber tracking-wide">
+                    <Link 
+                      to={`/blog/${post.slug}`}
+                      className="text-primary hover:text-accent transition-colors"
+                    >
+                      {post.title}
+                    </Link>
+                  </h2>
+                  <p className="text-sm text-muted-foreground font-mono">
+                    {formatDate(post.createdAt)}
+                  </p>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-foreground/80">
+                    {post.excerpt || post.content.substring(0, 100) + '...'}
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  <Button asChild variant="outline">
+                    <Link to={`/blog/${post.slug}`}>
+                      <FileText className="mr-2 h-4 w-4" />
+                      Read more
+                    </Link>
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center p-10 border border-dashed border-primary/30 rounded-lg">
+            <h3 className="text-xl font-bold mb-2">No Posts Yet</h3>
+            <p className="text-muted-foreground mb-4">
+              There are no blog posts to display yet. Check back later or create one in the admin panel.
+            </p>
+          </div>
+        )}
       </div>
-
-      <Pagination className="mt-8">
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious href="#" className="bg-transparent border border-cyber-neon/50 text-cyber-neon" />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationLink href="#" isActive className="bg-cyber-neon/20 border border-cyber-neon text-cyber-neon">1</PaginationLink>
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationLink href="#" className="bg-transparent border border-cyber-neon/50 text-cyber-neon">2</PaginationLink>
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationEllipsis />
-          </PaginationItem>
-          <PaginationItem>
-            <PaginationNext href="#" className="bg-transparent border border-cyber-neon/50 text-cyber-neon" />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
     </Layout>
   );
-};
-
-export default Blog;
+}
