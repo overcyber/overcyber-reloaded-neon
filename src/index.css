@@ -240,9 +240,10 @@
     @apply content-[''] absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent;
   }
   
-  .terminal-line::before {
-    @apply content-['>' '_'] text-primary;
-  }
+.terminal-line::before {
+  content: '> ';
+  @apply text-primary;
+}
   
   .scanline {
     @apply pointer-events-none fixed inset-0 z-50;
