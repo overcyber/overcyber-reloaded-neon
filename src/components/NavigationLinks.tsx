@@ -7,11 +7,11 @@ const NavigationLinks = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   
   const links = [
-    { name: "BL:G", url: "/blog", icon: <Archive size={16} /> },
-    { name: "AB:UT", url: "/about/", icon: <User size={16} /> },
-    { name: "PR:JECTS", url: "/projects", icon: <FileCode size={16} /> },
-    { name: "RES:ME", url: "/resume.pdf", icon: <FileText size={16} /> },
-    { name: "C:NTACT", url: "/contact", icon: <AtSign size={16} /> }
+    { name: "BLOG", url: "/blog", icon: <Archive size={16} /> },
+    { name: "ABOUT", url: "/about/", icon: <User size={16} /> },
+    { name: "PROJECTS", url: "/projects", icon: <FileCode size={16} /> },
+    { name: "RESUME", url: "/resume.pdf", icon: <FileText size={16} /> },
+    { name: "CONTACT", url: "/contact", icon: <AtSign size={16} /> }
   ];
   
   return (
