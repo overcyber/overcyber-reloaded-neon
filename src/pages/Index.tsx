@@ -6,7 +6,7 @@ import ProfileHeader from '@/components/ProfileHeader';
 import NavigationLinks from '@/components/NavigationLinks';
 import SocialIcons from '@/components/SocialIcons';
 import GlitchEffect from '@/components/GlitchEffect';
-import { ThemeToggle } from './ThemeToggle';
+import { ThemeToggle } from '@/components/ThemeToggle';
 const Index = () => {
   const [loaded, setLoaded] = useState(false);
   const [bootSequence, setBootSequence] = useState(true);
