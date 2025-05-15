@@ -24,7 +24,7 @@ const ProfileHeader = () => {
   }, []);
 
   return (
-    <div className="w-32 h-32 md:w-40 md:h-40 relative mb-6 rounded-full overflow-hidden border-4 border-cyber-neon glow">
+    <div className="w-32 h-32 md:w-40 md:h-40 relative mb-6 rounded-full overflow-hidden border-4 border-cyber-cyan glow">
       {/* Profile image with cyber effects */}
       <div className={`absolute inset-0 ${glitching ? 'animate-glitch' : ''}`}
         style={{
