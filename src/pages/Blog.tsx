@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { FileText } from "lucide-react";
+import { FileText, Archive } from "lucide-react";
 
 interface BlogPost {
   id: string;
@@ -48,58 +48,64 @@ export default function Blog() {
   };
 
   return (
-    <Layout>
-      <div className="container py-10 mx-auto">
-        <h1 className="text-4xl font-bold mb-8 cyber-glow">Blog</h1>
+    <Layout title="DATALOG" showBackButton={true}>
+      <div className="container mx-auto">
+        <div className="terminal-header mb-8">
+          <Archive size={18} className="text-primary mr-2" />
+          <span className="text-primary font-mono">ARCHIVE // ENTRIES: {posts.length}</span>
+        </div>
 
         {loading ? (
           <div className="flex justify-center items-center h-40">
-            <div className="animate-pulse text-primary">Loading posts...</div>
+            <div className="font-mono text-primary loading-dots">LOADING ENTRIES</div>
           </div>
         ) : posts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.map((post) => (
-              <Card key={post.id} className="neo-blur hover:shadow-lg transition-all duration-300 h-full flex flex-col">
+              <div key={post.id} className="cyber-terminal h-full flex flex-col">
                 {post.image && (
                   <div 
-                    className="h-48 w-full bg-cover bg-center rounded-t-lg border-b border-primary/20"
+                    className="h-48 w-full bg-cover bg-center border-b border-primary/20 relative overflow-hidden"
                     style={{ backgroundImage: `url(${post.image})` }}
-                  />
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
+                    <div className="absolute top-2 left-2 text-xs font-mono text-primary/70 bg-background/50 px-2 py-1 backdrop-blur-sm">
+                      REF#{post.id.substring(0, 8)}
+                    </div>
+                  </div>
                 )}
-                <CardHeader>
-                  <h2 className="text-2xl font-bold font-cyber tracking-wide">
+                <div className="p-4 flex flex-col flex-grow">
+                  <h2 className="text-xl font-mono tracking-wide text-primary mb-2">
                     <Link 
                       to={`/blog/${post.slug}`}
-                      className="text-primary hover:text-accent transition-colors"
+                      className="hover:text-accent transition-colors"
                     >
                       {post.title}
                     </Link>
                   </h2>
-                  <p className="text-sm text-muted-foreground font-mono">
+                  <p className="text-xs text-primary/70 font-mono mb-4">
                     {formatDate(post.createdAt)}
                   </p>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="text-foreground/80">
+                  <p className="text-sm text-foreground/80 font-mono flex-grow">
                     {post.excerpt || post.content.substring(0, 100) + '...'}
                   </p>
-                </CardContent>
-                <CardFooter>
-                  <Button asChild variant="outline">
-                    <Link to={`/blog/${post.slug}`}>
-                      <FileText className="mr-2 h-4 w-4" />
-                      Read more
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+                  <div className="mt-4 pt-4 border-t border-primary/20">
+                    <Button variant="outline" asChild className="cyber-button w-full">
+                      <Link to={`/blog/${post.slug}`}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        <span className="font-mono text-xs">ACCESS DATA</span>
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <div className="text-center p-10 border border-dashed border-primary/30 rounded-lg">
-            <h3 className="text-xl font-bold mb-2">No Posts Yet</h3>
-            <p className="text-muted-foreground mb-4">
-              There are no blog posts to display yet. Check back later or create one in the admin panel.
+          <div className="cyber-terminal p-6 text-center">
+            <h3 className="text-xl font-mono mb-2 text-primary">NO ENTRIES FOUND</h3>
+            <p className="text-sm text-foreground/80 font-mono mb-4">
+              DATABASE EMPTY. ADMIN ACCESS REQUIRED TO CREATE ENTRIES.
             </p>
           </div>
         )}

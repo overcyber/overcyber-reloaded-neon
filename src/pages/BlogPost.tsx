@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, FileText, Calendar, Info, AlertTriangle } from "lucide-react";
 
 interface BlogPost {
   id: string;
@@ -34,16 +34,16 @@ export default function BlogPost() {
           if (foundPost) {
             setPost(foundPost);
           } else {
-            setError("Post not found");
+            setError("DATA NOT FOUND");
             setTimeout(() => navigate("/blog"), 3000);
           }
         } else {
-          setError("No posts available");
+          setError("DATABASE EMPTY");
           setTimeout(() => navigate("/blog"), 3000);
         }
       } catch (error) {
         console.error("Failed to load blog post:", error);
-        setError("Failed to load post");
+        setError("DATA CORRUPTED");
       } finally {
         setLoading(false);
       }
@@ -64,17 +64,15 @@ export default function BlogPost() {
   // Helper function to add line breaks to the content
   const formatContent = (content: string) => {
     return content.split('\n').map((line, index) => (
-      <p key={index} className="mb-4">{line}</p>
+      <p key={index} className="mb-4 font-mono text-foreground/90">{line}</p>
     ));
   };
 
   if (loading) {
     return (
-      <Layout>
-        <div className="container py-10 mx-auto">
-          <div className="flex justify-center items-center h-60">
-            <div className="animate-pulse text-primary">Loading post...</div>
-          </div>
+      <Layout title="LOADING DATA">
+        <div className="flex justify-center items-center h-60">
+          <div className="font-mono text-primary loading-dots">ACCESSING DATABASE</div>
         </div>
       </Layout>
     );
@@ -82,13 +80,13 @@ export default function BlogPost() {
 
   if (error) {
     return (
-      <Layout>
-        <div className="container py-10 mx-auto">
-          <div className="text-center p-10 border border-dashed border-destructive rounded-lg">
-            <h3 className="text-xl font-bold mb-2">Error</h3>
-            <p className="text-muted-foreground mb-4">{error}</p>
-            <p className="text-sm">Redirecting to blog page...</p>
-          </div>
+      <Layout title="ERROR">
+        <div className="cyber-terminal p-6 text-center">
+          <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
+          <h3 className="text-xl font-mono mb-2 text-destructive">{error}</h3>
+          <p className="text-sm text-foreground/80 font-mono mb-4">
+            REDIRECTING TO ARCHIVE...
+          </p>
         </div>
       </Layout>
     );
@@ -96,55 +94,74 @@ export default function BlogPost() {
 
   if (!post) {
     return (
-      <Layout>
-        <div className="container py-10 mx-auto">
-          <div className="text-center p-10 border border-dashed border-primary/30 rounded-lg">
-            <h3 className="text-xl font-bold mb-2">Post Not Found</h3>
-            <p className="text-muted-foreground mb-4">
-              The post you're looking for doesn't exist.
-            </p>
-            <Button asChild>
-              <Link to="/blog">Back to Blog</Link>
-            </Button>
-          </div>
+      <Layout title="NOT FOUND">
+        <div className="cyber-terminal p-6 text-center">
+          <h3 className="text-xl font-mono mb-2 text-primary">DATA CORRUPTED OR DELETED</h3>
+          <p className="text-sm text-foreground/80 font-mono mb-4">
+            THE ENTRY YOU'RE LOOKING FOR DOESN'T EXIST.
+          </p>
+          <Button asChild variant="outline" className="cyber-button">
+            <Link to="/blog">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              <span className="font-mono text-xs">RETURN TO ARCHIVE</span>
+            </Link>
+          </Button>
         </div>
       </Layout>
     );
   }
 
   return (
-    <Layout>
-      <div className="container py-10 mx-auto max-w-4xl">
+    <Layout title={post.title.toUpperCase()}>
+      <div className="container mx-auto max-w-4xl">
         <Button 
           variant="outline" 
           asChild 
-          className="mb-6"
+          className="cyber-button mb-6"
         >
           <Link to="/blog">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Blog
+            <span className="font-mono text-xs">RETURN TO ARCHIVE</span>
           </Link>
         </Button>
         
-        <article className="prose prose-lg max-w-none dark:prose-invert">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 cyber-glow font-cyber">{post.title}</h1>
-          
-          <div className="text-sm text-muted-foreground font-mono mb-6">
-            {formatDate(post.createdAt)}
+        <article className="cyber-terminal p-6">
+          <div className="terminal-header mb-6">
+            <FileText size={18} className="text-primary mr-2" />
+            <span className="text-primary font-mono">DATA ENTRY</span>
+            <div className="ml-auto flex items-center gap-2 text-xs font-mono text-primary/70">
+              <Calendar size={14} />
+              {formatDate(post.createdAt)}
+            </div>
           </div>
-
+          
           {post.image && (
-            <div className="mb-6">
+            <div className="mb-8 relative">
               <img 
                 src={post.image} 
                 alt={post.title}
-                className="w-full h-auto rounded-lg object-cover mb-4 border border-primary/20"
+                className="w-full h-auto max-h-80 object-cover border border-primary/30"
               />
+              <div className="absolute bottom-0 left-0 bg-background/70 backdrop-blur-sm p-2 text-xs font-mono text-primary">
+                IMAGE_REF#{post.id.substring(0, 6)}
+              </div>
             </div>
           )}
           
-          <div className="space-y-4 text-foreground/90">
+          <div className="space-y-4 font-mono">
             {formatContent(post.content)}
+          </div>
+          
+          <div className="mt-8 pt-4 border-t border-primary/20 flex justify-between">
+            <div className="text-xs font-mono text-primary/50">
+              REF_ID: {post.id}
+            </div>
+            <Button variant="outline" asChild className="cyber-button">
+              <Link to="/blog">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                <span className="font-mono text-xs">ARCHIVE</span>
+              </Link>
+            </Button>
           </div>
         </article>
       </div>
