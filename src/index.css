@@ -204,12 +204,12 @@
     text-shadow: 0 0 5px rgba(255,215,0,0.2), 0 0 10px rgba(255,215,0,0.6), 0 0 15px rgba(255,215,0,0.4);
   }
   
-  /* Dark mode glow - green neon tint */
-/*   .dark .cyber-glow {
+/*   Dark mode glow - green neon tint */
+  .dark .cyber-glow {
     @apply relative text-primary;
-/**     text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 15px #00ff00, 0 0 20px #00ff00; 
-    text-shadow: 0 0 5px rgba(255,215,0,0.2), 0 0 10px rgba(255,215,0,0.6), 0 0 15px rgba(255,215,0,0.4); } */
-   .dark .cyber-glow {
+/* /**     text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 15px #00ff00, 0 0 20px #00ff00;  */
+    text-shadow: 0 0 5px rgba(255,215,0,0.2), 0 0 10px rgba(255,215,0,0.6), 0 0 15px rgba(255,215,0,0.4); }
+/*    .dark .cyber-glow {
   @apply relative text-white;
   text-shadow: 
     0 0 1px rgba(255, 255, 255, 0.9),
@@ -217,7 +217,7 @@
     0 0 8px rgba(0, 255, 0, 0.3),
     0 0 12px rgba(0, 255, 0, 0.2);
   letter-spacing: 0.5px;
-} 
+}  */
   
   .cyber-button {
     @apply relative px-6 py-2 bg-transparent border border-primary text-primary font-mono uppercase tracking-wider hover:bg-primary/10 transition-all duration-300;
