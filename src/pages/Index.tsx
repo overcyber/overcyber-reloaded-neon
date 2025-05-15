@@ -43,7 +43,10 @@ const Index = () => {
 
   if (bootSequence) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-8">
+      // <div className="min-h-screen flex flex-col items-center justify-center p-8">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-cyber-black bg-cyber-grid p-8">
+
+
         <div className="corner-tr"></div>
         <div className="corner-bl"></div>
         <div className="corner-br"></div>
