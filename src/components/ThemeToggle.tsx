@@ -28,15 +28,15 @@ export function ThemeToggle() {
       <DropdownMenuContent align="end" className="cyber-terminal border-primary/50">
         <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer hover:bg-primary/20">
           <Sun className="mr-2 h-4 w-4" />
-          <span>L:GHT</span>
+          <span>LIGHT</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer hover:bg-primary/20">
           <Moon className="mr-2 h-4 w-4" />
-          <span>D:RK</span>
+          <span>DARK</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => setTheme("system")} className="cursor-pointer hover:bg-primary/20">
           <MonitorSmartphone className="mr-2 h-4 w-4" />
-          <span>SYS:EM</span>
+          <span>SYSTEM</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
