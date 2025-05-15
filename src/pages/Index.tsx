@@ -104,7 +104,7 @@ const Index = () => {
             </div>
             
             <div className="w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent my-6 relative overflow-hidden">
-              <div className="absolute h-full w-20 bg-primary/50 animate-[shimmer_2s_infinite] flicker"></div>
+              <div className="absolute h-full w-20 bg-primary/50 animate-[shimmer_2s_infinite] flicker bg-cyber-grid"></div>
             </div>
             
             <div className="flex items-center gap-2 mb-8">
