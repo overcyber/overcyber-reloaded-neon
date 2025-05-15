@@ -30,12 +30,18 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				cyber: {
-					'neon': '#9b87f5',
-					'purple': '#8B5CF6',
-					'orange': '#F97316',
-					'blue': '#0EA5E9',
-					'black': '#1A1F2C',
-					'dark': '#221F26',
+					'neon': '#9b87f5', // dark theme
+					'purple': '#8B5CF6', // dark theme
+					'orange': '#F97316', // dark theme
+					'blue': '#0EA5E9', // dark theme
+					'black': '#1A1F2C', // dark theme
+					'dark': '#221F26', // dark theme
+					'teal': '#15AABF', // light theme
+					'yellow': '#F59E0B', // light theme
+					'mint': '#10B981', // light theme
+					'light': '#F3F4F6', // light theme
+					'lightblue': '#93C5FD', // light theme
+					'lightdark': '#E5E7EB', // light theme
 				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary))',
@@ -107,6 +113,11 @@ export default {
 					'100%': { transform: 'translate(0)' }
 				},
 				'neon-pulse': {
+					'0%': { textShadow: '0 0 5px rgba(0,0,0,0.2), 0 0 10px rgba(21,170,191,0.7), 0 0 15px rgba(21,170,191,0.5)' },
+					'50%': { textShadow: '0 0 10px rgba(0,0,0,0.2), 0 0 15px rgba(21,170,191,0.8), 0 0 20px rgba(21,170,191,0.6)' },
+					'100%': { textShadow: '0 0 5px rgba(0,0,0,0.2), 0 0 10px rgba(21,170,191,0.7), 0 0 15px rgba(21,170,191,0.5)' }
+				},
+				'dark-neon-pulse': {
 					'0%': { textShadow: '0 0 5px #fff, 0 0 10px #9b87f5, 0 0 15px #8B5CF6, 0 0 20px #8B5CF6' },
 					'50%': { textShadow: '0 0 10px #fff, 0 0 15px #9b87f5, 0 0 20px #8B5CF6, 0 0 25px #8B5CF6' },
 					'100%': { textShadow: '0 0 5px #fff, 0 0 10px #9b87f5, 0 0 15px #8B5CF6, 0 0 20px #8B5CF6' }
@@ -135,12 +146,15 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'glitch': 'glitch 0.5s ease infinite',
 				'neon-pulse': 'neon-pulse 2s ease-in-out infinite',
+				'dark-neon-pulse': 'dark-neon-pulse 2s ease-in-out infinite',
 				'border-flow': 'border-flow 3s ease infinite',
 				'flicker': 'flicker 2s linear infinite'
 			},
 			backgroundImage: {
 				'cyber-grid': 'linear-gradient(rgba(0, 0, 0, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.3) 1px, transparent 1px)',
-				'cyber-gradient': 'linear-gradient(90deg, #1A1F2C 0%, #221F26 100%)'
+				'cyber-light-grid': 'linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px)',
+				'cyber-gradient': 'linear-gradient(90deg, #1A1F2C 0%, #221F26 100%)',
+				'cyber-light-gradient': 'linear-gradient(90deg, #F3F4F6 0%, #E5E7EB 100%)'
 			},
 			backgroundSize: {
 				'cyber-grid': '20px 20px'

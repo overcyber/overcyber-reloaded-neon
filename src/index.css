@@ -7,6 +7,39 @@
 
 @layer base {
   :root {
+    /* Light mode - cyberpunk2077 bright theme */
+    --background: 220 33% 98%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 220 33% 98%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 220 33% 98%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 175 74% 39%; /* Cyber teal */
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 220 14% 90%;
+    --secondary-foreground: 240 10% 3.9%;
+
+    --muted: 220 14% 90%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 22 100% 55%; /* Cyber yellow-orange */
+    --accent-foreground: 240 10% 3.9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 220 14% 90%;
+    --input: 220 14% 90%;
+    --ring: 175 74% 39%; /* Cyber teal */
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
 
@@ -39,11 +72,11 @@
   }
 
   * {
-    @apply border-border selection:bg-cyber-neon/10 selection:text-cyber-neon;
+    @apply border-border selection:bg-primary/10 selection:text-primary;
   }
   
   body {
-    @apply bg-cyber-black text-foreground antialiased bg-cyber-grid font-cyber;
+    @apply bg-background text-foreground antialiased bg-cyber-grid font-cyber;
     background-attachment: fixed;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
   }
@@ -59,21 +92,28 @@
   }
   
   .cyber-border::before {
-    @apply content-[''] absolute inset-0 border-2 border-cyber-neon rounded-md bg-gradient-to-r from-cyber-neon via-cyber-purple to-cyber-blue animate-border-flow z-[-1];
+    @apply content-[''] absolute inset-0 border-2 border-primary rounded-md bg-gradient-to-r from-primary via-accent to-cyber-blue animate-border-flow z-[-1];
     background-size: 200% 200%;
   }
   
-  .cyber-glow {
+  /* Dark mode glow */
+  .dark .cyber-glow {
     @apply relative text-white;
     text-shadow: 0 0 5px #fff, 0 0 10px #9b87f5, 0 0 15px #8B5CF6, 0 0 20px #8B5CF6;
   }
   
+  /* Light mode glow */
+  .cyber-glow {
+    @apply relative text-foreground;
+    text-shadow: 0 0 5px rgba(0,0,0,0.2), 0 0 10px rgba(21,170,191,0.7), 0 0 15px rgba(21,170,191,0.5);
+  }
+  
   .cyber-button {
-    @apply relative px-6 py-2 bg-transparent border-2 border-cyber-neon text-cyber-neon font-mono uppercase tracking-wider hover:bg-cyber-neon/10 transition-all duration-300 overflow-hidden;
+    @apply relative px-6 py-2 bg-transparent border-2 border-primary text-primary font-mono uppercase tracking-wider hover:bg-primary/10 transition-all duration-300 overflow-hidden;
   }
   
   .cyber-button::before {
-    @apply content-[''] absolute inset-0 bg-cyber-neon/20 translate-y-full transition-transform duration-300;
+    @apply content-[''] absolute inset-0 bg-primary/20 translate-y-full transition-transform duration-300;
   }
   
   .cyber-button:hover::before {
@@ -102,6 +142,20 @@
   }
   
   .neo-blur {
-    @apply backdrop-blur-2xl bg-cyber-black/40 border border-cyber-neon/30;
+    @apply backdrop-blur-2xl bg-background/40 border border-primary/30;
+  }
+  
+  /* Light mode specific classes */
+  .light-cyber-grid {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), 
+                      linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  
+  /* Dark mode specific classes */
+  .dark-cyber-grid {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), 
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
   }
 }
