@@ -12,10 +12,10 @@
   transition: filter 300ms;
 }
 .logo:hover {
-   filter: drop-shadow(0 0 2em #40E0D0);   /* ff5e00aa ff7800aa  00e8ffaa antes era  646cffaa */
+   filter: drop-shadow(0 0 2em #00ff00);   /* ff5e00aa ff7800aa  00e8ffaa antes era  646cffaa */
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #40E0D0);
+  filter: drop-shadow(0 0 2em #ff7800);
 }
 
 @keyframes logo-spin {
