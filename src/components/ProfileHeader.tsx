@@ -39,15 +39,21 @@ const ProfileHeader = () => {
       <div 
         className="absolute inset-0 pointer-events-none" 
         style={{
-          background: `linear-gradient(transparent ${scanline}%, rgba(155, 135, 245, 0.2) ${scanline}%, rgba(155, 135, 245, 0.2) ${scanline + 1}%, transparent ${scanline + 1}%)`,
+          // background: `linear-gradient(transparent ${scanline}%, rgba(155, 135, 245, 0.2) ${scanline}%, rgba(155, 135, 245, 0.2) ${scanline + 1}%, transparent ${scanline + 1}%)`,
+          background: `linear-gradient(transparent ${scanline}%, rgba(0, 255, 128, 0.2) ${scanline}%, rgba(0, 255, 128, 0.2) ${scanline + 1}%, transparent ${scanline + 1}%)`,
+
         }}
       ></div>
       
       {/* Color overlay */}
-      <div className="absolute inset-0 bg-cyber-purple/10 mix-blend-overlay"></div>
+{/*       <div className="absolute inset-0 bg-cyber-purple/10 mix-blend-overlay"></div> */}
+        <div className="absolute inset-0 bg-cyber-neon/10 mix-blend-overlay"></div>
+
       
       {/* Border glow effect */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-cyber-neon via-cyber-blue to-cyber-purple rounded-full blur opacity-30"></div>
+      // <div className="absolute -inset-1 bg-gradient-to-r from-cyber-neon via-cyber-blue to-cyber-purple rounded-full blur opacity-30"></div>
+        <div className="absolute -inset-1 bg-gradient-to-r from-cyber-neon via-cyber-neon to-cyber-blue rounded-full blur opacity-30"></div>
+
     </div>
   );
 };
