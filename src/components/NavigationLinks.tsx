@@ -8,7 +8,7 @@ const NavigationLinks = () => {
   
   const links = [
     { name: "BLOG", url: "/blog", icon: <Archive size={16} /> },
-    { name: "ABOUT", url: "/about/", icon: <User size={16} /> },
+    { name: "ABOUT", url: "/about", icon: <User size={16} /> },
     { name: "PROJECTS", url: "/projects", icon: <FileCode size={16} /> },
     { name: "RESUME", url: "/resume.pdf", icon: <FileText size={16} /> },
     { name: "CONTACT", url: "/contact", icon: <AtSign size={16} /> }
