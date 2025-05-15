@@ -491,7 +491,7 @@ const About = () => {
                 <h3 className="text-xl text-white font-mono mb-4">Certifications & Awards</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {skillsData.awards.map((award, index) => (
-                    <div key={index} className="bg-cyber-black/40 border border-cyber-neon/30 p-3 rounded-md flex items-center">
+                    <div key={index} className="bg-cyber-black/40 border border-cyber-neon/30 p-3 rounded-md flex bg-cyber-black bg-cyber-grid  items-center">
                       <Award size={24} className="text-cyber-orange mr-3" />
                       <span className="text-cyber-blue">{award}</span>
                     </div>
