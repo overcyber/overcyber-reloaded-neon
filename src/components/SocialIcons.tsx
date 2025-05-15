@@ -17,7 +17,7 @@ const SocialIcons = () => {
     },
     { 
       icon: <Mail className="w-6 h-6" />, 
-      url: "mailto:email@example.com", 
+      url: "mailto:theovercyber@gmail.com", 
       label: "Email",
       color: "hover:text-cyber-orange" 
     },
