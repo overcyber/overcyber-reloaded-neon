@@ -6,7 +6,7 @@ import ProfileHeader from '@/components/ProfileHeader';
 import NavigationLinks from '@/components/NavigationLinks';
 import SocialIcons from '@/components/SocialIcons';
 import GlitchEffect from '@/components/GlitchEffect';
-
+import { ThemeToggle } from './ThemeToggle';
 const Index = () => {
   const [loaded, setLoaded] = useState(false);
   const [bootSequence, setBootSequence] = useState(true);
@@ -114,7 +114,10 @@ const Index = () => {
               </h3>
               <Shield className="text-accent h-5 w-5" />
             </div>
-            
+               <div className="flex justify-center mt-3">
+                <ThemeToggle />
+              </div>
+
             <SocialIcons />
           </div>
         </div>
