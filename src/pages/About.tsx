@@ -326,7 +326,9 @@ const About = () => {
                   <div key={index} className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
                     <div className="flex justify-between items-start">
                       <h3 className="text-xl text-white font-mono">{edu.title}</h3>
-                      <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50">{edu.period}</Badge>
+{/*                       <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50">{edu.period}</Badge> */}
+                      <Badge className="bg-purple-900/30 text-purple-400 border border-purple-500/50">{edu.period}</Badge>
+
 
                     </div>
                     {edu.institution && <p className="text-cyber-blue mt-1">{edu.institution}</p>}
