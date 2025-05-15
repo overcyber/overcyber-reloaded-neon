@@ -22,7 +22,7 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    // <div className="min-h-screen flex items-center justify-center bg-cyber-black bg-cyber-grid">
+    <div className="min-h-screen flex items-center justify-center bg-cyber-black bg-cyber-grid">
       <div className="neo-blur rounded-lg p-8 max-w-lg w-full border border-cyber-neon/30 text-center">
         <div className="relative mb-6">
           <AlertTriangle className="w-16 h-16 mx-auto text-cyber-orange animate-pulse" />
@@ -43,7 +43,7 @@ const NotFound = () => {
             RETURN TO MAINFRAME
           </span>
         </a>
-{/*       </div> */}
+      </div>
     </div>
   );
 };
