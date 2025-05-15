@@ -24,7 +24,7 @@ const ProfileHeader = () => {
   }, []);
 
   return (
-    <div className="w-32 h-32 md:w-40 md:h-40 relative mb-6 rounded-full overflow-hidden border-4 border-cyber-neon glow">
+    <div className="w-32 h-32 md:w-40 md:h-40 relative mb-6 rounded-full overflow-hidden border-4 border-cyber-blue glow">
       {/* Profile image with cyber effects */}
       <div className={`absolute inset-0 ${glitching ? 'animate-glitch' : ''}`}
         style={{
@@ -45,13 +45,13 @@ const ProfileHeader = () => {
         }}
       ></div>
       
-      {/* Color overlay */}
+{/*       Color overlay */}
 {/*       <div className="absolute inset-0 bg-cyber-purple/10 mix-blend-overlay"></div> */}
-        <div className="absolute inset-0 bg-cyber-neon/10 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-cyber-blue/10 mix-blend-overlay"></div>
 
       
-      {/* Border glow effect */}
-      // <div className="absolute -inset-1 bg-gradient-to-r from-cyber-neon via-cyber-blue to-cyber-purple rounded-full blur opacity-30"></div>
+      // Border glow effect
+{/*       // <div className="absolute -inset-1 bg-gradient-to-r from-cyber-neon via-cyber-blue to-cyber-purple rounded-full blur opacity-30"></div> */}
         <div className="absolute -inset-1 bg-gradient-to-r from-cyber-neon via-cyber-neon to-cyber-blue rounded-full blur opacity-30"></div>
 
     </div>
