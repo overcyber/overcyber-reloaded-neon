@@ -174,10 +174,6 @@
 }
 
 @layer utilities {
-  .date-badge {
-  @apply bg-primary/20 text-primary border border-primary/40 px-3 py-1 rounded-sm;
-  text-shadow: 0 0 4px rgba(0, 255, 0, 0.4);
-}
   .cyber-terminal {
     @apply relative border border-primary/50 bg-card/90 backdrop-blur-md p-4;
   }
