@@ -76,9 +76,23 @@
   }
   
   body {
-    @apply bg-background text-foreground antialiased bg-cyber-grid font-cyber;
-    background-attachment: fixed;
+    @apply bg-background text-foreground antialiased font-cyber;
     font-feature-settings: "ss01", "ss02", "cv01", "cv02", "cv03";
+  }
+
+  /* Apply grid background based on theme */
+  .light body {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), 
+                      linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-attachment: fixed;
+  }
+
+  .dark body {
+    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), 
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px;
+    background-attachment: fixed;
   }
 
   html {
@@ -103,7 +117,7 @@
   }
   
   /* Light mode glow */
-  .cyber-glow {
+  .light .cyber-glow {
     @apply relative text-foreground;
     text-shadow: 0 0 5px rgba(0,0,0,0.2), 0 0 10px rgba(21,170,191,0.7), 0 0 15px rgba(21,170,191,0.5);
   }
@@ -142,20 +156,14 @@
   }
   
   .neo-blur {
-    @apply backdrop-blur-2xl bg-background/40 border border-primary/30;
+    backdrop-blur: 15px;
   }
   
-  /* Light mode specific classes */
-  .light-cyber-grid {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px), 
-                      linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
-    background-size: 20px 20px;
+  .light .neo-blur {
+    @apply bg-background/60 border border-primary/30;
   }
   
-  /* Dark mode specific classes */
-  .dark-cyber-grid {
-    background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), 
-                      linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 20px 20px;
+  .dark .neo-blur {
+    @apply bg-background/40 border border-primary/30;
   }
 }
