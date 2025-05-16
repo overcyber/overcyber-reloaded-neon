@@ -1,5 +1,5 @@
 
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import NavigationLinks from './NavigationLinks';
 import { ArrowLeft } from 'lucide-react';
@@ -12,60 +12,6 @@ interface LayoutProps {
 }
 
 const Layout = ({ children, showBackButton = true, title }: LayoutProps) => {
-  const [bootSequence, setBootSequence] = useState(true);
-  const [bootText, setBootText] = useState<string[]>([]);
-
-  useEffect(() => {
-    if (bootSequence) {
-      const bootMessages = [
-        "Initializing cyberpunk terminal...",
-        "Loading system components...",
-        "Establishing secure connection...",
-        "Decrypting user data...",
-        `Accessing ${title || "main"} module...`,
-        "Connection established."
-      ];
-      
-      let index = 0;
-      const interval = setInterval(() => {
-        if (index < bootMessages.length) {
-          setBootText(prev => [...prev, bootMessages[index]]);
-          index++;
-        } else {
-          clearInterval(interval);
-          setTimeout(() => setBootSequence(false), 800);
-        }
-      }, 300);
-      
-      return () => clearInterval(interval);
-    }
-  }, [bootSequence, title]);
-
-  if (bootSequence) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-8">
-        <div className="cyber-terminal w-full max-w-3xl h-[60vh] overflow-hidden">
-          <div className="terminal-header">
-            <span className="text-primary font-mono text-sm">BOOT SEQUENCE</span>
-            <div className="ml-auto flex gap-2">
-              <div className="w-3 h-3 rounded-full bg-destructive"></div>
-              <div className="w-3 h-3 rounded-full bg-accent"></div>
-              <div className="w-3 h-3 rounded-full bg-primary"></div>
-            </div>
-          </div>
-          <div className="font-mono text-sm space-y-2 h-full overflow-y-auto scrollbar-none">
-            {bootText.map((text, index) => (
-              <div key={index} className="terminal-line py-1">{text}</div>
-            ))}
-            {bootText.length < 6 && (
-              <div className="terminal-line py-1 loading-dots">Loading</div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
       <div className="corner-tr"></div>

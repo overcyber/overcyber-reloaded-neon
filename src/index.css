@@ -7,36 +7,36 @@
 
 @layer base {
   :root {
-    /* Light mode - cyberpunk yellow/gold theme inspired by the first reference image */
-    --background: 35 40% 8%;
-    --foreground: 60 100% 70%;
+    /* Light mode - cyberpunk yellow/gold theme - now with brighter background */
+    --background: 35 40% 12%;
+    --foreground: 60 100% 75%;
 
-    --card: 35 40% 10%;
-    --card-foreground: 60 100% 70%;
+    --card: 35 40% 14%;
+    --card-foreground: 60 100% 75%;
 
-    --popover: 35 40% 10%;
-    --popover-foreground: 60 100% 70%;
+    --popover: 35 40% 14%;
+    --popover-foreground: 60 100% 75%;
 
     /* Bright neon gold */
-    --primary: 45 100% 60%; 
-    --primary-foreground: 35 40% 10%;
+    --primary: 45 100% 65%; 
+    --primary-foreground: 35 40% 12%;
 
-    --secondary: 35 40% 15%;
-    --secondary-foreground: 60 100% 70%;
+    --secondary: 35 40% 18%;
+    --secondary-foreground: 60 100% 75%;
 
-    --muted: 35 40% 15%;
-    --muted-foreground: 60 80% 60%;
+    --muted: 35 40% 18%;
+    --muted-foreground: 60 80% 65%;
 
     /* Vibrant gold accent */
-    --accent: 40 100% 60%; 
-    --accent-foreground: 35 40% 10%;
+    --accent: 40 100% 65%; 
+    --accent-foreground: 35 40% 12%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84.2% 65.2%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 45 100% 50%;
-    --input: 35 40% 20%;
-    --ring: 45 100% 50%;
+    --border: 45 100% 55%;
+    --input: 35 40% 22%;
+    --ring: 45 100% 55%;
 
     --radius: 0;
   }
@@ -198,26 +198,17 @@
     @apply font-mono tracking-wide;
   }
   
-  /* Light mode glow - golden cyberpunk style */
+  /* Light mode glow - golden cyberpunk style - enhanced brightness */
   .light .cyber-glow {
     @apply relative text-primary;
-    text-shadow: 0 0 5px rgba(255,215,0,0.2), 0 0 10px rgba(255,215,0,0.6), 0 0 15px rgba(255,215,0,0.4);
+    text-shadow: 0 0 5px rgba(255,225,0,0.3), 0 0 10px rgba(255,225,0,0.7), 0 0 15px rgba(255,225,0,0.5);
   }
   
-/*   Dark mode glow - green neon tint */
+  /* Dark mode glow - green neon tint */
   .dark .cyber-glow {
     @apply relative text-primary;
-/* /**     text-shadow: 0 0 5px #00ff00, 0 0 10px #00ff00, 0 0 15px #00ff00, 0 0 20px #00ff00;  */
-    text-shadow: 0 0 5px rgba(255,215,0,0.2), 0 0 10px rgba(255,215,0,0.6), 0 0 15px rgba(255,215,0,0.4); }
-/*    .dark .cyber-glow {
-  @apply relative text-white;
-  text-shadow: 
-    0 0 1px rgba(255, 255, 255, 0.9),
-    0 0 4px rgba(0, 255, 0, 0.6),
-    0 0 8px rgba(0, 255, 0, 0.3),
-    0 0 12px rgba(0, 255, 0, 0.2);
-  letter-spacing: 0.5px;
-}  */
+    text-shadow: 0 0 5px rgba(255,215,0,0.2), 0 0 10px rgba(255,215,0,0.6), 0 0 15px rgba(255,215,0,0.4); 
+  }
   
   .cyber-button {
     @apply relative px-6 py-2 bg-transparent border border-primary text-primary font-mono uppercase tracking-wider hover:bg-primary/10 transition-all duration-300;
@@ -249,10 +240,10 @@
     @apply content-[''] absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-primary to-transparent;
   }
   
-.terminal-line::before {
-  content: '> ';
-  @apply text-primary;
-}
+  .terminal-line::before {
+    content: '> ';
+    @apply text-primary;
+  }
   
   .scanline {
     @apply pointer-events-none fixed inset-0 z-50;
@@ -301,4 +292,3 @@
     100% { content: '.'; }
   }
 }
-

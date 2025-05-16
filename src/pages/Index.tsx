@@ -7,6 +7,7 @@ import NavigationLinks from '@/components/NavigationLinks';
 import SocialIcons from '@/components/SocialIcons';
 import GlitchEffect from '@/components/GlitchEffect';
 import { ThemeToggle } from '@/components/ThemeToggle';
+
 const Index = () => {
   const [loaded, setLoaded] = useState(false);
   const [bootSequence, setBootSequence] = useState(true);
@@ -43,10 +44,7 @@ const Index = () => {
 
   if (bootSequence) {
     return (
-      // <div className="min-h-screen flex flex-col items-center justify-center p-8">
       <div className="min-h-screen flex flex-col items-center justify-center bg-cyber-black bg-cyber-grid p-8">
-
-
         <div className="corner-tr"></div>
         <div className="corner-bl"></div>
         <div className="corner-br"></div>
@@ -114,9 +112,10 @@ const Index = () => {
               </h3>
               <Shield className="text-accent h-5 w-5" />
             </div>
-               <div className="flex justify-center mt-3">
-                <ThemeToggle />
-              </div>
+            
+            <div className="flex justify-center mt-3">
+              <ThemeToggle />
+            </div>
 
             <SocialIcons />
           </div>
