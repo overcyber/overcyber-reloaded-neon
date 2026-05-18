@@ -47,16 +47,32 @@ const Contact = () => {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
-    
-    // Simulate API call with setTimeout
-    setTimeout(() => {
-      console.log(values);
-      setIsSubmitting(false);
+    try {
+      const { api } = await import("@/lib/api");
+      const { requestAndSolvePow } = await import("@/lib/pow");
+      const pow = await requestAndSolvePow();
+      await api("/contact", {
+        method: "POST",
+        json: {
+          name: values.name,
+          email: values.email,
+          subject: values.subject,
+          body: values.message,
+          website: "",
+          pow,
+        },
+      });
       form.reset();
       toast.success("Message sent successfully! I'll respond as soon as possible.");
-    }, 1500);
+    } catch (err: any) {
+      // Fallback silencioso quando o backend ainda não estiver de pé
+      console.warn("contact send failed:", err);
+      toast.error(err?.message || "Could not send message.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
