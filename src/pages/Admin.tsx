@@ -15,6 +15,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Lock, Save, Edit, Plus, Image, FileText, Trash2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import AdminBackendPanel from "@/components/AdminBackendPanel";
 
 // Admin authentication schema
 const authSchema = z.object({
@@ -1016,6 +1017,12 @@ const Admin: React.FC = () => {
             >
               BLOG
             </TabsTrigger>
+            <TabsTrigger
+              value="backend"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
+            >
+              BACKEND
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="profile">
@@ -1580,6 +1587,10 @@ const Admin: React.FC = () => {
                 </Table>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="backend">
+            <AdminBackendPanel />
           </TabsContent>
         </Tabs>
       </div>
