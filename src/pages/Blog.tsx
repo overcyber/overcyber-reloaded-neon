@@ -21,21 +21,43 @@ export default function Blog() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, this would fetch from an API
-    const loadPosts = () => {
+    let cancelled = false;
+    const loadPosts = async () => {
       try {
-        const storedPosts = localStorage.getItem("blog-posts");
-        if (storedPosts) {
-          setPosts(JSON.parse(storedPosts));
+        // Tenta o backend self-hosted
+        const { api } = await import("@/lib/api");
+        const remote = await api<any[]>("/posts");
+        if (!cancelled) {
+          setPosts(
+            remote.map((p) => ({
+              id: p.id,
+              title: p.title,
+              slug: p.slug,
+              excerpt: p.excerpt,
+              content: p.content,
+              image: p.image || undefined,
+              createdAt: p.publishedAt || p.createdAt,
+            })),
+          );
+          return;
         }
-      } catch (error) {
-        console.error("Failed to load blog posts:", error);
+      } catch {
+        // Fallback: localStorage (modo offline / sem backend)
+        try {
+          const storedPosts = localStorage.getItem("blog-posts");
+          if (storedPosts && !cancelled) setPosts(JSON.parse(storedPosts));
+        } catch (error) {
+          console.error("Failed to load blog posts:", error);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     loadPosts();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const formatDate = (dateString: string) => {
