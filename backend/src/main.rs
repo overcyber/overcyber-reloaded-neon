@@ -66,7 +66,6 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let app: Router = handlers::build_router(state.clone())
-        .layer(tower_http::compression::CompressionLayer::new())
         .layer(tower_http::limit::RequestBodyLimitLayer::new(1024 * 1024))
         .layer(tower_http::trace::TraceLayer::new_for_http());
 
