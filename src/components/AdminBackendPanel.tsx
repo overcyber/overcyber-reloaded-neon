@@ -342,7 +342,7 @@ function PostsPanel() {
         status: p.status,
       };
       const saved = p.id
-        ? await api<BlogPost>(`/posts/${p.id}`, { method: "PUT", json: payload })
+        ? await api<BlogPost>(`/posts/by-id/${p.id}`, { method: "PUT", json: payload })
         : await api<BlogPost>(`/posts`, { method: "POST", json: payload });
       toast({ title: "Post salvo", description: `${saved.title} (${saved.status})` });
       setEditing(null);
@@ -388,7 +388,7 @@ function PostsPanel() {
                     onClick={async () => {
                       if (!confirm("Excluir post?")) return;
                       try {
-                        await api(`/posts/${p.id}`, { method: "DELETE", json: {} });
+                        await api(`/posts/by-id/${p.id}`, { method: "DELETE", json: {} });
                         load();
                       } catch (e) {
                         toast({ title: "Erro", description: errMsg(e), variant: "destructive" });

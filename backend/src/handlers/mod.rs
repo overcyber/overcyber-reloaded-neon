@@ -29,7 +29,7 @@ pub fn build_router(state: AppState) -> Router {
         .route("/projects/:id", put(projects::update).delete(projects::delete))
         .route("/resume/:section", put(resume::update))
         .route("/posts", post(posts::create))
-        .route("/posts/:id", put(posts::update).delete(posts::delete))
+        .route("/posts/by-id/:id", put(posts::update).delete(posts::delete))
         .route("/comments", get(comments::list_admin))
         .route("/comments/:id/approve", post(comments::approve))
         .route("/comments/:id/reject", post(comments::reject))
