@@ -11,15 +11,16 @@ strip = true
 opt-level = 3
 
 [dependencies]
-axum = { version = "0.7", features = ["macros", "http2"] }
-tokio = { version = "1", features = ["full"] }
-tower = "0.4"
-tower-http = { version = "0.5", features = ["compression-gzip", "trace", "limit", "cors"] }
-tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+# Pinned to versions compatible with Rust 1.75 (no edition2024 requirement).
+axum = { version = "=0.7.5", features = ["macros", "http2"] }
+tokio = { version = "=1.38.1", features = ["full"] }
+tower = "=0.4.13"
+tower-http = { version = "=0.5.2", features = ["compression-gzip", "trace", "limit", "cors"] }
+tracing = "=0.1.40"
+tracing-subscriber = { version = "=0.3.18", features = ["env-filter"] }
 
-rusqlite = { version = "0.31", features = ["bundled", "chrono"] }
-r2d2 = "0.8"
+rusqlite = { version = "=0.31.0", features = ["bundled", "chrono"] }
+r2d2 = "=0.8.10"
 r2d2_sqlite = "0.24"
 
 serde = { version = "1", features = ["derive"] }
