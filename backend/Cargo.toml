@@ -16,7 +16,7 @@ opt-level = 3
 axum = { version = "=0.7.5", features = ["macros", "http2"] }
 tokio = { version = "=1.38.1", features = ["full"] }
 tower = "=0.4.13"
-tower-http = { version = "=0.5.2", features = ["compression-gzip", "trace", "limit", "cors"] }
+tower-http = { version = "=0.5.2", features = ["trace", "limit", "cors"] }
 tracing = "=0.1.40"
 tracing-subscriber = { version = "=0.3.18", features = ["env-filter"] }
 
@@ -36,16 +36,12 @@ subtle = "=2.5.0"
 base32 = "=0.5.1"
 base64 = "=0.22.1"
 rand = "=0.8.5"
+base64ct = "=1.6.0"
+indexmap = "=2.2.6"
+hashbrown = "=0.14.5"
 
 uuid = { version = "=1.10.0", features = ["v4"] }
 chrono = { version = "=0.4.38", features = ["serde"] }
 anyhow = "=1.0.86"
 thiserror = "=1.0.63"
 
-# Some old Debian/Ubuntu servers still ship Cargo 1.75.  If any transitive
-# RustCrypto crate asks for cpufeatures 0.3, crates.io's release uses
-# edition2024 and cannot even be parsed by Cargo 1.75.  This local patch keeps
-# the public macro API and deliberately disables CPU-specific fast paths, so the
-# backend builds safely with the portable software hash implementations.
-[patch.crates-io]
-cpufeatures = { path = "vendor/cpufeatures-compat" }
