@@ -3,6 +3,7 @@ name = "overcyber-backend"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.75"
+resolver = "2"
 
 [profile.release]
 lto = true
@@ -15,7 +16,7 @@ opt-level = 3
 axum = { version = "=0.7.5", features = ["macros", "http2"] }
 tokio = { version = "=1.38.1", features = ["full"] }
 tower = "=0.4.13"
-tower-http = { version = "=0.5.2", features = ["compression-gzip", "trace", "limit", "cors"] }
+tower-http = { version = "=0.5.2", features = ["trace", "limit", "cors"] }
 tracing = "=0.1.40"
 tracing-subscriber = { version = "=0.3.18", features = ["env-filter"] }
 
@@ -35,11 +36,12 @@ subtle = "=2.5.0"
 base32 = "=0.5.1"
 base64 = "=0.22.1"
 rand = "=0.8.5"
-
-# Force cpufeatures < 0.3 (0.3+ requires edition2024 / Rust >= 1.85).
-cpufeatures = "=0.2.12"
+base64ct = "=1.6.0"
+indexmap = "=2.2.6"
+hashbrown = "=0.14.5"
 
 uuid = { version = "=1.10.0", features = ["v4"] }
 chrono = { version = "=0.4.38", features = ["serde"] }
 anyhow = "=1.0.86"
 thiserror = "=1.0.63"
+
