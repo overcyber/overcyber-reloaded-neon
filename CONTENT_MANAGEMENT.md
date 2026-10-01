@@ -12,7 +12,6 @@ This document explains how to use the admin panel to manage your website's conte
 ## Security Considerations
 
 - **IMPORTANT**: Change the default password in the `Admin.tsx` file
-- To add allowed IP addresses, edit the `allowedIPs` array in `Admin.tsx`
 - This is a simple authentication system. For production, consider implementing a more robust solution.
 
 ## Managing the About Page
@@ -64,13 +63,11 @@ This admin system uses the browser's localStorage to persist content changes. Th
 
 For deploying to a production environment:
 1. Change the default password in `Admin.tsx`
-2. Update the `allowedIPs` array with your trusted IP addresses
-3. Consider implementing a more secure authentication method
+2. Consider implementing a more secure authentication method
 4. For persistent storage, replace localStorage with a database solution
 
 ## Troubleshooting
 
 If you encounter issues:
 1. Ensure you're using a supported browser with localStorage enabled
-2. Check that you're accessing from an allowed IP address
-3. If content doesn't update, try clearing your browser cache and refreshing
+2. If content doesn't update, try clearing your browser cache and refreshing

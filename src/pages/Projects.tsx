@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,9 +12,17 @@ import { getProjectsContent } from '@/hooks/use-managed-content';
 const Projects = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [expandedProject, setExpandedProject] = useState<number | null>(null);
+  const [sectionVisible, setSectionVisible] = useState(true);
   
   // Get projects from the content management system
   const projects = getProjectsContent();
+
+  useEffect(() => {
+    fetch('/api/sections')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data && data.projects === false) setSectionVisible(false); })
+      .catch(() => {});
+  }, []);
   
   const filteredProjects = activeTab === "all" 
     ? projects 
@@ -29,6 +37,17 @@ const Projects = () => {
     )
   ).slice(0, 3); // Limit to first 3 tags to avoid too many tabs
   
+  if (!sectionVisible) {
+    return (
+      <Layout title="PROJECTS DATABASE">
+        <div className="text-center py-16 font-mono">
+          <p className="text-muted-foreground">&gt; SECTION_DISABLED</p>
+          <p className="text-muted-foreground mt-2">&gt; Esta seção está temporariamente desativada.</p>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout title="PROJECTS DATABASE">
       <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-8">

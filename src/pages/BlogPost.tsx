@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { ArrowLeft, FileText, Calendar, AlertTriangle, MessageSquare, Send } from "lucide-react";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { requestAndSolvePow } from "@/lib/pow";
 import { toast } from "@/components/ui/use-toast";
 
@@ -28,6 +28,33 @@ interface CommentRow {
   createdAt: string;
 }
 
+const FALLBACK_POSTS = [
+  {
+    id: "1",
+    title: "Introdução à Segurança Cibernética",
+    slug: "introducao-a-seguranca-cibernetica",
+    excerpt: "Uma visão geral sobre os princípios fundamentais da segurança cibernética para iniciantes.",
+    content: "Conteúdo completo disponível após configurar no painel Admin.\n\nEste é um placeholder do sistema de fallback.\n\nAcesse /admin para criar e gerenciar seus posts do blog.",
+    createdAt: "2025-01-15T10:30:00Z"
+  },
+  {
+    id: "2",
+    title: "Machine Learning Aplicado à Segurança de Redes",
+    slug: "machine-learning-aplicado-a-seguranca-de-redes",
+    excerpt: "Como algoritmos de aprendizado de máquina estão revolucionando a detecção de intrusões em redes.",
+    content: "Conteúdo completo disponível após configurar no painel Admin.\n\nEste é um placeholder do sistema de fallback.\n\nAcesse /admin para criar e gerenciar seus posts do blog.",
+    createdAt: "2025-02-22T14:45:00Z"
+  },
+  {
+    id: "3",
+    title: "Defesa Cibernética nas Forças Armadas",
+    slug: "defesa-cibernetica-forcas-armadas",
+    excerpt: "O papel estratégico da defesa cibernética no contexto militar brasileiro.",
+    content: "Conteúdo completo disponível após configurar no painel Admin.\n\nEste é um placeholder do sistema de fallback.\n\nAcesse /admin para criar e gerenciar seus posts do blog.",
+    createdAt: "2025-03-10T09:00:00Z"
+  }
+];
+
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogPost | null>(null);
@@ -37,50 +64,79 @@ export default function BlogPost() {
   const [backendOn, setBackendOn] = useState(false);
   const navigate = useNavigate();
 
+  const findPostInList = (list: BlogPost[]): BlogPost | undefined =>
+    list.find((p) => p.slug === slug);
+
   useEffect(() => {
     let cancelled = false;
     const load = async () => {
-      // 1) tenta backend
+      let postFound = false;
+
+      // 1. Tenta o backend primeiro (fonte da verdade do SQLite / API)
       try {
         const remote = await api<any>(`/posts/${slug}`);
-        if (cancelled) return;
-        setPost({
-          id: remote.id,
-          title: remote.title,
-          slug: remote.slug,
-          excerpt: remote.excerpt,
-          content: remote.content,
-          image: remote.image || undefined,
-          createdAt: remote.publishedAt || remote.createdAt,
-        });
-        setBackendOn(true);
+        if (!cancelled && remote && remote.id) {
+          setPost({
+            id: remote.id,
+            title: remote.title,
+            slug: remote.slug,
+            excerpt: remote.excerpt,
+            content: remote.content,
+            image: remote.image || undefined,
+            createdAt: remote.publishedAt || remote.createdAt,
+          });
+          postFound = true;
+          setBackendOn(true);
+        }
+      } catch {
+        // Backend indisponível ou 404
+      }
+
+      // 2. Se não encontrou no backend, tenta localStorage
+      if (!postFound) {
         try {
-          const cs = await api<CommentRow[]>(`/posts/${slug}/comments`);
-          if (!cancelled) setComments(cs);
-        } catch {}
-        setLoading(false);
-        return;
-      } catch {}
-      // 2) fallback localStorage
-      try {
-        const stored = localStorage.getItem("blog-posts");
-        if (stored) {
-          const posts: BlogPost[] = JSON.parse(stored);
-          const found = posts.find((p) => p.slug === slug);
-          if (found) setPost(found);
-          else {
-            setError("DATA NOT FOUND");
-            setTimeout(() => navigate("/blog"), 3000);
+          const stored = localStorage.getItem("blog-posts");
+          if (stored) {
+            const posts: BlogPost[] = JSON.parse(stored);
+            const found = findPostInList(posts);
+            if (found && !cancelled) {
+              setPost(found);
+              postFound = true;
+            }
           }
-        } else {
-          setError("DATABASE EMPTY");
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      // 3. Fallback: dados embutidos
+      if (!postFound) {
+        const fallbackFound = findPostInList(FALLBACK_POSTS);
+        if (fallbackFound && !cancelled) {
+          setPost(fallbackFound);
+          postFound = true;
+        }
+      }
+
+      if (!cancelled) {
+        if (!postFound) {
+          setError("DATA NOT FOUND");
           setTimeout(() => navigate("/blog"), 3000);
         }
-      } catch (e) {
-        console.error(e);
-        setError("DATA CORRUPTED");
-      } finally {
-        if (!cancelled) setLoading(false);
+        setLoading(false);
+      }
+
+      // Se o post foi encontrado e ainda precisamos buscar comentários
+      if (postFound) {
+        try {
+          const cs = await api<CommentRow[]>(`/posts/${slug}/comments`);
+          if (!cancelled) {
+            setComments(cs);
+            setBackendOn(true);
+          }
+        } catch {
+          // Sem comentários ou erro
+        }
       }
     };
     load();
@@ -243,9 +299,15 @@ function CommentForm({ slug, onPosted }: { slug: string; onPosted: () => void })
           setBody("");
           onPosted();
         } catch (err: any) {
+          console.error("ERRO COMPLETO:", err);
+          let detail = err?.message || "Tente novamente.";
+          if (err instanceof ApiError) {
+            console.error("STATUS:", err.status, "BODY:", err.body);
+            detail = `HTTP ${err.status}: ${err.body?.error || err.body || err.message}`;
+          }
           toast({
             title: "Erro ao enviar",
-            description: err?.message || "Tente novamente.",
+            description: detail,
             variant: "destructive",
           });
         } finally {

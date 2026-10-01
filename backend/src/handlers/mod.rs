@@ -1,5 +1,6 @@
 pub mod auth;
 pub mod about;
+pub mod sections;
 pub mod projects;
 pub mod resume;
 pub mod posts;
@@ -39,6 +40,10 @@ pub fn build_router(state: AppState) -> Router {
         .route("/contact/messages/:id/read", post(contact::mark_read))
         .route("/contact/messages/:id", delete(contact::delete))
         .route("/migrate/import", post(migrate::import))
+        .route(
+            "/sections",
+            put(sections::update_sections),
+        )
         .route_layer(axum::middleware::from_fn_with_state(
             state.clone(),
             require_auth,
@@ -55,6 +60,7 @@ pub fn build_router(state: AppState) -> Router {
         .route("/posts/:slug/comments", get(comments::list_public))
         .route("/posts/:slug/comments", post(comments::create))
         .route("/contact", post(contact::create))
+        .route("/sections", get(sections::get_sections))
         .route("/pow/challenge", get(pow::challenge));
 
     let api = Router::new().merge(public).merge(admin);

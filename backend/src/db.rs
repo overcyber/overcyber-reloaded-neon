@@ -38,6 +38,8 @@ impl Db {
             .context("migration 0001")?;
         conn.execute_batch(include_str!("../migrations/0002_seed.sql"))
             .context("migration 0002")?;
+        conn.execute_batch(include_str!("../migrations/0003_site_config.sql"))
+            .context("migration 0003")?;
         Ok(())
     }
 
@@ -48,9 +50,16 @@ impl Db {
                 r.get(0)
             })
             .unwrap_or(0);
+
         if exists > 0 {
+            // SEC-01 corrigido: ADMIN_BOOTSTRAP_PASSWORD é aplicado APENAS na criação.
+            // Nunca sobrescreve a senha de um admin já existente (evita reset em todo restart).
+            if password_override.is_some() {
+                tracing::info!("ADMIN_BOOTSTRAP_PASSWORD presente, mas o admin já existe — variável ignorada");
+            }
             return Ok(());
         }
+
         let pw = match password_override {
             Some(s) if !s.is_empty() => s.to_string(),
             _ => {

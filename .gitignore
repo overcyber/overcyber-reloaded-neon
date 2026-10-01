@@ -12,6 +12,21 @@ dist
 dist-ssr
 *.local
 
+# Segredos e banco de dados (SEC-06/SEC-21)
+data/
+*.db
+*.db-wal
+*.db-shm
+.session_secret
+.api_token
+backend/target/
+
+# Backups e cache
+backup_*/
+__pycache__/
+*.pyc
+
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  base: "./", // Isso garante que o build use caminhos relativos
+  base: "/", // Caminhos absolutos — necessário para SPA com React Router (sub-rotas como /blog/post carregam assets corretamente)
   plugins: [
     react(),
     mode === 'development' &&

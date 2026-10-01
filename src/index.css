@@ -97,10 +97,17 @@
     overflow-x: hidden;
   }
 
-  /* Add border frame to body */
+  /* Add border frame to body
+     Idêntico ao overcyber.online original:
+     position absolute no body::before e em todos os cantos para acompanhar
+     os limites do documento sem flutuar ou sobrepor a página durante a rolagem. */
+  body {
+    position: relative;
+    min-height: 100vh;
+  }
   body::before {
     content: '';
-    position: fixed;
+    position: absolute;
     top: 10px;
     left: 10px;
     right: 10px;
@@ -114,7 +121,7 @@
   /* Terminal corner borders */
   body::after {
     content: '';
-    position: fixed;
+    position: absolute;
     top: 10px;
     left: 10px;
     width: 30px;
@@ -128,7 +135,7 @@
 
   .corner-tr::before {
     content: '';
-    position: fixed;
+    position: absolute;
     top: 10px;
     right: 10px;
     width: 30px;
@@ -142,7 +149,7 @@
 
   .corner-bl::before {
     content: '';
-    position: fixed;
+    position: absolute;
     bottom: 10px;
     left: 10px;
     width: 30px;
@@ -156,7 +163,7 @@
 
   .corner-br::before {
     content: '';
-    position: fixed;
+    position: absolute;
     bottom: 10px;
     right: 10px;
     width: 30px;

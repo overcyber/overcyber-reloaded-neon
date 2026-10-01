@@ -25,84 +25,76 @@ const loadData = (key, defaultValue) => {
 
 // Dados padrão (serão substituídos pelos dados do localStorage se existirem)
 const defaultAboutData = {
-  name: "Dr. Melquizedequi Cabral dos Santos",
-  title: "Professor Associado - Universidade Federal do Piauí",
-  bio: "Pesquisador e especialista em cibersegurança com foco em técnicas avançadas de proteção de dados e desenvolvimento de soluções de segurança para redes e sistemas. Experiência em algoritmos de machine learning aplicados à detecção de intrusão e análise de vulnerabilidades.",
-  email: "secure@cyberdomain.net",
-  location: "São Paulo, Brasil",
+  name: "Claudio Henrique Marques de Oliveira",
+  title: "Militar - Marinha do Brasil | Especialista em Defesa Cibernética | Mestrando em Computação Aplicada (UnB)",
+  bio: "Profissional com 19 anos de experiência em Segurança da Informação e Defesa Cibernética, atuando em projetos estratégicos para as Forças Armadas. Mestrando em Computação Aplicada pela UnB com pesquisa em Detecção de Tráfego Malicioso utilizando Vetorização e Aprendizagem de Máquina. Combino expertise em segurança cibernética ofensiva e defensiva com técnicas avançadas de Ciência de Dados e Inteligência Artificial, desenvolvendo soluções inovadoras para proteção de infraestruturas críticas.",
+  email: "unixsolution@gmail.com",
+  location: "Brasília, DF, Brasil",
   lattes: "https://lattes.cnpq.br/2915812289846388",
   profileImage: "https://avatars.githubusercontent.com/u/583231",
   researchFocus: [
-    "Cibersegurança", 
-    "Machine Learning", 
-    "Análise de Vulnerabilidades", 
-    "Redes Neurais", 
-    "Detecção de Intrusão", 
-    "Segurança de Dados"
+    "Defesa Cibernética",
+    "Guerra Cibernética",
+    "Segurança da Informação",
+    "Ciência de Dados",
+    "Inteligência Artificial",
+    "Machine Learning"
+  ],
+  languages: [
+    { language: "Português", level: "Nativo", proficiency: "Leitura, Fala, Escrita, Compreensão" },
+    { language: "Inglês", level: "Intermediário", proficiency: "Leitura (Razoável), Escrita (Razoável), Compreensão (Razoável), Fala (Pouco)" }
   ]
 };
 
 const defaultEducationData = [
   {
-    title: "Doutorado em Ciência da Computação",
-    period: "2018-2022",
-    institution: "Universidade de São Paulo (USP)",
-    description: "Tese: \"Algoritmos de Aprendizado Profundo para Detecção Avançada de Intrusões em Redes de Alta Velocidade\""
+    title: "Mestrado Profissional em Computação Aplicada",
+    period: "2023-PRESENTE",
+    institution: "Universidade de Brasília (UnB)",
+    description: "PPCA — Programa de Pós-Graduação em Computação Aplicada. Orientador: João José Costa Gondim. Pesquisa em Detecção de Tráfego Malicioso utilizando Vetorização e Aprendizagem de Máquina."
   },
   {
-    title: "Mestrado em Segurança Computacional",
-    period: "2016-2018",
-    institution: "Universidade Estadual de Campinas (UNICAMP)",
-    description: "Dissertação: \"Métodos Avançados de Criptografia Aplicados à Proteção de Dados em Sistemas Distribuídos\""
+    title: "Bacharelado em Sistemas de Informação",
+    period: "2015-2018",
+    institution: "Estácio Ribeirão Preto",
+    description: "TCC: \"SISFISH\" — Sistema de Informação para Piscicultura"
   },
   {
-    title: "Graduação em Ciência da Computação",
-    period: "2012-2016",
-    institution: "Instituto Tecnológico de Aeronáutica (ITA)",
-    description: "Trabalho de Conclusão de Curso: \"Desenvolvimento de Sistema de Análise de Vulnerabilidades em Redes Corporativas\""
+    title: "Curso de Guerra Cibernética",
+    period: "2019",
+    institution: "Centro de Comunicações e Guerra Eletrônica do Exército (CComGEx)",
+    description: "Pós-técnica em Guerra Cibernética — 800h. Abrangendo táticas ofensivas e defensivas no espectro cibernético.",
+    certifications: ["Guerra Cibernética — CComGEx/Exército — 2019 (800h)"]
   },
   {
-    title: "Certificações Profissionais",
-    period: "DIVERSAS",
-    institution: "",
-    certifications: [
-      "Certified Information Systems Security Professional (CISSP)",
-      "Offensive Security Certified Professional (OSCP)",
-      "Certified Ethical Hacker (CEH)",
-      "GIAC Security Essentials (GSEC)"
-    ]
+    title: "Engenharia Reversa de Código",
+    period: "2020",
+    institution: "Offensive Security",
+    description: "Curso avançado de engenharia reversa de aplicações, análise de binários e exploração de vulnerabilidades em nível de sistema.",
+    certifications: ["Offensive Security Certified Expert (OSCE) — 2020"]
   }
 ];
 
 const defaultExperienceData = [
   {
-    title: "Pesquisador Sênior em Cibersegurança",
-    period: "2022-PRESENTE",
-    company: "Instituto de Pesquisas Avançadas em Tecnologia (IPAT)",
+    title: "Militar de Carreira — Defesa Cibernética",
+    period: "2012-PRESENTE",
+    company: "Marinha do Brasil",
     duties: [
-      "Liderança em projetos de pesquisa em segurança de redes e sistemas",
-      "Desenvolvimento de novos algoritmos para detecção de ataques avançados",
-      "Coordenação de equipe multidisciplinar com foco em segurança de dados"
+      "Atuação na área de Defesa Cibernética com dedicação exclusiva",
+      "Desenvolvimento de projetos estratégicos para as Forças Armadas",
+      "Participação em exercícios nacionais e internacionais de Defesa Cibernética (Guardião Cibernético 7.0, CyberShield 2025, Exercício Ibero-Americano)",
+      "Professor monitor na disciplina de Mineração de Dados Massivo no PPCA/UnB (2024)"
     ]
   },
   {
-    title: "Consultor de Segurança da Informação",
-    period: "2019-2022",
-    company: "CyberShield Technologies",
+    title: "Arquiteto de Soluções LLM e IA",
+    period: "2023-2024",
+    company: "VIAAPIA Informática",
     duties: [
-      "Realização de testes de penetração em sistemas críticos",
-      "Análise e mitigação de vulnerabilidades em aplicações corporativas",
-      "Implementação de soluções de proteção para infraestruturas complexas"
-    ]
-  },
-  {
-    title: "Pesquisador Associado",
-    period: "2016-2019",
-    company: "Laboratório de Segurança em Computação (LabSEC)",
-    duties: [
-      "Pesquisa em técnicas de machine learning para análise de malware",
-      "Desenvolvimento de ferramentas para análise automática de ameaças",
-      "Publicação de artigos científicos em periódicos de alto impacto"
+      "Desenvolvimento de arquitetura e solução de Chat com Processamento de Linguagem Natural (LLM)",
+      "Criação de plataforma de comunicação integrando módulos de NLP, TTS/STT e armazenamento",
+      "Arquitetura de microsserviços em contêineres Docker para escalabilidade"
     ]
   }
 ];
@@ -110,80 +102,48 @@ const defaultExperienceData = [
 const defaultPublicationsData = {
   articles: [
     {
-      year: "2023",
-      title: "Deep Learning-Based Anomaly Detection for Zero-Day Attack Identification in High-Speed Networks",
-      journal: "Journal of Cybersecurity Research, Vol. 15, Issue 4"
+      year: "2025",
+      title: "Metodologia para Detecção de Tráfego de Rede Malicioso Utilizando Vetorização e Aprendizagem de Máquina",
+      journal: "Lecture Notes in Networks and Systems (ISSN: 2367-3389)"
     },
     {
-      year: "2022",
-      title: "A Novel Approach for Malware Classification Using Convolutional Neural Networks and Binary Visualization",
-      journal: "IEEE Transactions on Information Security, Vol. 44, Issue 2"
-    },
-    {
-      year: "2021",
-      title: "Quantum-Resistant Cryptographic Protocols for Secure IoT Communications",
-      journal: "International Journal of Network Security, Vol. 32, Issue 8"
-    },
-    {
-      year: "2020",
-      title: "Advanced Persistent Threats Detection Using Machine Learning Techniques",
-      journal: "Computers & Security Journal, Vol. 89"
+      year: "2025",
+      title: "Proactive Management of Offensive Profiles: Detecting Trends in Cyberattacks on Institutions in Brazil Through the Analysis of Hacker Communities Using Complex Networks and Machine Learning Algorithms",
+      journal: "REVISTA ENIAC PESQUISA (ISSN: 2316-2341)"
     }
   ],
   conferences: [
     {
-      year: "2023",
-      title: "Adversarial Machine Learning for Robust Intrusion Detection Systems",
-      conference: "International Conference on Network and Systems Security (NSS)"
-    },
-    {
-      year: "2022",
-      title: "Real-time Network Traffic Analysis Using Graph Neural Networks",
-      conference: "IEEE Symposium on Security and Privacy (S&P)"
-    },
-    {
-      year: "2021",
-      title: "Blockchain-based Framework for Secure Firmware Updates in IoT Devices",
-      conference: "ACM Conference on Computer and Communications Security (CCS)"
-    }
-  ],
-  patents: [
-    {
-      year: "2022",
-      title: "Sistema de Detecção de Intrusão Baseado em Análise Comportamental e Aprendizado Profundo",
-      number: "Patente Nº BR10202200XXXX"
-    },
-    {
-      year: "2021",
-      title: "Método para Identificação Automática de Vulnerabilidades em Aplicações Web",
-      number: "Patente Nº BR10202100XXXX"
+      year: "2024",
+      title: "Proactive Management of Offensive Profiles: Detecting Trends in Cyberattacks on Institutions in Brazil...",
+      conference: "XXI Encontro Nacional de Inteligência Artificial e Computacional (ENIAC 2024) — Belém/PA"
     }
   ]
 };
 
 const defaultSkillsData = {
   coreSkills: [
-    { name: "Python", level: 92 },
-    { name: "Machine Learning", level: 85 },
-    { name: "Cybersecurity", level: 90 },
-    { name: "Data Science", level: 88 }
+    { name: "Defesa Cibernética", level: 92 },
+    { name: "Segurança da Informação", level: 90 },
+    { name: "Linux/Unix", level: 88 },
+    { name: "Redes de Computadores", level: 85 }
   ],
   advancedSkills: [
-    { name: "Network Security", level: 86 },
-    { name: "Web Development", level: 78 },
-    { name: "Blockchain", level: 75 },
-    { name: "Cloud Computing", level: 80 }
+    { name: "Inteligência Artificial / ML", level: 78 },
+    { name: "Ciência de Dados", level: 75 },
+    { name: "Docker / Microsserviços", level: 72 },
+    { name: "OSINT / Pentest", level: 80 }
   ],
   technologies: [
-    "Python", "C/C++", "JavaScript", "Rust", "TensorFlow", 
-    "PyTorch", "Docker", "Kubernetes", "AWS", "Linux", 
-    "Blockchain", "Network Analysis"
+    "Python", "Linux", "Docker", "Windows Server", 
+    "Machine Learning", "LLM", "Redes", "Firewall",
+    "Criptografia", "Análise de Dados", "R", "OSINT"
   ],
   awards: [
-    "Best Paper Award - Cybersecurity Conference 2022",
-    "Young Researcher Award - INFOCOM 2021",
-    "Top Security Researcher - CyberShield 2020",
-    "Innovation Prize - Brazilian Computing Society"
+    "SANS FOR500 Windows Forensics Analysis — 2025",
+    "Core NetWars Tournament 7 — SANS — 2022",
+    "Guardião Cibernético 7.0 — Exército Brasileiro — 2025",
+    "CEH v7 Certified — EC-Council — 2013"
   ]
 };
 
@@ -196,6 +156,7 @@ const About = () => {
   const [experienceData, setExperienceData] = useState(defaultExperienceData);
   const [publicationsData, setPublicationsData] = useState(defaultPublicationsData);
   const [skillsData, setSkillsData] = useState(defaultSkillsData);
+  const [sections, setSections] = useState<Record<string, boolean>>({});
   
   // Carrega os dados do localStorage quando o componente montar
   useEffect(() => {
@@ -213,42 +174,105 @@ const About = () => {
     
     const savedSkillsData = loadData('admin-skills-data', defaultSkillsData);
     setSkillsData(savedSkillsData);
+
+    // Carregar visibilidade de seções do backend
+    fetch('/api/sections')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setSections(data); })
+      .catch(() => {});
+
+    // Sincronizar dados do backend com merge seguro
+    fetch('/api/about')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.name) setAboutData(data);
+      })
+      .catch(() => {});
+
+    fetch('/api/resume')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data) {
+          if (Array.isArray(data.education) && data.education.length > 0) setEducationData(data.education);
+          if (Array.isArray(data.experience) && data.experience.length > 0) setExperienceData(data.experience);
+          if (data.publications && typeof data.publications === 'object') {
+            setPublicationsData(prev => ({
+              articles: (data.publications.articles && data.publications.articles.length > 0)
+                ? data.publications.articles
+                : prev.articles,
+              conferences: (data.publications.conferences && data.publications.conferences.length > 0)
+                ? data.publications.conferences
+                : prev.conferences,
+              patents: (data.publications.patents && data.publications.patents.length > 0)
+                ? data.publications.patents
+                : (prev.patents || []),
+            }));
+          }
+          if (data.skills && typeof data.skills === 'object') {
+            setSkillsData(prev => ({
+              coreSkills: (data.skills.coreSkills && data.skills.coreSkills.length > 0)
+                ? data.skills.coreSkills
+                : prev.coreSkills,
+              advancedSkills: (data.skills.advancedSkills && data.skills.advancedSkills.length > 0)
+                ? data.skills.advancedSkills
+                : prev.advancedSkills,
+              technologies: (data.skills.technologies && data.skills.technologies.length > 0)
+                ? data.skills.technologies
+                : prev.technologies,
+              awards: (data.skills.awards && data.skills.awards.length > 0)
+                ? data.skills.awards
+                : prev.awards,
+            }));
+          }
+        }
+      })
+      .catch(() => {});
   }, []);
 
   return (
     <Layout title="IDENTITY PROFILE" showBackButton={true}>
-      <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs defaultValue={sections.profile !== false ? "profile" : "education"} value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="bg-cyber-black/80 border border-cyber-neon/30 mb-6">
-          <TabsTrigger 
-            value="profile"
-            className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon"
-          >
-            <User size={16} className="mr-2" /> PROFILE
-          </TabsTrigger>
-          <TabsTrigger 
-            value="education"
-            className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon"
-          >
-            <GraduationCap size={16} className="mr-2" /> EDUCATION
-          </TabsTrigger>
-          <TabsTrigger 
-            value="experience"
-            className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon"
-          >
-            <Briefcase size={16} className="mr-2" /> EXPERIENCE
-          </TabsTrigger>
-          <TabsTrigger 
-            value="publications"
-            className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon"
-          >
-            <Book size={16} className="mr-2" /> PUBLICATIONS
-          </TabsTrigger>
-          <TabsTrigger 
-            value="skills"
-            className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon"
-          >
-            <FileCode size={16} className="mr-2" /> SKILLS
-          </TabsTrigger>
+          {sections.profile !== false && (
+            <TabsTrigger 
+              value="profile"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon"
+            >
+              <User size={16} className="mr-2" /> PROFILE
+            </TabsTrigger>
+          )}
+          {sections.education !== false && (
+            <TabsTrigger 
+              value="education"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon"
+            >
+              <GraduationCap size={16} className="mr-2" /> EDUCATION
+            </TabsTrigger>
+          )}
+          {sections.experience !== false && (
+            <TabsTrigger 
+              value="experience"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon"
+            >
+              <Briefcase size={16} className="mr-2" /> EXPERIENCE
+            </TabsTrigger>
+          )}
+          {sections.publications !== false && (
+            <TabsTrigger 
+              value="publications"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon"
+            >
+              <Book size={16} className="mr-2" /> PUBLICATIONS
+            </TabsTrigger>
+          )}
+          {sections.skills !== false && (
+            <TabsTrigger 
+              value="skills"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon"
+            >
+              <FileCode size={16} className="mr-2" /> SKILLS
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="profile" className="mt-0">
@@ -311,6 +335,20 @@ const About = () => {
                   ))}
                 </div>
               </div>
+
+              {aboutData.languages && aboutData.languages.length > 0 && (
+              <div>
+                <h3 className="text-xl text-white font-mono mb-2">LANGUAGES // <span className="text-cyber-neon">PROFICIENCY</span></h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {aboutData.languages.map((lang, index) => (
+                    <div key={index} className="bg-cyber-black/40 border border-cyber-neon/20 p-3 rounded-md">
+                      <p className="text-white font-mono">{lang.language} <span className="text-cyber-neon text-sm">({lang.level})</span></p>
+                      <p className="text-cyber-blue/80 text-xs mt-1">{lang.proficiency}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -409,18 +447,7 @@ const About = () => {
                   </ul>
                 </div>
                 
-                <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
-                  <h3 className="text-xl text-white font-mono mb-2">Patentes e Propriedade Intelectual</h3>
-                  <ul className="space-y-4">
-                    {publicationsData.patents.map((patent, index) => (
-                      <li key={index} className="border-l-2 border-cyber-neon pl-4 py-1">
-                        <p className="text-cyber-neon font-mono">{patent.year}</p>
-                        <p className="text-white">{patent.title}</p>
-                        <p className="text-cyber-blue/80 text-sm mt-1">{patent.number}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+
               </div>
             </CardContent>
           </Card>

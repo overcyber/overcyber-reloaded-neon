@@ -16,39 +16,84 @@ interface BlogPost {
   createdAt: string;
 }
 
+const FALLBACK_POSTS = [
+  {
+    id: "1",
+    title: "Introdução à Segurança Cibernética",
+    slug: "introducao-a-seguranca-cibernetica",
+    excerpt: "Uma visão geral sobre os princípios fundamentais da segurança cibernética para iniciantes.",
+    content: "Conteúdo completo disponível após configurar no painel Admin.",
+    createdAt: "2025-01-15T10:30:00Z"
+  },
+  {
+    id: "2",
+    title: "Machine Learning Aplicado à Segurança de Redes",
+    slug: "machine-learning-aplicado-a-seguranca-de-redes",
+    excerpt: "Como algoritmos de aprendizado de máquina estão revolucionando a detecção de intrusões em redes.",
+    content: "Conteúdo completo disponível após configurar no painel Admin.",
+    createdAt: "2025-02-22T14:45:00Z"
+  },
+  {
+    id: "3",
+    title: "Defesa Cibernética nas Forças Armadas",
+    slug: "defesa-cibernetica-forcas-armadas",
+    excerpt: "O papel estratégico da defesa cibernética no contexto militar brasileiro.",
+    content: "Conteúdo completo disponível após configurar no painel Admin.",
+    createdAt: "2025-03-10T09:00:00Z"
+  }
+];
+
 export default function Blog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sectionVisible, setSectionVisible] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+
+    // Verificar visibilidade de seções
+    fetch('/api/sections')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!cancelled && data && data.blog === false) {
+          setSectionVisible(false);
+        }
+      })
+      .catch(() => {});
+
+    // Carregar posts: tenta do backend primeiro, com fallback para localStorage
     const loadPosts = async () => {
       try {
-        // Tenta o backend self-hosted
-        const { api } = await import("@/lib/api");
-        const remote = await api<any[]>("/posts");
-        if (!cancelled) {
-          setPosts(
-            remote.map((p) => ({
+        const res = await fetch('/api/posts');
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0 && !cancelled) {
+            setPosts(data.map((p: any) => ({
               id: p.id,
               title: p.title,
               slug: p.slug,
-              excerpt: p.excerpt,
-              content: p.content,
+              excerpt: p.excerpt || "",
+              content: p.content || "",
               image: p.image || undefined,
-              createdAt: p.publishedAt || p.createdAt,
-            })),
-          );
-          return;
+              createdAt: p.createdAt || p.publishedAt || new Date().toISOString(),
+            })));
+            setLoading(false);
+            return;
+          }
         }
       } catch {
-        // Fallback: localStorage (modo offline / sem backend)
-        try {
-          const storedPosts = localStorage.getItem("blog-posts");
-          if (storedPosts && !cancelled) setPosts(JSON.parse(storedPosts));
-        } catch (error) {
-          console.error("Failed to load blog posts:", error);
+        // Fallback abaixo
+      }
+
+      try {
+        const storedPosts = localStorage.getItem("blog-posts");
+        if (storedPosts && !cancelled) {
+          setPosts(JSON.parse(storedPosts));
+        } else if (!cancelled) {
+          setPosts(FALLBACK_POSTS);
         }
+      } catch (error) {
+        console.error("Failed to load blog posts:", error);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -68,6 +113,17 @@ export default function Blog() {
     };
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
+
+  if (!sectionVisible) {
+    return (
+      <Layout title="DATALOG" showBackButton={true}>
+        <div className="container mx-auto text-center py-16 font-mono">
+          <p className="text-primary text-xl mb-2">&gt; SEÇÃO_DESATIVADA</p>
+          <p className="text-muted-foreground">&gt; O blog está temporariamente desativado nas configurações.</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout title="DATALOG" showBackButton={true}>

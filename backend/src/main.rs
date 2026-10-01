@@ -1,6 +1,7 @@
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
+use std::time::Duration;
 
 use anyhow::Context;
 use axum::Router;
@@ -24,6 +25,8 @@ pub struct AppState {
     pub db: Db,
     pub config: Arc<Config>,
     pub rate: Arc<RateLimiter>,
+    /// SEC-05: true quando PUBLIC_ORIGIN é https — cookies passam a levar `Secure`.
+    pub https_public: bool,
 }
 
 #[tokio::main]
@@ -48,11 +51,16 @@ async fn main() -> anyhow::Result<()> {
     let admin_bootstrap_pw = std::env::var("ADMIN_BOOTSTRAP_PASSWORD").ok();
     let public_origin =
         std::env::var("PUBLIC_ORIGIN").unwrap_or_else(|_| "http://localhost:5173".into());
+    // SEC-20: dificuldade do PoW configurável (padrão elevado de 14 para 18 bits).
+    let pow_bits: u32 = std::env::var("POW_DIFFICULTY_BITS")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(18);
 
     let config = Arc::new(Config {
         session_secret,
-        public_origin,
-        pow_difficulty_bits: 18,
+        public_origin: public_origin.clone(),
+        pow_difficulty_bits: pow_bits,
     });
 
     let db = Db::open(&db_path)?;
@@ -63,11 +71,18 @@ async fn main() -> anyhow::Result<()> {
         db,
         config,
         rate: Arc::new(RateLimiter::new()),
+        https_public: public_origin.starts_with("https://"),
     };
 
+    let cors = cors_for(&public_origin);
     let app: Router = handlers::build_router(state.clone())
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            security::session_cookie_security::enforce_secure_cookies,
+        ))
         .layer(tower_http::limit::RequestBodyLimitLayer::new(1024 * 1024))
-        .layer(tower_http::trace::TraceLayer::new_for_http());
+        .layer(tower_http::trace::TraceLayer::new_for_http())
+        .layer(cors);
 
     tracing::info!("overcyber-backend ouvindo em http://{bind}");
     let listener = tokio::net::TcpListener::bind(bind).await?;
@@ -77,6 +92,29 @@ async fn main() -> anyhow::Result<()> {
     )
     .await?;
     Ok(())
+}
+
+/// SEC-14: CORS restrito à origem pública configurada.
+/// Em produção same-origin o CORS é desnecessário, mas fica correto para
+/// cenários de desenvolvimento com VITE_API_BASE_URL apontando direto ao backend.
+fn cors_for(public_origin: &str) -> tower_http::cors::CorsLayer {
+    let origin = public_origin
+        .parse::<axum::http::HeaderValue>()
+        .expect("PUBLIC_ORIGIN inválida para CORS");
+    tower_http::cors::CorsLayer::new()
+        .allow_origin(origin)
+        .allow_methods([
+            axum::http::Method::GET,
+            axum::http::Method::POST,
+            axum::http::Method::PUT,
+            axum::http::Method::DELETE,
+        ])
+        .allow_headers([
+            axum::http::header::CONTENT_TYPE,
+            axum::http::HeaderName::from_static("x-csrf-token"),
+        ])
+        .allow_credentials(true)
+        .max_age(Duration::from_secs(600))
 }
 
 fn load_or_create_session_secret(db_path: &std::path::Path) -> anyhow::Result<[u8; 32]> {

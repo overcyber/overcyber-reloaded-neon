@@ -17,7 +17,6 @@ const Layout = ({ children, showBackButton = true, title }: LayoutProps) => {
       <div className="corner-tr"></div>
       <div className="corner-bl"></div>
       <div className="corner-br"></div>
-      <div className="scanline"></div>
       
       <div className="min-h-screen flex flex-col p-8">
         <div className="w-full max-w-6xl mx-auto">

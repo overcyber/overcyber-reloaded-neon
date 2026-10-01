@@ -4,7 +4,7 @@ use axum::extract::{ConnectInfo, State};
 use axum::http::{HeaderMap, Request};
 use axum::middleware::Next;
 use axum::response::Response;
-use chrono::Utc;
+use chrono::{DateTime, Utc};
 
 use crate::error::AppError;
 use crate::security::{csrf, hash_pii, session};
@@ -30,13 +30,33 @@ pub fn extract_cookie(headers: &HeaderMap, name: &str) -> Option<String> {
     None
 }
 
+/// SEC-03: só confia em `X-Forwarded-For` quando a conexão TCP vem de um
+/// proxy confiável (loopback: server.py / Nginx local). Conexões externas
+/// não conseguem forjar o IP usado em rate limiting e auditoria.
 pub fn client_ip(headers: &HeaderMap, fallback: SocketAddr) -> String {
-    if let Some(v) = headers.get("x-forwarded-for").and_then(|h| h.to_str().ok()) {
-        if let Some(first) = v.split(',').next() {
-            return first.trim().to_string();
+    let is_trusted_proxy = fallback.ip().is_loopback();
+    if is_trusted_proxy {
+        if let Some(v) = headers.get("x-forwarded-for").and_then(|h| h.to_str().ok()) {
+            if let Some(first) = v.split(',').next() {
+                let first = first.trim();
+                if !first.is_empty() {
+                    return first.to_string();
+                }
+            }
         }
     }
     fallback.ip().to_string()
+}
+
+/// Rotas que permanecem acessíveis enquanto `must_change_pw` estiver ativo.
+/// Compara por sufixo porque, dentro do `nest("/api", …)`, o middleware pode
+/// ver o caminho sem o prefixo `/api`.
+fn allowed_during_password_change(req: &Request<axum::body::Body>) -> bool {
+    let path = req.uri().path();
+    let method = req.method().as_str();
+    (matches!(method, "GET") && path.ends_with("/auth/me"))
+        || (matches!(method, "POST")
+            && (path.ends_with("/auth/logout") || path.ends_with("/auth/change-password")))
 }
 
 pub async fn require_auth(
@@ -61,8 +81,36 @@ pub async fn require_auth(
         .ok();
     let (user_id, csrf_tok, expires_at, must_change_pw, totp_enabled) =
         row.ok_or(AppError::Unauthorized)?;
-    if expires_at <= Utc::now().to_rfc3339() {
+
+    // SEC-12: comparação de expiração por DateTime parseado (não por string).
+    let expires = DateTime::parse_from_rfc3339(&expires_at)
+        .map(|d| d.with_timezone(&Utc))
+        .ok()
+        .ok_or(AppError::Unauthorized)?;
+    if expires <= Utc::now() {
         return Err(AppError::Unauthorized);
+    }
+
+    // SEC-10: registra divergência de IP/User-Agent da sessão (o hash do IP
+    // muda de provider para provider, então divergência é só evidência
+    // forense/log, não bloqueio).
+    {
+        let stored_ip_hash: Option<String> = conn
+            .query_row("SELECT ip_hash FROM sessions WHERE id=?1", [&sid], |r| {
+                r.get(0)
+            })
+            .ok();
+        let ip = client_ip(&headers, addr);
+        let current_ip_hash = hash_pii(&ip, &state.config.session_secret);
+        if let Some(stored) = stored_ip_hash {
+            if !stored.is_empty() && stored != current_ip_hash {
+                tracing::warn!(
+                    session = %sid,
+                    "divergência de IP na sessão (possível roubo de cookie)"
+                );
+            }
+        }
+        let _ = &current_ip_hash;
     }
 
     // Rolling expiration (30 min)
@@ -83,8 +131,10 @@ pub async fn require_auth(
         }
     }
 
-    let ip = client_ip(&headers, addr);
-    let _ = ip; // disponível se quiser logar
+    // SEC-02: enquanto a senha não for trocada, só rotas essenciais passam.
+    if must_change_pw != 0 && !allowed_during_password_change(&req) {
+        return Err(AppError::MustChangePassword);
+    }
 
     req.extensions_mut().insert(AuthUser {
         user_id,

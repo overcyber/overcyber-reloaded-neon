@@ -1,14 +1,28 @@
-use axum::extract::State;
+use std::net::SocketAddr;
+
+use axum::extract::{ConnectInfo, State};
+use axum::http::HeaderMap;
 use axum::Json;
 use chrono::Utc;
 use rusqlite::params;
 
-use crate::error::AppResult;
+use crate::error::{AppError, AppResult};
+use crate::middleware::client_ip;
 use crate::models::PowChallenge;
 use crate::security::pow;
 use crate::AppState;
 
-pub async fn challenge(State(state): State<AppState>) -> AppResult<Json<PowChallenge>> {
+pub async fn challenge(
+    State(state): State<AppState>,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    headers: HeaderMap,
+) -> AppResult<Json<PowChallenge>> {
+    // SEC-11: limita emissão de desafios por IP (60/min) para impedir
+    // inflação da tabela pow_challenges.
+    let ip = client_ip(&headers, addr);
+    if !state.rate.check(&format!("pow:{ip}"), 60, std::time::Duration::from_secs(60)) {
+        return Err(AppError::TooMany);
+    }
     let nonce = pow::new_nonce();
     let conn = state.db.get()?;
     conn.execute(

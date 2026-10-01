@@ -41,20 +41,24 @@ pub fn verify_cookie(cookie_value: &str, secret: &[u8; 32]) -> Option<String> {
     }
 }
 
-pub const SESSION_COOKIE: &str = "__Host-sid";
+pub const SESSION_COOKIE: &str = "sid";
 pub const CSRF_COOKIE: &str = "csrf";
 
 pub fn build_session_cookie(value: &str, max_age_secs: i64) -> String {
+    // SEC-19: SameSite=Strict (a dupla camada CSRF double-submit já protege
+    // mutações; Strict reduz ainda mais a superfície cross-site).
+    // SEC-05: o atributo Secure é adicionado pelo middleware
+    // session_cookie_security quando PUBLIC_ORIGIN é https.
     format!(
-        "{SESSION_COOKIE}={value}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age={max_age_secs}"
+        "{SESSION_COOKIE}={value}; Path=/; HttpOnly; SameSite=Strict; Max-Age={max_age_secs}"
     )
 }
 
 pub fn build_csrf_cookie(value: &str, max_age_secs: i64) -> String {
     // Não-HttpOnly por design: o JS precisa lê-lo e ecoá-lo em X-CSRF-Token
-    format!("{CSRF_COOKIE}={value}; Path=/; Secure; SameSite=Strict; Max-Age={max_age_secs}")
+    format!("{CSRF_COOKIE}={value}; Path=/; SameSite=Strict; Max-Age={max_age_secs}")
 }
 
 pub fn clear_cookie(name: &str) -> String {
-    format!("{name}=; Path=/; Max-Age=0; Secure; SameSite=Strict")
+    format!("{name}=; Path=/; Max-Age=0; SameSite=Lax")
 }

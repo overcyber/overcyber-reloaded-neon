@@ -1,9 +1,11 @@
 pub mod argon2id;
+pub mod crypto;
 pub mod csrf;
 pub mod headers;
 pub mod pow;
 pub mod ratelimit;
 pub mod session;
+pub mod session_cookie_security;
 pub mod totp;
 
 use sha2::{Digest, Sha256};

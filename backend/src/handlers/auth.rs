@@ -55,15 +55,22 @@ pub async fn login(
         )
         .ok();
     let Some((user_id, password_hash, totp_secret, totp_enabled, must_change_pw)) = row else {
+        // SEC-15: audita falha (usuário inexistente) — mesmo erro "unauthorized"
+        // para não revelar existência do usuário.
+        audit_failure(&state, &input.username, "login_failed_unknown_user", &ip);
         return Err(AppError::Unauthorized);
     };
     if !argon2id::verify(input.password.as_bytes(), &password_hash) {
+        // SEC-15: audita falha de senha (custo Argon2 já limita brute force;
+        // rate limit por IP complementa).
+        audit_failure(&state, &input.username, "login_failed_bad_password", &ip);
         return Err(AppError::Unauthorized);
     }
     if totp_enabled != 0 {
         let code = input.totp.unwrap_or_default();
         let secret = totp_secret.unwrap_or_default();
         if !totp::verify(&secret, &code) {
+            audit_failure(&state, &input.username, "login_failed_totp", &ip);
             return Err(AppError::Unauthorized);
         }
     }
@@ -95,6 +102,13 @@ pub async fn login(
         HeaderValue::from_str(&session::build_csrf_cookie(&csrf, 30 * 60)).unwrap(),
     );
     audit(&state, "admin", "login", None, &ip)?;
+
+    // SEC-16: limpeza oportuna de sessões expiradas.
+    let _ = conn.execute(
+        "DELETE FROM sessions WHERE expires_at <= ?1",
+        [Utc::now().to_rfc3339()],
+    );
+
     Ok((
         StatusCode::OK,
         h,
@@ -263,4 +277,11 @@ fn audit(
         params![actor, action, target, hash_ip(ip, &state.config.session_secret)],
     )?;
     Ok(())
+}
+
+/// SEC-15: registra falhas de autenticação (não bloqueia em caso de erro de log).
+fn audit_failure(state: &AppState, username: &str, action: &str, ip: &str) {
+    if let Err(e) = audit(state, username, action, None, ip) {
+        tracing::warn!("falha ao auditar {action}: {e}");
+    }
 }

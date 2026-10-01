@@ -48,7 +48,6 @@ const Index = () => {
         <div className="corner-tr"></div>
         <div className="corner-bl"></div>
         <div className="corner-br"></div>
-        <div className="scanline"></div>
         
         <div className="cyber-terminal w-full max-w-3xl h-[60vh] overflow-hidden">
           <div className="terminal-header">
@@ -73,11 +72,9 @@ const Index = () => {
   }
 
   return (
-    <div className={`min-h-screen transition-opacity duration-1000 ${loaded ? 'opacity-100' : 'opacity-0'}`}>
-      <div className="corner-tr"></div>
-      <div className="corner-bl"></div>
-      <div className="corner-br"></div>
-      <div className="scanline"></div>
+    <div className={`min-h-screen transition-opacity duration-1000 ${loaded ? 'opacity-100' : 'opacity-0'}`}>      <div className="corner-tr"></div>
+        <div className="corner-bl"></div>
+        <div className="corner-br"></div>
       
       <div className="flex flex-col items-center justify-center min-h-screen p-8">
         <div className="cyber-terminal w-full max-w-4xl mx-auto relative">

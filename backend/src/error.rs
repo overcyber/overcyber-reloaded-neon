@@ -16,6 +16,8 @@ pub enum AppError {
     Conflict(String),
     #[error("muitas requisições")]
     TooMany,
+    #[error("troca de senha obrigatória")]
+    MustChangePassword,
     #[error("erro interno")]
     Internal(#[from] anyhow::Error),
     #[error("erro sqlite")]
@@ -33,6 +35,10 @@ impl IntoResponse for AppError {
             AppError::BadRequest(m) => (StatusCode::BAD_REQUEST, m.clone()),
             AppError::Conflict(m) => (StatusCode::CONFLICT, m.clone()),
             AppError::TooMany => (StatusCode::TOO_MANY_REQUESTS, "rate_limited".to_string()),
+            AppError::MustChangePassword => (
+                StatusCode::FORBIDDEN,
+                "must_change_password".to_string(),
+            ),
             _ => {
                 tracing::error!(error=?self, "erro interno");
                 (StatusCode::INTERNAL_SERVER_ERROR, "internal".to_string())

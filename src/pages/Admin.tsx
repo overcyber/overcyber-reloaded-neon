@@ -13,9 +13,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Lock, Save, Edit, Plus, Image, FileText, Trash2 } from "lucide-react";
+import { Lock, Save, Edit, Plus, Image, FileText, Trash2, AlertTriangle, Settings } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import AdminBackendPanel from "@/components/AdminBackendPanel";
+import { api, ApiError } from "@/lib/api";
 
 // Admin authentication schema
 const authSchema = z.object({
@@ -24,57 +26,59 @@ const authSchema = z.object({
 
 // About page schema
 const profileSchema = z.object({
-  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  title: z.string().min(2, "Título deve ter pelo menos 2 caracteres"),
-  bio: z.string().min(10, "Bio deve ter pelo menos 10 caracteres"),
-  email: z.string().email("Email inválido"),
-  location: z.string().min(2, "Localização deve ter pelo menos 2 caracteres"),
-  lattes: z.string().url("URL do Lattes inválida"),
-  profileImage: z.string().url("URL da imagem de perfil inválida"),
-  researchFocus: z.string().min(5, "Áreas de pesquisa são obrigatórias")
+  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres").or(z.literal('')).optional(),
+  title: z.string().min(2, "Título deve ter pelo menos 2 caracteres").or(z.literal('')).optional(),
+  bio: z.string().or(z.literal('')).optional(),
+  email: z.string().email("Email inválido").or(z.literal('')).optional(),
+  location: z.string().or(z.literal('')).optional(),
+  lattes: z.string().url("URL do Lattes inválida").or(z.literal('')).optional(),
+  profileImage: z.string().url("URL da imagem de perfil inválida").or(z.literal('')).optional(),
+  researchFocus: z.string().or(z.literal('')).optional()
 });
 
-// Project schema
+// Project schema - campos flexíveis para permitir salvar alterações parciais
 const projectSchema = z.object({
   id: z.number().optional(),
-  title: z.string().min(3, "Title must be at least 3 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
-  tags: z.string().min(3, "Add at least one tag"),
-  image: z.string().url("Must be a valid URL"),
-  github: z.string().url("Must be a valid URL"),
-  live: z.string().url("Must be a valid URL").optional().nullable(),
-  readme: z.string().min(10, "Readme must be at least 10 characters"),
+  title: z.string().min(1, "Title is required"),
+  description: z.string().or(z.literal('')).optional(),
+  tags: z.string().or(z.literal('')).optional(),
+  image: z.string().or(z.literal('')).optional(),
+  github: z.string().or(z.literal('')).optional(),
+  live: z.string().optional().nullable(),
+  readme: z.string().or(z.literal('')).optional(),
 });
 
 // Education, Experience, Publications, and Skills schemas
 const educationSchema = z.object({
-  items: z.string().min(10, "Educação deve ter pelo menos 10 caracteres"),
+  items: z.string().or(z.literal('')).optional(),
 });
 
 const experienceSchema = z.object({
-  items: z.string().min(10, "Experiência deve ter pelo menos 10 caracteres"),
+  items: z.string().or(z.literal('')).optional(),
 });
 
+// FIX: campos opcionais — permite atualizar apenas uma sub-seção
+// (ex.: preencher só "Artigos" deixando Conferências/Patentes vazios sem erro).
 const publicationsSchema = z.object({
-  articles: z.string().min(5, "Artigos em periódicos são obrigatórios"),
-  conferences: z.string().min(5, "Conferências são obrigatórias"),
-  patents: z.string().min(5, "Patentes são obrigatórias")
+  articles: z.string().or(z.literal('')).optional(),
+  conferences: z.string().or(z.literal('')).optional(),
+  patents: z.string().or(z.literal('')).optional()
 });
 
 const skillsSchema = z.object({
-  coreSkills: z.string().min(5, "Habilidades principais são obrigatórias"),
-  advancedSkills: z.string().min(5, "Habilidades avançadas são obrigatórias"),
-  technologies: z.string().min(5, "Tecnologias são obrigatórias"),
-  awards: z.string().min(5, "Prêmios e certificações são obrigatórios")
+  coreSkills: z.string().or(z.literal('')).optional(),
+  advancedSkills: z.string().or(z.literal('')).optional(),
+  technologies: z.string().or(z.literal('')).optional(),
+  awards: z.string().or(z.literal('')).optional()
 });
 
 // Blog post schema
 const blogPostSchema = z.object({
-  title: z.string().min(5, "Título deve ter pelo menos 5 caracteres"),
-  slug: z.string().min(5, "Slug deve ter pelo menos 5 caracteres"),
-  excerpt: z.string().optional(),
-  content: z.string().min(10, "Conteúdo deve ter pelo menos 10 caracteres"),
-  image: z.string().url("URL da imagem inválida").optional().or(z.literal('')),
+  title: z.string().min(1, "Título é obrigatório"),
+  slug: z.string().min(1, "Slug é obrigatório"),
+  excerpt: z.string().or(z.literal('')).optional(),
+  content: z.string().or(z.literal('')).optional(),
+  image: z.string().or(z.literal('')).optional(),
 });
 
 type AuthFormValues = z.infer<typeof authSchema>;
@@ -88,86 +92,74 @@ type BlogPostFormValues = z.infer<typeof blogPostSchema>;
 
 // Sample About data (replace with localStorage or other storage)
 const defaultAboutData = {
-  name: "Dr. Melquizedequi Cabral dos Santos",
-  title: "Professor Associado - Universidade Federal do Piauí",
-  bio: "Pesquisador e especialista em cibersegurança com foco em técnicas avançadas de proteção de dados e desenvolvimento de soluções de segurança para redes e sistemas. Experiência em algoritmos de machine learning aplicados à detecção de intrusão e análise de vulnerabilidades.",
-  email: "secure@cyberdomain.net",
-  location: "São Paulo, Brasil",
+  name: "Claudio Henrique Marques de Oliveira",
+  title: "Militar - Marinha do Brasil | Especialista em Defesa Cibernética | Mestrando em Computação Aplicada (UnB)",
+  bio: "Profissional com sólida experiência na área de Defesa, com ênfase em Defesa Cibernética, atuando na área de segurança da informação há 19 anos, desenvolvendo projetos para as Forças Armadas e projetos pessoais. Nos últimos anos, tenho direcionado minha expertise para a área de Ciência de Dados e Inteligência Artificial aplicada à Defesa, combinando conhecimentos tradicionais de segurança cibernética com técnicas avançadas de análise de dados e machine learning.",
+  email: "unixsolution@gmail.com",
+  location: "Brasília, DF, Brasil",
   lattes: "https://lattes.cnpq.br/2915812289846388",
   profileImage: "https://avatars.githubusercontent.com/u/583231",
   researchFocus: [
-    "Cibersegurança", 
-    "Machine Learning", 
-    "Análise de Vulnerabilidades", 
-    "Redes Neurais", 
-    "Detecção de Intrusão", 
-    "Segurança de Dados"
+    "Defesa Cibernética",
+    "Guerra Cibernética",
+    "Segurança da Informação",
+    "Ciência de Dados",
+    "Inteligência Artificial",
+    "Machine Learning"
   ]
 };
 
 // Dados padrão para educação
 const defaultEducationData = [
   {
-    title: "Doutorado em Ciência da Computação",
-    period: "2018-2022",
-    institution: "Universidade de São Paulo (USP)",
-    description: "Tese: \"Algoritmos de Aprendizado Profundo para Detecção Avançada de Intrusões em Redes de Alta Velocidade\""
+    title: "Mestrado Profissional em Computação Aplicada",
+    period: "2023-PRESENTE",
+    institution: "Universidade de Brasília (UnB)",
+    description: "PPCA — Programa de Pós-Graduação em Computação Aplicada. Orientador: João José Costa Gondim. Pesquisa em Detecção de Tráfego Malicioso utilizando Vetorização e Aprendizagem de Máquina."
   },
   {
-    title: "Mestrado em Segurança Computacional",
-    period: "2016-2018",
-    institution: "Universidade Estadual de Campinas (UNICAMP)",
-    description: "Dissertação: \"Métodos Avançados de Criptografia Aplicados à Proteção de Dados em Sistemas Distribuídos\""
+    title: "Bacharelado em Sistemas de Informação",
+    period: "2015-2018",
+    institution: "Estácio Ribeirão Preto",
+    description: "TCC: \"SISFISH\" — Sistema de Informação para Piscicultura"
   },
   {
-    title: "Graduação em Ciência da Computação",
-    period: "2012-2016",
-    institution: "Instituto Tecnológico de Aeronáutica (ITA)",
-    description: "Trabalho de Conclusão de Curso: \"Desenvolvimento de Sistema de Análise de Vulnerabilidades em Redes Corporativas\""
+    title: "Curso de Guerra Cibernética",
+    period: "2019",
+    institution: "Centro de Comunicações e Guerra Eletrônica do Exército (CComGEx)",
+    description: "Pós-técnica em Guerra Cibernética — 800h. Abrangendo táticas ofensivas e defensivas no espectro cibernético.",
+    certifications: ["Guerra Cibernética — CComGEx/Exército — 2019 (800h)"]
   },
   {
-    title: "Certificações Profissionais",
-    period: "DIVERSAS",
-    institution: "",
-    certifications: [
-      "Certified Information Systems Security Professional (CISSP)",
-      "Offensive Security Certified Professional (OSCP)",
-      "Certified Ethical Hacker (CEH)",
-      "GIAC Security Essentials (GSEC)"
-    ]
+    title: "Engenharia Reversa de Código",
+    period: "2020",
+    institution: "Offensive Security",
+    description: "Curso avançado de engenharia reversa de aplicações, análise de binários e exploração de vulnerabilidades em nível de sistema.",
+    certifications: ["Offensive Security Certified Expert (OSCE) — 2020"]
   }
 ];
 
 // Dados padrão para experiência
 const defaultExperienceData = [
   {
-    title: "Pesquisador Sênior em Cibersegurança",
-    period: "2022-PRESENTE",
-    company: "Instituto de Pesquisas Avançadas em Tecnologia (IPAT)",
+    title: "Militar de Carreira — Defesa Cibernética",
+    period: "2012-PRESENTE",
+    company: "Marinha do Brasil",
     duties: [
-      "Liderança em projetos de pesquisa em segurança de redes e sistemas",
-      "Desenvolvimento de novos algoritmos para detecção de ataques avançados",
-      "Coordenação de equipe multidisciplinar com foco em segurança de dados"
+      "Atuação na área de Defesa Cibernética com dedicação exclusiva",
+      "Desenvolvimento de projetos estratégicos para as Forças Armadas",
+      "Participação em exercícios nacionais e internacionais de Defesa Cibernética (Guardião Cibernético 7.0, CyberShield 2025, Exercício Ibero-Americano)",
+      "Professor monitor na disciplina de Mineração de Dados Massivo no PPCA/UnB (2024)"
     ]
   },
   {
-    title: "Consultor de Segurança da Informação",
-    period: "2019-2022",
-    company: "CyberShield Technologies",
+    title: "Arquiteto de Soluções LLM e IA",
+    period: "2023-2024",
+    company: "VIAAPIA Informática",
     duties: [
-      "Realização de testes de penetração em sistemas críticos",
-      "Análise e mitigação de vulnerabilidades em aplicações corporativas",
-      "Implementação de soluções de proteção para infraestruturas complexas"
-    ]
-  },
-  {
-    title: "Pesquisador Associado",
-    period: "2016-2019",
-    company: "Laboratório de Segurança em Computação (LabSEC)",
-    duties: [
-      "Pesquisa em técnicas de machine learning para análise de malware",
-      "Desenvolvimento de ferramentas para análise automática de ameaças",
-      "Publicação de artigos científicos em periódicos de alto impacto"
+      "Desenvolvimento de arquitetura e solução de Chat com Processamento de Linguagem Natural (LLM)",
+      "Criação de plataforma de comunicação integrando módulos de NLP, TTS/STT e armazenamento",
+      "Arquitetura de microsserviços em contêineres Docker para escalabilidade"
     ]
   }
 ];
@@ -176,85 +168,54 @@ const defaultExperienceData = [
 const defaultPublicationsData = {
   articles: [
     {
-      year: "2023",
-      title: "Deep Learning-Based Anomaly Detection for Zero-Day Attack Identification in High-Speed Networks",
-      journal: "Journal of Cybersecurity Research, Vol. 15, Issue 4"
+      year: "2025",
+      title: "Metodologia para Detecção de Tráfego de Rede Malicioso Utilizando Vetorização e Aprendizagem de Máquina",
+      journal: "Lecture Notes in Networks and Systems (ISSN: 2367-3389)"
     },
     {
-      year: "2022",
-      title: "A Novel Approach for Malware Classification Using Convolutional Neural Networks and Binary Visualization",
-      journal: "IEEE Transactions on Information Security, Vol. 44, Issue 2"
-    },
-    {
-      year: "2021",
-      title: "Quantum-Resistant Cryptographic Protocols for Secure IoT Communications",
-      journal: "International Journal of Network Security, Vol. 32, Issue 8"
-    },
-    {
-      year: "2020",
-      title: "Advanced Persistent Threats Detection Using Machine Learning Techniques",
-      journal: "Computers & Security Journal, Vol. 89"
+      year: "2025",
+      title: "Proactive Management of Offensive Profiles: Detecting Trends in Cyberattacks on Institutions in Brazil Through the Analysis of Hacker Communities Using Complex Networks and Machine Learning Algorithms",
+      journal: "REVISTA ENIAC PESQUISA (ISSN: 2316-2341)"
     }
   ],
   conferences: [
     {
-      year: "2023",
-      title: "Adversarial Machine Learning for Robust Intrusion Detection Systems",
-      conference: "International Conference on Network and Systems Security (NSS)"
-    },
-    {
-      year: "2022",
-      title: "Real-time Network Traffic Analysis Using Graph Neural Networks",
-      conference: "IEEE Symposium on Security and Privacy (S&P)"
-    },
-    {
-      year: "2021",
-      title: "Blockchain-based Framework for Secure Firmware Updates in IoT Devices",
-      conference: "ACM Conference on Computer and Communications Security (CCS)"
+      year: "2024",
+      title: "Proactive Management of Offensive Profiles: Detecting Trends in Cyberattacks on Institutions in Brazil...",
+      conference: "XXI Encontro Nacional de Inteligência Artificial e Computacional (ENIAC 2024) — Belém/PA"
     }
   ],
-  patents: [
-    {
-      year: "2022",
-      title: "Sistema de Detecção de Intrusão Baseado em Análise Comportamental e Aprendizado Profundo",
-      number: "Patente Nº BR10202200XXXX"
-    },
-    {
-      year: "2021",
-      title: "Método para Identificação Automática de Vulnerabilidades em Aplicações Web",
-      number: "Patente Nº BR10202100XXXX"
-    }
-  ]
+  patents: []
 };
 
 // Dados padrão para habilidades
 const defaultSkillsData = {
   coreSkills: [
-    { name: "Python", level: 92 },
-    { name: "Machine Learning", level: 85 },
-    { name: "Cybersecurity", level: 90 },
-    { name: "Data Science", level: 88 }
+    { name: "Defesa Cibernética", level: 92 },
+    { name: "Segurança da Informação", level: 90 },
+    { name: "Linux/Unix", level: 88 },
+    { name: "Redes de Computadores", level: 85 }
   ],
   advancedSkills: [
-    { name: "Network Security", level: 86 },
-    { name: "Web Development", level: 78 },
-    { name: "Blockchain", level: 75 },
-    { name: "Cloud Computing", level: 80 }
+    { name: "Inteligência Artificial / ML", level: 78 },
+    { name: "Ciência de Dados", level: 75 },
+    { name: "Docker / Microsserviços", level: 72 },
+    { name: "OSINT / Pentest", level: 80 }
   ],
   technologies: [
-    "Python", "C/C++", "JavaScript", "Rust", "TensorFlow", 
-    "PyTorch", "Docker", "Kubernetes", "AWS", "Linux", 
-    "Blockchain", "Network Analysis"
+    "Python", "Linux", "Docker", "Windows Server", 
+    "Machine Learning", "LLM", "Redes", "Firewall",
+    "Criptografia", "Análise de Dados", "R", "OSINT"
   ],
   awards: [
-    "Best Paper Award - Cybersecurity Conference 2022",
-    "Young Researcher Award - INFOCOM 2021",
-    "Top Security Researcher - CyberShield 2020",
-    "Innovation Prize - Brazilian Computing Society"
+    "SANS FOR500 Windows Forensics Analysis — 2025",
+    "Core NetWars Tournament 7 — SANS — 2022",
+    "Guardião Cibernético 7.0 — Exército Brasileiro — 2025",
+    "CEH v7 Certified — EC-Council — 2013"
   ]
 };
 
-// Sample Projects data from the existing page
+// Sample Projects data — must match the 3 projects in use-managed-content.ts
 const defaultProjects = [
   {
     id: 1,
@@ -279,6 +240,18 @@ const defaultProjects = [
     stars: 765,
     forks: 134,
     readme: "# CyberShield\n\nCyberShield is a next-generation intrusion prevention system built for high-performance environments where security cannot be compromised.",
+  },
+  {
+    id: 3,
+    title: "QuantumCrypt",
+    description: "Post-quantum cryptographic library implementing advanced algorithms resistant to quantum computing attacks.",
+    tags: "C++, Cryptography, Quantum",
+    image: "https://images.unsplash.com/photo-1494891848038-7bd202a2afeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
+    github: "https://github.com/overcyber/quantumcrypt",
+    live: "",
+    stars: 531,
+    forks: 97,
+    readme: "# QuantumCrypt\n\n## Quantum-Resistant Cryptographic Library\n\nQuantumCrypt is a C++ library implementing advanced cryptographic algorithms designed to resist attacks from both classical and quantum computers.",
   }
 ];
 
@@ -323,6 +296,26 @@ const saveData = (key: string, data: any) => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(key, JSON.stringify(data));
 };
+
+// Save to backend with fallback to localStorage
+async function saveToBackend(path: string, data: any): Promise<boolean> {
+  try {
+    await api(path, { method: 'PUT', json: data });
+    return true;
+  } catch (err) {
+    console.warn(`Backend offline for ${path}, saved to localStorage only:`, err);
+    return false;
+  }
+}
+
+// Load from backend
+async function loadFromBackend<T>(path: string): Promise<T | null> {
+  try {
+    return await api<T>(path);
+  } catch {
+    return null;
+  }
+}
 
 // Helper functions for data formatting
 function formatEducationData(data: any) {
@@ -464,8 +457,13 @@ const generateSlugFromTitle = (title: string) => {
 const Admin: React.FC = () => {
   // Auth state
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [ipAddress, setIpAddress] = useState('');
-  const [allowedIPs, setAllowedIPs] = useState(['127.0.0.1', 'localhost', '::1']);
+  const [authChecking, setAuthChecking] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [loginLockedUntil, setLoginLockedUntil] = useState<number | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const MAX_ATTEMPTS = 3;
+  const LOCKOUT_SECONDS = 30;
   
   // Content state
   const [aboutData, setAboutData] = useState(() => loadData('admin-about-data', defaultAboutData));
@@ -482,6 +480,10 @@ const Admin: React.FC = () => {
   const [currentProject, setCurrentProject] = useState<ProjectFormValues | null>(null);
   const [isBlogPostDialogOpen, setIsBlogPostDialogOpen] = useState(false);
   const [currentBlogPost, setCurrentBlogPost] = useState<any>(null);
+  const [sections, setSections] = useState<Record<string, boolean>>({
+    profile: true, education: true, experience: true, publications: true,
+    skills: true, projects: true, blog: true, contact: true,
+  });
   
   // Forms
   const authForm = useForm<AuthFormValues>({
@@ -494,47 +496,53 @@ const Admin: React.FC = () => {
   const profileForm = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: aboutData.name,
-      title: aboutData.title,
-      bio: aboutData.bio,
-      email: aboutData.email,
-      location: aboutData.location,
-      lattes: aboutData.lattes,
-      profileImage: aboutData.profileImage,
-      researchFocus: aboutData.researchFocus.join(', ')
+      name: aboutData?.name || "",
+      title: aboutData?.title || "",
+      bio: aboutData?.bio || "",
+      email: aboutData?.email || "",
+      location: aboutData?.location || "",
+      lattes: aboutData?.lattes || "",
+      profileImage: aboutData?.profileImage || "",
+      researchFocus: Array.isArray(aboutData?.researchFocus)
+        ? aboutData.researchFocus.join(', ')
+        : (aboutData?.researchFocus || "")
     }
   });
   
   const educationForm = useForm<EducationFormValues>({
     resolver: zodResolver(educationSchema),
     defaultValues: {
-      items: formatEducationData(educationData)
+      items: formatEducationData(Array.isArray(educationData) ? educationData : [])
     }
   });
   
   const experienceForm = useForm<ExperienceFormValues>({
     resolver: zodResolver(experienceSchema),
     defaultValues: {
-      items: formatExperienceData(experienceData)
+      items: formatExperienceData(Array.isArray(experienceData) ? experienceData : [])
     }
   });
   
   const publicationsForm = useForm<PublicationsFormValues>({
     resolver: zodResolver(publicationsSchema),
     defaultValues: {
-      articles: formatArticlesData(publicationsData.articles),
-      conferences: formatConferencesData(publicationsData.conferences),
-      patents: formatPatentsData(publicationsData.patents)
+      articles: formatArticlesData(publicationsData?.articles || []),
+      conferences: formatConferencesData(publicationsData?.conferences || []),
+      patents: formatPatentsData(publicationsData?.patents || [])
     }
   });
   
   const skillsForm = useForm<SkillsFormValues>({
     resolver: zodResolver(skillsSchema),
     defaultValues: {
-      coreSkills: formatSkillsData(skillsData.coreSkills),
-      advancedSkills: formatSkillsData(skillsData.advancedSkills),
-      technologies: skillsData.technologies.join(', '),
-      awards: skillsData.awards.join('\n')
+      coreSkills: formatSkillsData(skillsData?.coreSkills || []),
+      advancedSkills: formatSkillsData(skillsData?.advancedSkills || []),
+      technologies: Array.isArray(skillsData?.technologies)
+        ? skillsData.technologies.join(', ')
+        : (skillsData?.technologies || ""),
+      awards: Array.isArray(skillsData?.awards)
+        ? skillsData.awards.join('\n')
+        : (skillsData?.awards || "")
     }
   });
   
@@ -564,207 +572,307 @@ const Admin: React.FC = () => {
   
   const navigate = useNavigate();
   
-  // Get user's IP address
-  useEffect(() => {
-    const checkLocalhost = () => {
-      // Verifica se está acessando via localhost ou 127.0.0.1
-      const hostname = window.location.hostname;
-      const port = window.location.port ? `:${window.location.port}` : '';
-      
-      console.log('Hostname atual:', hostname);
-      console.log('Porta atual:', port);
-      
-      // Se estiver acessando localmente, define o IP como localhost
-      if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        console.log('Acesso local detectado');
-        setIpAddress(hostname);
-        return true;
-      }
-      
-      return false;
-    };
-
-    const getOnlineIpAddress = async () => {
-      try {
-        const response = await fetch('https://api.ipify.org?format=json');
-        const data = await response.json();
-        return data.ip;
-      } catch (error) {
-        console.error('Erro ao obter IP online:', error);
-        throw error;
-      }
-    };
-
-    const getIpAddress = async () => {
-      // Primeiro verifica se é localhost
-      if (checkLocalhost()) {
-        // Se for localhost, não precisa fazer mais nada
-        return;
-      }
-      
-      // Se não for localhost, tenta obter o IP online
-      try {
-        const onlineIp = await getOnlineIpAddress();
-        console.log('IP online encontrado:', onlineIp);
-        setIpAddress(onlineIp);
-      } catch (onlineError) {
-        console.error('Erro ao obter IP online:', onlineError);
-        setIpAddress('unknown');
-      }
-    };
-    
-    getIpAddress();
-
-    // Reset form values with data from localStorage
+  // Carregar dados do backend + localStorage
+  const loadAll = async () => {
+    // 1. Load from localStorage first (instant)
     const loadedAboutData = loadData('admin-about-data', defaultAboutData);
     setAboutData(loadedAboutData);
-    profileForm.reset({
-      name: loadedAboutData.name,
-      title: loadedAboutData.title,
-      bio: loadedAboutData.bio,
-      email: loadedAboutData.email,
-      location: loadedAboutData.location,
-      lattes: loadedAboutData.lattes,
-      profileImage: loadedAboutData.profileImage,
-      researchFocus: loadedAboutData.researchFocus.join(', ')
-    });
-
     const loadedEducationData = loadData('admin-education-data', defaultEducationData);
     setEducationData(loadedEducationData);
-    educationForm.reset({
-      items: formatEducationData(loadedEducationData)
-    });
-
     const loadedExperienceData = loadData('admin-experience-data', defaultExperienceData);
     setExperienceData(loadedExperienceData);
-    experienceForm.reset({
-      items: formatExperienceData(loadedExperienceData)
-    });
-
     const loadedPublicationsData = loadData('admin-publications-data', defaultPublicationsData);
     setPublicationsData(loadedPublicationsData);
-    publicationsForm.reset({
-      articles: formatArticlesData(loadedPublicationsData.articles),
-      conferences: formatConferencesData(loadedPublicationsData.conferences),
-      patents: formatPatentsData(loadedPublicationsData.patents)
-    });
-
     const loadedSkillsData = loadData('admin-skills-data', defaultSkillsData);
     setSkillsData(loadedSkillsData);
-    skillsForm.reset({
-      coreSkills: formatSkillsData(loadedSkillsData.coreSkills),
-      advancedSkills: formatSkillsData(loadedSkillsData.advancedSkills),
-      technologies: loadedSkillsData.technologies.join(', '),
-      awards: loadedSkillsData.awards.join('\n')
-    });
-
     const loadedProjects = loadData('admin-projects-data', defaultProjects);
     setProjects(loadedProjects);
-    
     const loadedBlogPosts = loadData('blog-posts', defaultBlogPosts);
     setBlogPosts(loadedBlogPosts);
-  }, []);
-  
-  // Check if IP is allowed (localhost is always allowed for development)
-  const isIPAllowed = () => {
-    return allowedIPs.includes(ipAddress) ||
-            ipAddress === '127.0.0.1' ||
-            ipAddress === 'localhost' ||
-            ipAddress === '192.168.10.21' ||
-            ipAddress === '192.168.10.18' ||
-            ipAddress === '::1';
+
+    // 2. Try to load from backend (overrides localStorage if available)
+    // IMPORTANTE: só sobrescreve se o backend retornar dados NÃO-VAZIOS
+    // (arrays/objetos vazios são truthy em JS — precisamos checar conteúdo)
+    try {
+      // Profile
+      const backendAbout = await loadFromBackend<any>('/about');
+      if (backendAbout && backendAbout.name) {
+        setAboutData(backendAbout);
+        saveData('admin-about-data', backendAbout);
+      }
+
+      // Resume sections (single call returns all)
+      const backendResume = await loadFromBackend<any>('/resume');
+      if (backendResume) {
+        if (Array.isArray(backendResume.education) && backendResume.education.length > 0) {
+          setEducationData(backendResume.education);
+          saveData('admin-education-data', backendResume.education);
+        }
+
+        // Experiência: merge para preservar preenchimento
+        const curExp = loadData('admin-experience-data', defaultExperienceData);
+        if (Array.isArray(backendResume.experience) && backendResume.experience.length > 0) {
+          setExperienceData(backendResume.experience);
+          saveData('admin-experience-data', backendResume.experience);
+        } else {
+          setExperienceData(curExp);
+        }
+
+        // Publicações (04 // KNOWLEDGE DATABASE): merge preservando artigos e conferências
+        if (backendResume.publications && typeof backendResume.publications === 'object') {
+          const curPubs = loadData('admin-publications-data', defaultPublicationsData);
+          const mergedArticles = (Array.isArray(backendResume.publications.articles) && backendResume.publications.articles.length > 0)
+            ? backendResume.publications.articles
+            : curPubs.articles;
+          const mergedConferences = (Array.isArray(backendResume.publications.conferences) && backendResume.publications.conferences.length > 0)
+            ? backendResume.publications.conferences
+            : curPubs.conferences;
+          const mergedPatents = (Array.isArray(backendResume.publications.patents) && backendResume.publications.patents.length > 0)
+            ? backendResume.publications.patents
+            : (curPubs.patents || []);
+
+          const mergedPubs = {
+            articles: mergedArticles,
+            conferences: mergedConferences,
+            patents: mergedPatents
+          };
+          setPublicationsData(mergedPubs);
+          saveData('admin-publications-data', mergedPubs);
+        }
+
+        // Habilidades: merge preservando competências e tecnologias
+        if (backendResume.skills && typeof backendResume.skills === 'object') {
+          const curSkills = loadData('admin-skills-data', defaultSkillsData);
+          const mergedSkills = {
+            coreSkills: (Array.isArray(backendResume.skills.coreSkills) && backendResume.skills.coreSkills.length > 0)
+              ? backendResume.skills.coreSkills
+              : curSkills.coreSkills,
+            advancedSkills: (Array.isArray(backendResume.skills.advancedSkills) && backendResume.skills.advancedSkills.length > 0)
+              ? backendResume.skills.advancedSkills
+              : curSkills.advancedSkills,
+            technologies: (Array.isArray(backendResume.skills.technologies) && backendResume.skills.technologies.length > 0)
+              ? backendResume.skills.technologies
+              : curSkills.technologies,
+            awards: (Array.isArray(backendResume.skills.awards) && backendResume.skills.awards.length > 0)
+              ? backendResume.skills.awards
+              : curSkills.awards
+          };
+          setSkillsData(mergedSkills);
+          saveData('admin-skills-data', mergedSkills);
+        }
+      }
+
+      // Projects
+      const backendProjects = await loadFromBackend<any[]>('/projects');
+      if (backendProjects && backendProjects.length > 0) {
+        setProjects(backendProjects);
+        saveData('admin-projects-data', backendProjects);
+      }
+
+      // Blog posts
+      const backendPosts = await loadFromBackend<any[]>('/posts');
+      if (backendPosts && backendPosts.length > 0) {
+        setBlogPosts(backendPosts);
+        saveData('blog-posts', backendPosts);
+      }
+
+      // Sections visibility
+      const backendSections = await loadFromBackend<Record<string, boolean>>('/sections');
+      if (backendSections && typeof backendSections === 'object') {
+        setSections(backendSections);
+      }
+    } catch {
+      // Backend offline — using localStorage data is fine
+    }
+
+    // 3. Reset all forms with final data
+    const finalAbout = loadData('admin-about-data', defaultAboutData);
+    setAboutData(finalAbout);
+    profileForm.reset({
+      name: finalAbout.name,
+      title: finalAbout.title,
+      bio: finalAbout.bio,
+      email: finalAbout.email,
+      location: finalAbout.location,
+      lattes: finalAbout.lattes,
+      profileImage: finalAbout.profileImage,
+      researchFocus: (finalAbout.researchFocus || []).join(', ')
+    });
+
+    const finalEducation = loadData('admin-education-data', defaultEducationData);
+    setEducationData(finalEducation);
+    educationForm.reset({ items: formatEducationData(finalEducation) });
+
+    const finalExperience = loadData('admin-experience-data', defaultExperienceData);
+    setExperienceData(finalExperience);
+    experienceForm.reset({ items: formatExperienceData(finalExperience) });
+
+    const finalPublications = loadData('admin-publications-data', defaultPublicationsData);
+    setPublicationsData(finalPublications);
+    publicationsForm.reset({
+      articles: formatArticlesData(finalPublications.articles),
+      conferences: formatConferencesData(finalPublications.conferences),
+      patents: formatPatentsData(finalPublications.patents)
+    });
+
+    const finalSkills = loadData('admin-skills-data', defaultSkillsData);
+    setSkillsData(finalSkills);
+    skillsForm.reset({
+      coreSkills: formatSkillsData(finalSkills.coreSkills),
+      advancedSkills: formatSkillsData(finalSkills.advancedSkills),
+      technologies: finalSkills.technologies.join(', '),
+      awards: finalSkills.awards.join('\n')
+    });
+
+    const finalProjects = loadData('admin-projects-data', defaultProjects);
+    setProjects(finalProjects);
+
+    const finalPosts = loadData('blog-posts', defaultBlogPosts);
+    setBlogPosts(finalPosts);
   };
 
-  // Authentication
-  const onAuthSubmit = (data: AuthFormValues) => {
-    // Simple password check (in a real app, use a more secure method)
-    if (data.password === "admin123") {
-      if (isIPAllowed()) {
+  useEffect(() => {
+    loadAll();
+  }, [isAuthenticated]);
+
+  // Verificar sessão existente no backend
+  useEffect(() => {
+    const checkSession = async () => {
+      try {
+        await api("/auth/me");
         setIsAuthenticated(true);
-        toast({
-          title: "Authentication successful",
-          description: "Welcome to the admin panel.",
-        });
-      } else {
-        toast({
-          title: "IP not allowed",
-          description: `Your IP (${ipAddress}) is not in the allowed list.`,
-          variant: "destructive",
-        });
+      } catch {
+        // Sem sessão ativa
+      } finally {
+        setAuthChecking(false);
       }
-    } else {
+    };
+    checkSession();
+  }, []);
+
+  // Authentication via backend API
+  const onAuthSubmit = async (data: AuthFormValues) => {
+    // Check rate limiting
+    const now = Date.now();
+    if (loginLockedUntil && now < loginLockedUntil) {
+      const remaining = Math.ceil((loginLockedUntil - now) / 1000);
+      setAuthError(`Too many attempts. Wait ${remaining}s.`);
+      return;
+    }
+
+    if (submitting) return;
+    setSubmitting(true);
+    setAuthError(null);
+    try {
+      await api("/auth/login", {
+        method: "POST",
+        json: { username: "admin", password: data.password },
+      });
+      setLoginAttempts(0);
+      setSubmitting(false);
+      setIsAuthenticated(true);
+      await loadAll();
+      toast({
+        title: "Authenticated",
+        description: "Welcome to the admin panel.",
+      });
+    } catch (e) {
+      setSubmitting(false);
+      const newAttempts = loginAttempts + 1;
+      setLoginAttempts(newAttempts);
+
+      const msg = e instanceof ApiError
+        ? (typeof e.body === "object" && e.body?.error ? e.body.error : e.message)
+        : "Authentication failed";
+
+      if (newAttempts >= MAX_ATTEMPTS) {
+        const lockUntil = Date.now() + LOCKOUT_SECONDS * 1000;
+        setLoginLockedUntil(lockUntil);
+        setLoginAttempts(0);
+        setAuthError(`Locked out for ${LOCKOUT_SECONDS}s due to too many failed attempts.`);
+        setTimeout(() => setLoginLockedUntil(null), LOCKOUT_SECONDS * 1000);
+      } else {
+        setAuthError(`${msg} (${newAttempts}/${MAX_ATTEMPTS} attempts)`);
+      }
+
       toast({
         title: "Authentication failed",
-        description: "Incorrect password.",
+        description: msg,
         variant: "destructive",
       });
     }
   };
 
   // Form submission handlers
-  const onProfileSubmit = (data: ProfileFormValues) => {
-    const updatedProfile = {
-      ...aboutData,
-      name: data.name,
-      title: data.title,
-      bio: data.bio,
-      email: data.email,
-      location: data.location,
-      lattes: data.lattes,
-      profileImage: data.profileImage,
-      researchFocus: data.researchFocus.split(',').map(item => item.trim())
-    };
+  const onProfileSubmit = async (data: ProfileFormValues) => {
+    // Mescla com dados existentes — só sobrescreve campos preenchidos
+    const updatedProfile = { ...aboutData };
+    if (data.name) updatedProfile.name = data.name;
+    if (data.title) updatedProfile.title = data.title;
+    if (data.bio) updatedProfile.bio = data.bio;
+    if (data.email) updatedProfile.email = data.email;
+    if (data.location) updatedProfile.location = data.location;
+    if (data.lattes) updatedProfile.lattes = data.lattes;
+    if (data.profileImage) updatedProfile.profileImage = data.profileImage;
+    if (data.researchFocus) {
+      updatedProfile.researchFocus = data.researchFocus.split(',').map(item => item.trim());
+    }
     
     setAboutData(updatedProfile);
     saveData('admin-about-data', updatedProfile);
+    const ok = await saveToBackend('/about', updatedProfile);
     
     toast({
       title: "Perfil atualizado",
-      description: "As informações do perfil foram salvas com sucesso.",
+      description: ok ? "Salvo no backend + cache local." : "Salvo apenas no cache local (backend offline).",
     });
   };
 
-  const onEducationSubmit = (data: EducationFormValues) => {
+  const onEducationSubmit = async (data: EducationFormValues) => {
     const updatedEducation = parseEducationData(data.items);
     setEducationData(updatedEducation);
     saveData('admin-education-data', updatedEducation);
+    const ok = await saveToBackend('/resume/education', updatedEducation);
     
     toast({
       title: "Educação atualizada",
-      description: "As informações sobre educação foram salvas com sucesso.",
+      description: ok ? "Salvo no backend + cache local." : "Salvo apenas no cache local (backend offline).",
     });
   };
 
-  const onExperienceSubmit = (data: ExperienceFormValues) => {
+  const onExperienceSubmit = async (data: ExperienceFormValues) => {
     const updatedExperience = parseExperienceData(data.items);
     setExperienceData(updatedExperience);
     saveData('admin-experience-data', updatedExperience);
+    const ok = await saveToBackend('/resume/experience', updatedExperience);
     
     toast({
       title: "Experiência atualizada",
-      description: "As informações sobre experiência profissional foram salvas com sucesso.",
+      description: ok ? "Salvo no backend + cache local." : "Salvo apenas no cache local (backend offline).",
     });
   };
 
-  const onPublicationsSubmit = (data: PublicationsFormValues) => {
+  const onPublicationsSubmit = async (data: PublicationsFormValues) => {
     const updatedPublications = parsePublicationsData(data.articles, data.conferences, data.patents);
     setPublicationsData(updatedPublications);
     saveData('admin-publications-data', updatedPublications);
+    const ok = await saveToBackend('/resume/publications', updatedPublications);
     
     toast({
       title: "Publicações atualizadas",
-      description: "As informações sobre publicações foram salvas com sucesso.",
+      description: ok ? "Salvo no backend + cache local." : "Salvo apenas no cache local (backend offline).",
     });
   };
 
-  const onSkillsSubmit = (data: SkillsFormValues) => {
+  const onSkillsSubmit = async (data: SkillsFormValues) => {
     const updatedSkills = parseSkillsData(data.coreSkills, data.advancedSkills, data.technologies, data.awards);
     setSkillsData(updatedSkills);
     saveData('admin-skills-data', updatedSkills);
+    const ok = await saveToBackend('/resume/skills', updatedSkills);
     
     toast({
       title: "Habilidades atualizadas",
-      description: "As informações sobre habilidades foram salvas com sucesso.",
+      description: ok ? "Salvo no backend + cache local." : "Salvo apenas no cache local (backend offline).",
     });
   };
 
@@ -788,47 +896,103 @@ const Admin: React.FC = () => {
     setIsProjectDialogOpen(true);
   };
 
-  const onProjectSubmit = (data: ProjectFormValues) => {
-    let updatedProjects;
-    
-    if (currentProject && currentProject.id) {
-      // Edit existing project
-      updatedProjects = projects.map(p => 
-        p.id === currentProject.id ? { ...data, id: currentProject.id, stars: p.stars, forks: p.forks } : p
-      );
-      toast({
-        title: "Project updated",
-        description: `"${data.title}" has been updated.`,
-      });
-    } else {
-      // Add new project
-      const newProject = {
-        ...data,
-        id: Math.max(0, ...projects.map(p => p.id || 0)) + 1,
-        stars: 0,
-        forks: 0,
-      };
-      updatedProjects = [...projects, newProject];
-      toast({
-        title: "Project added",
-        description: `"${data.title}" has been added to your projects.`,
-      });
-    }
-    
-    setProjects(updatedProjects);
-    saveData('admin-projects-data', updatedProjects);
-    setIsProjectDialogOpen(false);
-  };
-
-  const deleteProject = (id: number) => {
-    if (confirm("Are you sure you want to delete this project?")) {
-      const updatedProjects = projects.filter(p => p.id !== id);
+  const onProjectSubmit = async (data: ProjectFormValues) => {
+    setSubmitting(true);
+    try {
+      if (currentProject && currentProject.id) {
+        // Edit existing project
+        const payload = {
+          title: data.title,
+          description: data.description,
+          tags: data.tags,
+          image: data.image,
+          github: data.github,
+          live: data.live || null,
+          readme: data.readme,
+          stars: (currentProject as any).stars || 0,
+          forks: (currentProject as any).forks || 0,
+          ord: 0,
+        };
+        await api(`/projects/${currentProject.id}`, { method: 'PUT', json: payload });
+        toast({
+          title: "Projeto atualizado",
+          description: `"${data.title}" foi atualizado no backend.`,
+        });
+      } else {
+        // Add new project
+        const payload = {
+          title: data.title,
+          description: data.description,
+          tags: data.tags,
+          image: data.image,
+          github: data.github,
+          live: data.live || null,
+          readme: data.readme,
+          stars: 0,
+          forks: 0,
+          ord: 0,
+        };
+        await api('/projects', { method: 'POST', json: payload });
+        toast({
+          title: "Projeto adicionado",
+          description: `"${data.title}" foi criado no backend.`,
+        });
+      }
+      // Reload projects from backend
+      const updated = await loadFromBackend<any[]>('/projects');
+      if (updated) {
+        setProjects(updated);
+        saveData('admin-projects-data', updated);
+      }
+    } catch (err) {
+      // Fallback: save to localStorage only
+      let updatedProjects;
+      if (currentProject && currentProject.id) {
+        updatedProjects = projects.map(p => 
+          p.id === currentProject.id ? { ...data, id: currentProject.id, stars: (p as any).stars || 0, forks: (p as any).forks || 0 } : p
+        );
+      } else {
+        const newProject = {
+          ...data,
+          id: Math.max(0, ...projects.map(p => p.id || 0)) + 1,
+          stars: 0,
+          forks: 0,
+        };
+        updatedProjects = [...projects, newProject];
+      }
       setProjects(updatedProjects);
       saveData('admin-projects-data', updatedProjects);
       toast({
-        title: "Project deleted",
-        description: "The project has been removed from your portfolio.",
+        title: "Projeto salvo (offline)",
+        description: `"${data.title}" salvo apenas no cache local (backend offline).`,
       });
+    } finally {
+      setSubmitting(false);
+      setIsProjectDialogOpen(false);
+    }
+  };
+
+  const deleteProject = async (id: number) => {
+    if (confirm("Are you sure you want to delete this project?")) {
+      try {
+        await api(`/projects/${id}`, { method: 'DELETE', json: {} });
+        const updated = projects.filter(p => p.id !== id);
+        setProjects(updated);
+        saveData('admin-projects-data', updated);
+        toast({
+          title: "Projeto excluído",
+          description: "Removido do backend + cache local.",
+        });
+      } catch {
+        // Fallback: remove from localStorage only
+        const updated = projects.filter(p => p.id !== id);
+        setProjects(updated);
+        saveData('admin-projects-data', updated);
+        toast({
+          title: "Projeto excluído (offline)",
+          description: "Removido apenas do cache local (backend offline).",
+        });
+      }
     }
   };
   
@@ -856,68 +1020,123 @@ const Admin: React.FC = () => {
     setIsBlogPostDialogOpen(true);
   };
 
-  const onBlogPostSubmit = (data: BlogPostFormValues) => {
-    if (currentBlogPost) {
-      // Edit existing post
-      const updatedPosts = blogPosts.map(post => 
-        post.id === currentBlogPost.id ? 
-          { 
-            ...post, 
-            title: data.title,
-            slug: data.slug,
-            excerpt: data.excerpt || "",
-            content: data.content,
-            image: data.image || "",
-          } : post
-      );
-      
-      setBlogPosts(updatedPosts);
-      saveData('blog-posts', updatedPosts);
-      
-      toast({
-        title: "Post atualizado",
-        description: `"${data.title}" foi atualizado com sucesso.`,
-      });
-    } else {
-      // Add new post
-      const newPost = {
-        id: Date.now().toString(),
+  const onBlogPostSubmit = async (data: BlogPostFormValues) => {
+    setSubmitting(true);
+    try {
+      const payload = {
         title: data.title,
         slug: data.slug,
         excerpt: data.excerpt || "",
         content: data.content,
-        image: data.image || "",
-        createdAt: new Date().toISOString(),
+        image: data.image || null,
+        status: "published" as const,
       };
       
-      const updatedPosts = [...blogPosts, newPost];
-      setBlogPosts(updatedPosts);
-      saveData('blog-posts', updatedPosts);
-      
+      if (currentBlogPost) {
+        // Edit existing post
+        await api(`/posts/by-id/${currentBlogPost.id}`, { method: 'PUT', json: payload });
+        toast({
+          title: "Post atualizado",
+          description: `"${data.title}" foi atualizado no backend.`,
+        });
+      } else {
+        // Add new post
+        await api('/posts', { method: 'POST', json: payload });
+        toast({
+          title: "Post criado",
+          description: `"${data.title}" foi criado no backend.`,
+        });
+      }
+      // Reload posts from backend
+      const updated = await loadFromBackend<any[]>('/posts');
+      if (updated) {
+        setBlogPosts(updated);
+        saveData('blog-posts', updated);
+      }
+    } catch (err) {
+      // Fallback: save to localStorage only
+      if (currentBlogPost) {
+        const updatedPosts = blogPosts.map(post => 
+          post.id === currentBlogPost.id ? 
+            { 
+              ...post, 
+              title: data.title,
+              slug: data.slug,
+              excerpt: data.excerpt || "",
+              content: data.content,
+              image: data.image || "",
+            } : post
+        );
+        setBlogPosts(updatedPosts);
+        saveData('blog-posts', updatedPosts);
+      } else {
+        const newPost = {
+          id: Date.now().toString(),
+          title: data.title,
+          slug: data.slug,
+          excerpt: data.excerpt || "",
+          content: data.content,
+          image: data.image || "",
+          createdAt: new Date().toISOString(),
+        };
+        const updatedPosts = [...blogPosts, newPost];
+        setBlogPosts(updatedPosts);
+        saveData('blog-posts', updatedPosts);
+      }
       toast({
-        title: "Post criado",
-        description: `"${data.title}" foi criado com sucesso.`,
+        title: currentBlogPost ? "Post atualizado (offline)" : "Post criado (offline)",
+        description: `"${data.title}" salvo apenas no cache local (backend offline).`,
       });
+    } finally {
+      setSubmitting(false);
+      setIsBlogPostDialogOpen(false);
     }
-    
-    setIsBlogPostDialogOpen(false);
   };
 
-  const deleteBlogPost = (id: string) => {
+  const deleteBlogPost = async (id: string) => {
     if (confirm("Tem certeza que deseja excluir este post?")) {
-      const updatedPosts = blogPosts.filter(post => post.id !== id);
-      setBlogPosts(updatedPosts);
-      saveData('blog-posts', updatedPosts);
-      
-      toast({
-        title: "Post excluído",
-        description: "O post foi removido do seu blog.",
-      });
+      try {
+        await api(`/posts/by-id/${id}`, { method: 'DELETE', json: {} });
+        const updatedPosts = blogPosts.filter(post => post.id !== id);
+        setBlogPosts(updatedPosts);
+        saveData('blog-posts', updatedPosts);
+        toast({
+          title: "Post excluído",
+          description: "Removido do backend + cache local.",
+        });
+      } catch {
+        const updatedPosts = blogPosts.filter(post => post.id !== id);
+        setBlogPosts(updatedPosts);
+        saveData('blog-posts', updatedPosts);
+        toast({
+          title: "Post excluído (offline)",
+          description: "Removido apenas do cache local (backend offline).",
+        });
+      }
     }
   };
+
+  // If checking auth, show loading
+  if (authChecking) {
+    return (
+      <Layout title="ADMIN AUTHENTICATION">
+        <div className="flex justify-center items-center min-h-[60vh]">
+          <Card className="w-full max-w-md neo-blur border border-cyber-neon/30">
+            <CardContent className="p-6 font-mono text-cyber-blue text-center">
+              Verificando sessão...
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
 
   // If not authenticated, show login form
   if (!isAuthenticated) {
+    const now = Date.now();
+    const isLocked = loginLockedUntil && now < loginLockedUntil;
+    const lockRemaining = isLocked ? Math.ceil((loginLockedUntil! - now) / 1000) : 0;
+
     return (
       <Layout title="ADMIN AUTHENTICATION">
         <div className="flex justify-center items-center min-h-[60vh]">
@@ -928,15 +1147,16 @@ const Admin: React.FC = () => {
                 Admin Authentication
               </CardTitle>
               <CardDescription>
-                Enter your password to access the admin area.
-                {!isIPAllowed() && (
-                  <div className="mt-2 text-destructive">
-                    Warning: Your IP ({ipAddress}) is not in the allowed list.
-                  </div>
-                )}
+                Enter your admin password to access the control panel.
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {authError && (
+                <div className="mb-4 flex items-start gap-2 p-3 bg-destructive/10 border border-destructive/30 rounded text-sm text-destructive">
+                  <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                  <span>{authError}</span>
+                </div>
+              )}
               <Form {...authForm}>
                 <form onSubmit={authForm.handleSubmit(onAuthSubmit)} className="space-y-4">
                   <FormField
@@ -946,14 +1166,19 @@ const Admin: React.FC = () => {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="Enter admin password" {...field} />
+                          <Input
+                            type="password"
+                            placeholder="Enter admin password"
+                            disabled={isLocked}
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  <Button type="submit" className="w-full">
-                    Authenticate
+                  <Button type="submit" className="w-full" disabled={isLocked || submitting}>
+                    {submitting ? "Authenticating..." : isLocked ? `Locked (${lockRemaining}s)` : "Authenticate"}
                   </Button>
                 </form>
               </Form>
@@ -973,6 +1198,22 @@ const Admin: React.FC = () => {
   return (
     <Layout title="ADMIN PANEL">
       <div className="mb-6">
+        <div className="flex justify-end mb-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="text-red-400 border-red-400/30 hover:bg-red-900/20"
+            onClick={async () => {
+              try {
+                await api("/auth/logout", { method: "POST", json: {} });
+              } catch {}
+              setIsAuthenticated(false);
+              toast({ title: "Logged out" });
+            }}
+          >
+            SAIR
+          </Button>
+        </div>
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="bg-cyber-black border border-cyber-neon/30 p-1">
             <TabsTrigger 
@@ -1022,6 +1263,13 @@ const Admin: React.FC = () => {
               className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
             >
               BACKEND
+            </TabsTrigger>
+            <TabsTrigger
+              value="settings"
+              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
+            >
+              <Settings size={14} className="mr-1" />
+              CONFIGURAÇÕES
             </TabsTrigger>
           </TabsList>
           
@@ -1591,6 +1839,62 @@ const Admin: React.FC = () => {
 
           <TabsContent value="backend">
             <AdminBackendPanel />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <Card className="neo-blur border border-cyber-neon/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Settings size={20} />
+                  Visibilidade de Seções
+                </CardTitle>
+                <CardDescription>
+                  Controle quais seções são visíveis na página pública do site.
+                  As alterações são aplicadas imediatamente.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[
+                  { key: "profile", label: "PERFIL", desc: "Informações pessoais e profissionais" },
+                  { key: "education", label: "EDUCAÇÃO", desc: "Formação acadêmica e cursos" },
+                  { key: "experience", label: "EXPERIÊNCIA", desc: "Experiência profissional" },
+                  { key: "publications", label: "PUBLICAÇÕES", desc: "Artigos, conferências e patentes" },
+                  { key: "skills", label: "HABILIDADES", desc: "Competências técnicas e prêmios" },
+                  { key: "projects", label: "PROJETOS", desc: "Portfólio de projetos" },
+                  { key: "blog", label: "BLOG", desc: "Posts do blog" },
+                  { key: "contact", label: "CONTATO", desc: "Formulário de contato" },
+                ].map(({ key, label, desc }) => (
+                  <div key={key} className="flex items-center justify-between p-3 border border-primary/20 rounded">
+                    <div>
+                      <Label className="font-mono text-sm text-primary">{label}</Label>
+                      <p className="text-xs text-muted-foreground mt-1">{desc}</p>
+                    </div>
+                    <Switch
+                      checked={sections[key] ?? true}
+                      onCheckedChange={async (checked) => {
+                        const updated = { ...sections, [key]: checked };
+                        setSections(updated);
+                        try {
+                          await api('/sections', { method: 'PUT', json: { [key]: checked } });
+                          toast({
+                            title: `${label} ${checked ? 'visível' : 'oculta'}`,
+                            description: `Seção ${label.toLowerCase()} foi ${checked ? 'ativada' : 'desativada'} no site.`,
+                          });
+                        } catch {
+                          // Reverte em caso de erro
+                          setSections(sections);
+                          toast({
+                            title: "Erro ao salvar",
+                            description: "Não foi possível atualizar a visibilidade. Backend offline?",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    />
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -6,7 +6,7 @@ use serde::Deserialize;
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::error::AppResult;
+use crate::error::{AppError, AppResult};
 use crate::AppState;
 
 #[derive(Deserialize)]
@@ -40,6 +40,24 @@ pub async fn import(
     let conn = state.db.get()?;
     let now = Utc::now().to_rfc3339();
 
+    // SEC-13: limites de volume para impedir inflação do banco mesmo
+    // por um admin autenticado (backup gigante, erro de loop etc.).
+    if let Some(projects) = &p.projects {
+        if projects.len() > 500 {
+            return Err(AppError::BadRequest("muitos projetos (max 500)".into()));
+        }
+    }
+    if let Some(posts) = &p.posts {
+        if posts.len() > 1000 {
+            return Err(AppError::BadRequest("muitos posts (max 1000)".into()));
+        }
+    }
+    if let Some(about) = &p.about {
+        if serde_json::to_string(about).map(|s| s.len()).unwrap_or(0) > 100_000 {
+            return Err(AppError::BadRequest("about muito grande".into()));
+        }
+    }
+
     if let Some(about) = p.about {
         conn.execute(
             "INSERT INTO about(id,data_json,updated_at) VALUES (1,?1,?2)
@@ -66,7 +84,12 @@ pub async fn import(
     if let Some(projects) = p.projects {
         for (i, proj) in projects.iter().enumerate() {
             let title = proj.get("title").and_then(Value::as_str).unwrap_or("").to_string();
-            if title.is_empty() { continue; }
+            if title.is_empty() || title.len() > 300 { continue; }
+            // SEC-13: evita duplicação em reimport (projects não tem UNIQUE).
+            let dup: i64 = conn
+                .query_row("SELECT COUNT(*) FROM projects WHERE title=?1", [&title], |r| r.get(0))
+                .unwrap_or(0);
+            if dup > 0 { continue; }
             conn.execute(
                 "INSERT INTO projects(title,description,tags,image,github,live,stars,forks,readme,ord,created_at,updated_at)
                  VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?11)",
@@ -91,6 +114,12 @@ pub async fn import(
             let slug = post.get("slug").and_then(Value::as_str).unwrap_or("").to_string();
             let title = post.get("title").and_then(Value::as_str).unwrap_or("").to_string();
             if slug.is_empty() || title.is_empty() { continue; }
+            // SEC-13: mesmas regras de validação do CRUD de posts.
+            if title.len() < 3 || title.len() > 300 { continue; }
+            if slug.len() < 3 || slug.len() > 200 { continue; }
+            if !slug.chars().all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_') { continue; }
+            let content_len = post.get("content").and_then(Value::as_str).map(|s| s.len()).unwrap_or(0);
+            if content_len > 200_000 { continue; }
             let id = post.get("id").and_then(Value::as_str).map(String::from)
                 .unwrap_or_else(|| Uuid::new_v4().to_string());
             let created = post.get("createdAt").and_then(Value::as_str).unwrap_or(&now).to_string();

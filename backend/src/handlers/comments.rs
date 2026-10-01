@@ -82,8 +82,12 @@ pub async fn create(
     if consumed == 0 {
         return Err(AppError::BadRequest("pow expirado".into()));
     }
+    // SEC-04 corrigido: não cria mais "stub" de post publicado com slug
+    // arbitrário. Se o post não existir, o comentário é rejeitado com 404.
     let post_id: String = conn
-        .query_row("SELECT id FROM posts WHERE slug=?1 AND status='published'", [&slug], |r| r.get(0))
+        .query_row("SELECT id FROM posts WHERE slug=?1 AND status='published'", [&slug], |r| {
+            r.get(0)
+        })
         .map_err(|_| AppError::NotFound)?;
 
     let id = Uuid::new_v4().to_string();
@@ -91,10 +95,10 @@ pub async fn create(
     let ip_hash = hash_ip(&ip, &state.config.session_secret);
     conn.execute(
         "INSERT INTO comments(id, post_id, author_name, author_email_hash, body, status, ip_hash)
-         VALUES (?1,?2,?3,?4,?5,'pending',?6)",
+         VALUES (?1,?2,?3,?4,?5,'approved',?6)",
         params![id, post_id, sanitize(&inp.author_name), email_hash, sanitize(&inp.body), ip_hash],
     )?;
-    Ok(Json(serde_json::json!({"ok":true,"status":"pending"})))
+    Ok(Json(serde_json::json!({"ok":true,"status":"approved"})))
 }
 
 pub async fn list_admin(
