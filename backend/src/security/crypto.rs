@@ -46,14 +46,24 @@ pub fn decrypt(token: &str, secret: &[u8; 32]) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use aes_gcm::aead::rand_core::RngCore;
 
     #[test]
     fn roundtrip() {
-        let secret = [7u8; 32];
+        let mut rng = OsRng;
+        let secret: [u8; 32] = core::array::from_fn(|_| {
+            let mut b = [0u8; 1];
+            rng.fill_bytes(&mut b);
+            b[0]
+        });
         let token = encrypt("user@example.com", &secret);
         assert!(token.starts_with(PREFIX));
         assert_eq!(decrypt(&token, &secret).as_deref(), Some("user@example.com"));
-        let other = [8u8; 32];
+        let other: [u8; 32] = core::array::from_fn(|_| {
+            let mut b = [0u8; 1];
+            rng.fill_bytes(&mut b);
+            b[0]
+        });
         assert!(decrypt(&token, &other).is_none());
         assert!(decrypt("texto-em-claro", &secret).is_none());
     }
