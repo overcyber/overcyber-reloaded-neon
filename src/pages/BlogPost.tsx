@@ -145,8 +145,15 @@ export default function BlogPost() {
     };
   }, [slug, navigate]);
 
-  const formatDate = (dateString: string) =>
-    new Date(dateString).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+  const formatDate = (dateString: string) => {
+    try {
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return dateString || "";
+      return d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" });
+    } catch {
+      return dateString || "";
+    }
+  };
 
   const formatContent = (content: string) =>
     content.split("\n").map((line, index) => (

@@ -37,7 +37,10 @@ export async function api<T = any>(path: string, opts: ApiOptions = {}): Promise
     credentials: "include",
   });
   const ct = res.headers.get("content-type") || "";
-  const body = ct.includes("json") ? await res.json().catch(() => null) : await res.text();
+  if (!ct.includes("json")) {
+    throw new ApiError(res.status, "API retornou resposta não-JSON");
+  }
+  const body = await res.json().catch(() => null);
   if (!res.ok) throw new ApiError(res.status, body);
   return body as T;
 }

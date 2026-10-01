@@ -739,10 +739,14 @@ const Admin: React.FC = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        await api("/auth/me");
-        setIsAuthenticated(true);
+        const me = await api("/auth/me");
+        if (me && typeof me === "object" && me.userId) {
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
       } catch {
-        // Sem sessão ativa
+        setIsAuthenticated(false);
       } finally {
         setAuthChecking(false);
       }

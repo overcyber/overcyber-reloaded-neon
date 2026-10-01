@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { FileText, Archive } from "lucide-react";
+import { api } from "@/lib/api";
 
 interface BlogPost {
   id: string;
@@ -64,36 +65,39 @@ export default function Blog() {
     // Carregar posts: tenta do backend primeiro, com fallback para localStorage
     const loadPosts = async () => {
       try {
-        const res = await fetch('/api/posts');
-        if (res.ok) {
-          const data = await res.json();
-          if (Array.isArray(data) && data.length > 0 && !cancelled) {
-            setPosts(data.map((p: any) => ({
-              id: p.id,
-              title: p.title,
-              slug: p.slug,
-              excerpt: p.excerpt || "",
-              content: p.content || "",
-              image: p.image || undefined,
-              createdAt: p.createdAt || p.publishedAt || new Date().toISOString(),
-            })));
-            setLoading(false);
-            return;
-          }
+        const data = await api<any[]>('/posts');
+        if (Array.isArray(data) && data.length > 0 && !cancelled) {
+          setPosts(data.map((p: any) => ({
+            id: String(p.id),
+            title: p.title,
+            slug: p.slug,
+            excerpt: p.excerpt || "",
+            content: p.content || "",
+            image: p.image || undefined,
+            createdAt: p.createdAt || p.publishedAt || new Date().toISOString(),
+          })));
+          setLoading(false);
+          return;
         }
-      } catch {
-        // Fallback abaixo
+      } catch (err) {
+        console.warn("Backend /posts indisponível, usando fallback:", err);
       }
 
       try {
         const storedPosts = localStorage.getItem("blog-posts");
         if (storedPosts && !cancelled) {
-          setPosts(JSON.parse(storedPosts));
+          const parsed = JSON.parse(storedPosts);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setPosts(parsed);
+          } else {
+            setPosts(FALLBACK_POSTS);
+          }
         } else if (!cancelled) {
           setPosts(FALLBACK_POSTS);
         }
       } catch (error) {
         console.error("Failed to load blog posts:", error);
+        if (!cancelled) setPosts(FALLBACK_POSTS);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -106,12 +110,18 @@ export default function Blog() {
   }, []);
 
   const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    try {
+      const d = new Date(dateString);
+      if (isNaN(d.getTime())) return dateString || "";
+      const options: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      };
+      return d.toLocaleDateString(undefined, options);
+    } catch {
+      return dateString || "";
+    }
   };
 
   if (!sectionVisible) {
@@ -148,7 +158,7 @@ export default function Blog() {
                   >
                     <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent"></div>
                     <div className="absolute top-2 left-2 text-xs font-mono text-primary/70 bg-background/50 px-2 py-1 backdrop-blur-sm">
-                      REF#{post.id.substring(0, 8)}
+                      REF#{String(post.id).substring(0, 8)}
                     </div>
                   </div>
                 )}
