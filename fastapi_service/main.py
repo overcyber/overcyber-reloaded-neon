@@ -13,7 +13,7 @@ async def lifespan(app: FastAPI):
     print("=" * 60)
     print("OVERCYBER FASTAPI GATEWAY INICIADO")
     print(f"API Port: {API_PORT}")
-    print(f"Token de Autenticação (Bearer): {API_TOKEN}")
+    print(f"Token de Autenticação (Bearer) configurado: {'sim' if bool(API_TOKEN) else 'não'}")
     print(f"CORS Origins: {CORS_ORIGINS}")
     print("=" * 60)
     yield
