@@ -185,7 +185,18 @@ const About = () => {
     fetch('/api/about')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data && data.name) setAboutData(data);
+        if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+          setAboutData(prev => ({
+            ...prev,
+            ...data,
+            researchFocus: (Array.isArray(data.researchFocus) && data.researchFocus.length > 0)
+              ? data.researchFocus
+              : prev.researchFocus,
+            languages: (Array.isArray(data.languages) && data.languages.length > 0)
+              ? data.languages
+              : prev.languages,
+          }));
+        }
       })
       .catch(() => {});
 

@@ -9,31 +9,55 @@ import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getProjectsContent } from '@/hooks/use-managed-content';
 
+const normalizeProject = (p: any) => ({
+  ...p,
+  tags: Array.isArray(p.tags)
+    ? p.tags
+    : (typeof p.tags === 'string' && p.tags.trim()
+        ? p.tags.split(',').map((t: string) => t.trim()).filter(Boolean)
+        : []),
+});
+
 const Projects = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [expandedProject, setExpandedProject] = useState<number | null>(null);
   const [sectionVisible, setSectionVisible] = useState(true);
   
-  // Get projects from the content management system
-  const projects = getProjectsContent();
+  // Get initial projects from content management system
+  const [projects, setProjects] = useState<any[]>(() => {
+    const initial = getProjectsContent();
+    return Array.isArray(initial) ? initial.map(normalizeProject) : [];
+  });
 
   useEffect(() => {
     fetch('/api/sections')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data && data.projects === false) setSectionVisible(false); })
       .catch(() => {});
+
+    fetch('/api/projects')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setProjects(data.map(normalizeProject));
+        }
+      })
+      .catch(() => {});
   }, []);
   
   const filteredProjects = activeTab === "all" 
     ? projects 
-    : projects.filter(project => project.tags.some((tag: string) => 
-        tag.toLowerCase() === activeTab.toLowerCase()));
+    : projects.filter(project => {
+        const tags = Array.isArray(project.tags) ? project.tags : [];
+        return tags.some((tag: string) => typeof tag === 'string' && tag.toLowerCase() === activeTab.toLowerCase());
+      });
 
   // Get unique tags for building tab filters
   const uniqueTags = Array.from(
     new Set(
-      projects.flatMap(project => project.tags)
+      projects.flatMap(project => Array.isArray(project.tags) ? project.tags : [])
         .map((tag: string) => typeof tag === 'string' ? tag.toLowerCase() : tag)
+        .filter(Boolean)
     )
   ).slice(0, 3); // Limit to first 3 tags to avoid too many tabs
   

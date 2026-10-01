@@ -36,12 +36,23 @@ export async function api<T = any>(path: string, opts: ApiOptions = {}): Promise
     headers,
     credentials: "include",
   });
+  if (res.status === 204) {
+    return null as T;
+  }
   const ct = res.headers.get("content-type") || "";
-  if (!ct.includes("json")) {
+  if (res.ok && !ct.includes("json")) {
     throw new ApiError(res.status, "API retornou resposta não-JSON");
   }
+  if (!res.ok) {
+    let errBody: any = null;
+    if (ct.includes("json")) {
+      errBody = await res.json().catch(() => null);
+    } else {
+      errBody = await res.text().catch(() => null);
+    }
+    throw new ApiError(res.status, errBody);
+  }
   const body = await res.json().catch(() => null);
-  if (!res.ok) throw new ApiError(res.status, body);
   return body as T;
 }
 
