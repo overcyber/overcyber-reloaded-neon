@@ -1,7 +1,7 @@
 import secrets
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List, Optional, Union
-from fastapi import FastAPI, Depends, HTTPException, Query, Request, status
+from fastapi import FastAPI, Depends, HTTPException, Query, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -116,6 +116,11 @@ class ContactInput(BaseModel):
     website: Optional[str] = Field("", description="Honeypot")
     pow: Optional[Any] = Field(None, description="Proof of work")
 
+class LoginInput(BaseModel):
+    username: str = Field(..., min_length=1, max_length=64, description="Nome de usuário")
+    password: str = Field(..., min_length=1, max_length=512, description="Senha")
+    totp: Optional[str] = Field(None, description="Código 2FA TOTP (se ativo)")
+
 
 
 # ─── ROTAS GERAIS ──────────────────────────────────────────────────
@@ -131,6 +136,7 @@ def root(token: str = Depends(verify_token)):
             "comments": "/api/comments",
             "messages": "/api/contact/messages",
             "sections": "/api/sections",
+            "auth": "/api/auth/login",
             "docs": "/docs",
         },
     }
@@ -139,6 +145,83 @@ def root(token: str = Depends(verify_token)):
 def healthz():
     """Único endpoint público para probe e verificação de saúde da API."""
     return {"status": "ok"}
+
+# ─── AUTENTICAÇÃO DO ADMINISTRADOR ─────────────────────────────────
+
+@app.post("/api/auth/login")
+def auth_login(payload: LoginInput, response: Response):
+    """Autentica o administrador no painel web (gera sessão e cookies sid/csrf)."""
+    user = db.verify_admin_login(payload.username, payload.password)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Credenciais inválidas"
+        )
+    sess = db.create_session(user_id=user["id"])
+    sid = sess["sid"]
+    csrf = sess["csrf"]
+
+    response.set_cookie(
+        key="sid",
+        value=sid,
+        httponly=True,
+        samesite="lax",
+        path="/",
+        max_age=7 * 86400
+    )
+    response.set_cookie(
+        key="csrf",
+        value=csrf,
+        httponly=False,
+        samesite="lax",
+        path="/",
+        max_age=7 * 86400
+    )
+    return {
+        "ok": True,
+        "mustChangePassword": user["mustChangePassword"],
+        "totpEnabled": user["totpEnabled"],
+        "csrf": csrf
+    }
+
+@app.get("/api/auth/me")
+def auth_me(request: Request):
+    """Verifica se há sessão ativa de administrador."""
+    sid = request.cookies.get("sid")
+    auth_header = request.headers.get("Authorization", "")
+    if not sid and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ", 1)[1]
+        if token == API_TOKEN:
+            return {
+                "userId": 1,
+                "username": "admin",
+                "mustChangePassword": False,
+                "totpEnabled": False,
+                "csrf": ""
+            }
+        sid = token
+
+    user = db.get_session_user(sid) if sid else None
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Não autenticado")
+    return {
+        "userId": user["userId"],
+        "username": user["username"],
+        "mustChangePassword": user["mustChangePassword"],
+        "totpEnabled": user["totpEnabled"],
+        "csrf": user["csrfToken"]
+    }
+
+@app.post("/api/auth/logout")
+def auth_logout(request: Request, response: Response):
+    """Encerra a sessão do administrador."""
+    sid = request.cookies.get("sid")
+    if sid:
+        db.delete_session(sid)
+    response.delete_cookie("sid", path="/")
+    response.delete_cookie("csrf", path="/")
+    return {"ok": True}
+
 
 # ─── BLOG POSTS ────────────────────────────────────────────────────
 
