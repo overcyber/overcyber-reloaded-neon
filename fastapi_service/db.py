@@ -372,7 +372,7 @@ def list_comments(status: Optional[str] = None) -> List[Dict[str, Any]]:
             for r in rows
         ]
 
-def get_post_comments(slug_or_id: str, status: Optional[str] = None) -> List[Dict[str, Any]]:
+def get_post_comments(slug_or_id: str, status: Optional[str] = "approved") -> List[Dict[str, Any]]:
     with get_connection() as conn:
         cursor = conn.cursor()
         query = (
@@ -381,9 +381,10 @@ def get_post_comments(slug_or_id: str, status: Optional[str] = None) -> List[Dic
             "WHERE (p.slug = ? OR p.id = ?) "
         )
         params = [slug_or_id, slug_or_id]
-        if status:
+        target_status = status or "approved"
+        if target_status != "all":
             query += " AND c.status = ?"
-            params.append(status)
+            params.append(target_status)
         query += " ORDER BY c.created_at ASC"
         cursor.execute(query, tuple(params))
         rows = cursor.fetchall()

@@ -416,11 +416,11 @@ def delete_project(project_id: str, token: str = Depends(verify_token)):
 @app.get("/api/posts/{slug_or_id}/comments")
 def get_post_comments(
     slug_or_id: str,
-    status: Optional[str] = Query(None),
+    status: Optional[str] = Query("approved"),
     token: Optional[str] = Depends(optional_verify_token)
 ):
-    """Lista comentários de um post (público para status=approved; requer token para ver outros status)."""
-    if not token and not status:
+    """Lista comentários de um post. Por padrão, SEMPRE retorna apenas comentários aprovados."""
+    if not token or not status:
         status = "approved"
     return db.get_post_comments(slug_or_id, status)
 

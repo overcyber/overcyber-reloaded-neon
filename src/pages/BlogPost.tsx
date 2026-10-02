@@ -129,9 +129,10 @@ export default function BlogPost() {
       // Se o post foi encontrado e ainda precisamos buscar comentários
       if (postFound) {
         try {
-          const cs = await api<CommentRow[]>(`/posts/${slug}/comments`);
+          const cs = await api<CommentRow[]>(`/posts/${slug}/comments?status=approved`);
           if (!cancelled) {
-            setComments(cs);
+            const approvedOnly = (Array.isArray(cs) ? cs : []).filter((c) => c.status === "approved");
+            setComments(approvedOnly);
             setBackendOn(true);
           }
         } catch {
@@ -269,8 +270,9 @@ export default function BlogPost() {
               slug={slug!}
               onPosted={async () => {
                 try {
-                  const cs = await api<CommentRow[]>(`/posts/${slug}/comments`);
-                  setComments(cs);
+                  const cs = await api<CommentRow[]>(`/posts/${slug}/comments?status=approved`);
+                  const approvedOnly = (Array.isArray(cs) ? cs : []).filter((c) => c.status === "approved");
+                  setComments(approvedOnly);
                 } catch {}
               }}
             />
