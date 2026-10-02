@@ -1,5 +1,7 @@
 import sqlite3
 import json
+import re
+import unicodedata
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 import uuid
@@ -359,8 +361,8 @@ def list_comments(status: Optional[str] = None) -> List[Dict[str, Any]]:
             {
                 "id": r["id"],
                 "postId": r["post_id"],
-                "postSlug": r["post_slug"],
-                "postTitle": r["post_title"],
+                "postSlug": r["post_slug"] or "",
+                "postTitle": r["post_title"] or r["post_slug"] or "Post",
                 "authorName": r["author_name"],
                 "body": r["body"],
                 "status": r["status"],
@@ -389,8 +391,8 @@ def get_post_comments(slug_or_id: str, status: Optional[str] = None) -> List[Dic
             {
                 "id": r["id"],
                 "postId": r["post_id"],
-                "postSlug": r["post_slug"],
-                "postTitle": r["post_title"],
+                "postSlug": r["post_slug"] or "",
+                "postTitle": r["post_title"] or r["post_slug"] or "Post",
                 "authorName": r["author_name"],
                 "body": r["body"],
                 "status": r["status"],
@@ -405,7 +407,7 @@ def create_comment(
     author_name: str,
     body: str,
     author_email: Optional[str] = "",
-    status: str = "approved"
+    status: str = "pending"
 ) -> Dict[str, Any]:
     with get_connection() as conn:
         cursor = conn.cursor()
@@ -706,4 +708,139 @@ def delete_session(sid: str) -> bool:
         cursor.execute("DELETE FROM sessions WHERE id = ?", (sid,))
         conn.commit()
         return cursor.rowcount > 0
+
+def slugify(text: str) -> str:
+    text = unicodedata.normalize("NFKD", str(text)).encode("ascii", "ignore").decode("ascii")
+    text = re.sub(r"[^\w\s-]", "", text).strip().lower()
+    return re.sub(r"[-\s]+", "-", text)
+
+def import_migration_snapshot(snapshot: Dict[str, Any]) -> Dict[str, Any]:
+    """Importa snapshot de migração contendo about, resume, projects e posts."""
+    ts = now_iso()
+    imported = {
+        "about": 0,
+        "resume": 0,
+        "projects": 0,
+        "posts": 0
+    }
+
+    # 1. About
+    about = snapshot.get("about")
+    if about and isinstance(about, dict):
+        update_about(about)
+        imported["about"] = 1
+
+    # 2. Resume
+    resume = snapshot.get("resume")
+    if resume and isinstance(resume, dict):
+        for sec in ["education", "experience", "publications", "skills"]:
+            if sec in resume and resume[sec] is not None:
+                update_resume_section(sec, resume[sec])
+                imported["resume"] += 1
+
+    # 3. Projects
+    projects = snapshot.get("projects")
+    if projects and isinstance(projects, list):
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            for i, proj in enumerate(projects):
+                if not isinstance(proj, dict):
+                    continue
+                title = (proj.get("title") or "").strip()
+                if not title:
+                    continue
+                slug = proj.get("slug") or slugify(title)
+                cursor.execute("SELECT id FROM projects WHERE slug = ? OR title = ?", (slug, title))
+                existing = cursor.fetchone()
+
+                tags = proj.get("tags", "")
+                if isinstance(tags, list):
+                    tags = ", ".join(tags)
+
+                source_repos = proj.get("source_repos", [])
+                if isinstance(source_repos, list):
+                    source_repos_str = json.dumps(source_repos)
+                else:
+                    source_repos_str = str(source_repos)
+
+                image = proj.get("image") or ""
+                github = proj.get("github") or ""
+                live = proj.get("live")
+                stars = int(proj.get("stars") or 0)
+                forks = int(proj.get("forks") or 0)
+                readme = proj.get("readme") or ""
+                visibility = proj.get("visibility") or "public"
+                status_field = proj.get("status") or ""
+                description = proj.get("description") or ""
+                ord_val = int(proj.get("ord", i))
+
+                if existing:
+                    cursor.execute(
+                        "UPDATE projects SET slug = ?, description = ?, tags = ?, image = ?, "
+                        "github = ?, live = ?, stars = ?, forks = ?, readme = ?, ord = ?, "
+                        "visibility = ?, status = ?, source_repos = ?, updated_at = ? "
+                        "WHERE id = ?",
+                        (slug, description, tags, image, github, live, stars, forks,
+                         readme, ord_val, visibility, status_field, source_repos_str, ts, existing["id"])
+                    )
+                else:
+                    cursor.execute(
+                        "INSERT INTO projects(title, slug, description, tags, image, github, live, "
+                        "stars, forks, readme, ord, visibility, status, source_repos, created_at, updated_at) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        (title, slug, description, tags, image, github, live, stars, forks,
+                         readme, ord_val, visibility, status_field, source_repos_str, ts, ts)
+                    )
+                imported["projects"] += 1
+            conn.commit()
+
+    # 4. Posts
+    posts = snapshot.get("posts")
+    if posts and isinstance(posts, list):
+        with get_connection() as conn:
+            cursor = conn.cursor()
+            for p in posts:
+                if not isinstance(p, dict):
+                    continue
+                title = (p.get("title") or "").strip()
+                slug = (p.get("slug") or "").strip()
+                if not title:
+                    continue
+                if not slug:
+                    slug = slugify(title)
+
+                content = p.get("content") or ""
+                excerpt = p.get("excerpt") or ""
+                image = p.get("image")
+                post_status = p.get("status") or "published"
+                if post_status not in ("draft", "published"):
+                    post_status = "published"
+
+                post_id = p.get("id") or str(uuid.uuid4())
+                created_at = p.get("createdAt") or ts
+                published_at = p.get("publishedAt") or (created_at if post_status == "published" else None)
+
+                cursor.execute("SELECT id FROM posts WHERE slug = ? OR id = ?", (slug, post_id))
+                existing = cursor.fetchone()
+                if existing:
+                    cursor.execute(
+                        "UPDATE posts SET title = ?, excerpt = ?, content = ?, image = ?, "
+                        "status = ?, published_at = ?, updated_at = ? WHERE id = ?",
+                        (title, excerpt, content, image, post_status, published_at, ts, existing["id"])
+                    )
+                else:
+                    cursor.execute(
+                        "INSERT INTO posts(id, slug, title, excerpt, content, image, status, published_at, created_at, updated_at) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                        (post_id, slug, title, excerpt, content, image, post_status, published_at, created_at, ts)
+                    )
+                imported["posts"] += 1
+            conn.commit()
+
+    return {
+        "ok": True,
+        "message": "Importação concluída com sucesso",
+        "counts": imported
+    }
+
 

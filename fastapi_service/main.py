@@ -96,7 +96,7 @@ class CommentCreateInput(BaseModel):
     authorEmail: Optional[str] = Field("", description="Email do autor (camelCase)")
     post_slug: Optional[str] = Field(None, description="Slug do post alvo")
     post_id: Optional[str] = Field(None, description="ID do post alvo")
-    status: Optional[str] = Field("approved", description="pending, approved, rejected ou spam")
+    status: Optional[str] = Field("pending", description="pending, approved, rejected ou spam")
     website: Optional[str] = Field("", description="Honeypot")
     pow: Optional[Any] = Field(None, description="Proof of work")
 
@@ -426,7 +426,7 @@ def get_post_comments(
 
 @app.post("/api/posts/{slug_or_id}/comments", status_code=status.HTTP_201_CREATED)
 def create_post_comment(slug_or_id: str, payload: CommentCreateInput):
-    """Cria um comentário em um post específico (endpoint público)."""
+    """Cria um comentário em um post específico (endpoint público). Aguarda moderação."""
     if payload.website:
         return {"status": "ok", "detail": "Comentário processado"}
     try:
@@ -435,7 +435,7 @@ def create_post_comment(slug_or_id: str, payload: CommentCreateInput):
             author_name=payload.resolved_name,
             body=payload.body,
             author_email=payload.resolved_email,
-            status=payload.status or "approved"
+            status="pending"
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -596,4 +596,15 @@ def update_resume_section(section: str, payload: Any, token: str = Depends(verif
         return db.update_resume_section(section, payload)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+# ─── MIGRAÇÃO DE DADOS (IMPORT SNAPSHOT) ────────────────────────────
+
+@app.post("/api/migrate/import")
+def migrate_import(payload: Dict[str, Any], token: str = Depends(verify_token)):
+    """Importa snapshot de migração (about, resume, projects, posts) para o banco SQLite."""
+    try:
+        return db.import_migration_snapshot(payload)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao importar snapshot: {str(e)}")
+
 

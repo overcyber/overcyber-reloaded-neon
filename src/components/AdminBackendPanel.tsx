@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { api, ApiError } from "@/lib/api";
-import { Trash2, Check, X, Send, Plus, Save } from "lucide-react";
+import { Trash2, Check, X, Send, Plus, Save, RefreshCw, MailCheck, Mail, MessageSquare } from "lucide-react";
 
 interface Me {
   userId: number;
@@ -56,7 +56,10 @@ interface ContactMsg {
 
 function errMsg(e: unknown): string {
   if (e instanceof ApiError) {
-    if (typeof e.body === "object" && e.body && "error" in e.body) return String((e.body as any).error);
+    if (typeof e.body === "object" && e.body) {
+      if ("error" in e.body) return String((e.body as any).error);
+      if ("detail" in e.body) return String((e.body as any).detail);
+    }
     return e.message;
   }
   return e instanceof Error ? e.message : String(e);
@@ -126,7 +129,7 @@ export default function AdminBackendPanel() {
         <TabsList className="bg-cyber-black border border-cyber-neon/30 p-1">
           <TabsTrigger value="posts">POSTS</TabsTrigger>
           <TabsTrigger value="comments">COMENTÁRIOS</TabsTrigger>
-          <TabsTrigger value="inbox">INBOX</TabsTrigger>
+          <TabsTrigger value="inbox">MENSAGENS</TabsTrigger>
           <TabsTrigger value="migrate">MIGRAR</TabsTrigger>
         </TabsList>
 
@@ -476,26 +479,55 @@ function PostEditor({
   );
 }
 
-function CommentsPanel() {
+export function CommentsPanel() {
   const [status, setStatus] = useState<"pending" | "approved" | "rejected" | "spam">("pending");
   const [items, setItems] = useState<CommentRow[]>([]);
+  const [pendingCount, setPendingCount] = useState<number>(0);
+  const [loading, setLoading] = useState(false);
 
-  const load = async () => {
+  const loadPendingCount = async () => {
     try {
-      const list = await api<CommentRow[]>(`/comments?status=${status}`);
-      setItems(list);
-    } catch (e) {
-      toast({ title: "Erro", description: errMsg(e), variant: "destructive" });
+      const pendingList = await api<CommentRow[]>("/comments?status=pending");
+      if (Array.isArray(pendingList)) {
+        setPendingCount(pendingList.length);
+      }
+    } catch {
+      // Ignora erro de contagem silenciosamente
     }
   };
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const list = await api<CommentRow[]>(`/comments?status=${status}`);
+      setItems(Array.isArray(list) ? list : []);
+      loadPendingCount();
+    } catch (e) {
+      toast({ title: "Erro", description: errMsg(e), variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     load();
   }, [status]);
 
   const action = async (id: string, what: "approve" | "reject" | "spam" | "delete") => {
     try {
-      if (what === "delete") await api(`/comments/${id}`, { method: "DELETE", json: {} });
-      else await api(`/comments/${id}/${what}`, { method: "POST", json: {} });
+      if (what === "delete") {
+        if (!confirm("Tem certeza que deseja excluir permanentemente este comentário?")) return;
+        await api(`/comments/${id}`, { method: "DELETE", json: {} });
+        toast({ title: "Comentário excluído" });
+      } else {
+        await api(`/comments/${id}/${what}`, { method: "POST", json: {} });
+        const labels: Record<string, string> = {
+          approve: "Comentário aprovado",
+          reject: "Comentário rejeitado",
+          spam: "Marcado como spam",
+        };
+        toast({ title: labels[what] || "Status atualizado" });
+      }
       load();
     } catch (e) {
       toast({ title: "Erro", description: errMsg(e), variant: "destructive" });
@@ -504,48 +536,110 @@ function CommentsPanel() {
 
   return (
     <Card className="neo-blur border border-cyber-neon/30 mt-4">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="font-mono">Moderação de Comentários</CardTitle>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as any)}
-          className="bg-cyber-black border border-cyber-neon/30 p-2 font-mono text-sm"
-        >
-          <option value="pending">Pendentes</option>
-          <option value="approved">Aprovados</option>
-          <option value="rejected">Rejeitados</option>
-          <option value="spam">Spam</option>
-        </select>
+      <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <CardTitle className="font-mono flex items-center gap-2">
+            <MessageSquare size={18} className="text-cyber-neon" />
+            Moderação de Comentários
+          </CardTitle>
+          <CardDescription>
+            {pendingCount > 0
+              ? `${pendingCount} comentário(s) aguardando sua moderação.`
+              : "Nenhum comentário pendente no momento."}
+          </CardDescription>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <div className="flex bg-cyber-black/80 border border-cyber-neon/30 p-1 rounded">
+            {(["pending", "approved", "rejected", "spam"] as const).map((s) => (
+              <button
+                key={s}
+                onClick={() => setStatus(s)}
+                className={`px-3 py-1 font-mono text-xs rounded transition-colors ${
+                  status === s
+                    ? "bg-cyber-neon/30 text-cyber-neon font-bold"
+                    : "text-cyber-blue hover:text-cyber-neon"
+                }`}
+              >
+                {s === "pending" && `Pendentes ${pendingCount > 0 ? `(${pendingCount})` : ""}`}
+                {s === "approved" && "Aprovados"}
+                {s === "rejected" && "Rejeitados"}
+                {s === "spam" && "Spam"}
+              </button>
+            ))}
+          </div>
+
+          <Button size="sm" variant="outline" onClick={load} disabled={loading} title="Atualizar">
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-2">
-        {items.length === 0 && <div className="text-sm text-cyber-blue/60">Nada para moderar.</div>}
-        {items.map((c) => (
-          <div key={c.id} className="border border-cyber-neon/20 p-2">
-            <div className="flex items-center justify-between gap-2">
+
+      <CardContent className="space-y-3">
+        {loading && <div className="text-sm font-mono text-cyber-blue/60">Carregando comentários...</div>}
+        {!loading && items.length === 0 && (
+          <div className="text-sm font-mono text-cyber-blue/60 py-6 text-center border border-dashed border-cyber-neon/20 rounded">
+            Nenhum comentário com status: <span className="text-cyber-neon font-bold">{status}</span>.
+          </div>
+        )}
+        {!loading && items.map((c) => (
+          <div key={c.id} className="border border-cyber-neon/20 bg-cyber-black/40 p-3 rounded space-y-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyber-neon/10 pb-2">
               <div className="min-w-0">
-                <div className="font-mono text-cyber-neon truncate">{c.authorName} · {c.postTitle}</div>
-                <div className="text-xs text-cyber-blue/60">{new Date(c.createdAt).toLocaleString()}</div>
+                <div className="font-mono text-cyber-neon font-semibold text-sm truncate">
+                  {c.authorName} <span className="text-xs text-cyber-blue/70">em</span> {c.postTitle || c.postSlug}
+                </div>
+                <div className="text-xs text-cyber-blue/60">
+                  {new Date(c.createdAt).toLocaleString("pt-BR")}
+                </div>
               </div>
-              <div className="flex gap-1">
+
+              <div className="flex items-center gap-1">
                 {status !== "approved" && (
-                  <Button size="sm" variant="outline" onClick={() => action(c.id, "approve")}>
-                    <Check className="h-4 w-4" />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-green-500/40 text-green-400 hover:bg-green-500/20 text-xs h-8"
+                    onClick={() => action(c.id, "approve")}
+                  >
+                    <Check className="h-3.5 w-3.5 mr-1" /> Aprovar
                   </Button>
                 )}
                 {status !== "rejected" && (
-                  <Button size="sm" variant="outline" onClick={() => action(c.id, "reject")}>
-                    <X className="h-4 w-4" />
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/20 text-xs h-8"
+                    onClick={() => action(c.id, "reject")}
+                  >
+                    <X className="h-3.5 w-3.5 mr-1" /> Rejeitar
                   </Button>
                 )}
                 {status !== "spam" && (
-                  <Button size="sm" variant="outline" onClick={() => action(c.id, "spam")}>SPAM</Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-orange-500/40 text-orange-400 hover:bg-orange-500/20 text-xs h-8"
+                    onClick={() => action(c.id, "spam")}
+                  >
+                    SPAM
+                  </Button>
                 )}
-                <Button size="sm" variant="outline" onClick={() => action(c.id, "delete")}>
-                  <Trash2 className="h-4 w-4" />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="border-red-500/40 text-red-400 hover:bg-red-500/20 text-xs h-8 px-2"
+                  onClick={() => action(c.id, "delete")}
+                  title="Excluir permanentemente"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>
-            <div className="mt-2 text-sm whitespace-pre-wrap">{c.body}</div>
+
+            <div className="text-sm font-sans text-cyber-blue/90 whitespace-pre-wrap bg-cyber-black/30 p-2.5 rounded border border-cyber-neon/10">
+              {c.body}
+            </div>
           </div>
         ))}
       </CardContent>
@@ -553,54 +647,138 @@ function CommentsPanel() {
   );
 }
 
-function InboxPanel() {
+export function InboxPanel() {
   const [items, setItems] = useState<ContactMsg[]>([]);
+  const [loading, setLoading] = useState(false);
+
   const load = async () => {
+    setLoading(true);
     try {
-      setItems(await api<ContactMsg[]>("/contact/messages"));
+      const res = await api<ContactMsg[]>("/contact/messages");
+      setItems(Array.isArray(res) ? res : []);
     } catch (e) {
       toast({ title: "Erro", description: errMsg(e), variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
   };
+
   useEffect(() => {
     load();
   }, []);
+
+  const unreadCount = items.filter((m) => !m.readAt).length;
+
   return (
     <Card className="neo-blur border border-cyber-neon/30 mt-4">
-      <CardHeader>
-        <CardTitle className="font-mono">Inbox / Contato</CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <div>
+          <CardTitle className="font-mono flex items-center gap-2">
+            <Mail size={18} className="text-cyber-neon" />
+            Mensagens de Contato
+          </CardTitle>
+          <CardDescription>
+            {unreadCount > 0
+              ? `${unreadCount} nova(s) mensagem(ns) não lida(s) de um total de ${items.length}.`
+              : `Total de ${items.length} mensagem(ns) recebida(s). Todas lidas.`}
+          </CardDescription>
+        </div>
+
+        <Button size="sm" variant="outline" onClick={load} disabled={loading} title="Atualizar">
+          <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+        </Button>
       </CardHeader>
-      <CardContent className="space-y-2">
-        {items.length === 0 && <div className="text-sm text-cyber-blue/60">Caixa de entrada vazia.</div>}
-        {items.map((m) => (
-          <div key={m.id} className={`border p-2 ${m.readAt ? "border-cyber-neon/10 opacity-70" : "border-cyber-neon/30"}`}>
-            <div className="flex items-center justify-between">
-              <div className="min-w-0">
-                <div className="font-mono text-cyber-neon truncate">{m.subject || "(sem assunto)"}</div>
-                <div className="text-xs text-cyber-blue/60 truncate">
-                  {m.name} &lt;{m.email}&gt; · {new Date(m.createdAt).toLocaleString()}
+
+      <CardContent className="space-y-3">
+        {loading && <div className="text-sm font-mono text-cyber-blue/60">Carregando mensagens...</div>}
+        {!loading && items.length === 0 && (
+          <div className="text-sm font-mono text-cyber-blue/60 py-6 text-center border border-dashed border-cyber-neon/20 rounded">
+            Caixa de entrada vazia. Nenhuma mensagem recebida ainda.
+          </div>
+        )}
+        {!loading && items.map((m) => {
+          const isEncrypted = m.email.startsWith("v1:gc1:");
+          const displayEmail = isEncrypted ? "(email protegido / criptografado em repouso)" : m.email;
+
+          return (
+            <div
+              key={m.id}
+              className={`border p-3 rounded space-y-2 transition-colors ${
+                m.readAt
+                  ? "border-cyber-neon/20 bg-cyber-black/20 opacity-80"
+                  : "border-cyber-neon/50 bg-cyber-black/60 shadow-[0_0_10px_rgba(0,255,157,0.1)]"
+              }`}
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyber-neon/10 pb-2">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-cyber-neon font-semibold text-sm truncate">
+                      {m.subject || "(sem assunto)"}
+                    </span>
+                    {!m.readAt && (
+                      <span className="bg-cyber-neon/20 text-cyber-neon text-[10px] font-mono px-1.5 py-0.5 rounded border border-cyber-neon/40 font-bold">
+                        NOVA
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-cyber-blue/70 truncate mt-0.5">
+                    <span className="font-medium text-cyber-blue">{m.name}</span> &lt;{displayEmail}&gt; ·{" "}
+                    {new Date(m.createdAt).toLocaleString("pt-BR")}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1 self-end sm:self-auto">
+                  {!m.readAt && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-cyber-neon/40 text-cyber-neon hover:bg-cyber-neon/20 text-xs h-8"
+                      onClick={async () => {
+                        try {
+                          await api(`/contact/messages/${m.id}/read`, { method: "POST", json: {} });
+                          load();
+                        } catch (e) {
+                          toast({ title: "Erro", description: errMsg(e), variant: "destructive" });
+                        }
+                      }}
+                    >
+                      <MailCheck className="h-3.5 w-3.5 mr-1" /> Marcar lida
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-red-500/40 text-red-400 hover:bg-red-500/20 text-xs h-8 px-2"
+                    onClick={async () => {
+                      if (!confirm("Excluir esta mensagem?")) return;
+                      try {
+                        await api(`/contact/messages/${m.id}`, { method: "DELETE", json: {} });
+                        toast({ title: "Mensagem excluída" });
+                        load();
+                      } catch (e) {
+                        toast({ title: "Erro", description: errMsg(e), variant: "destructive" });
+                      }
+                    }}
+                    title="Excluir mensagem"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex gap-1">
-                {!m.readAt && (
-                  <Button size="sm" variant="outline" onClick={async () => { await api(`/contact/messages/${m.id}/read`, { method: "POST", json: {} }); load(); }}>
-                    Marcar lido
-                  </Button>
-                )}
-                <Button size="sm" variant="outline" onClick={async () => { if (!confirm("Excluir?")) return; await api(`/contact/messages/${m.id}`, { method: "DELETE", json: {} }); load(); }}>
-                  <Trash2 className="h-4 w-4" />
-                </Button>
+
+              <div className="text-sm font-sans text-cyber-blue/90 whitespace-pre-wrap bg-cyber-black/30 p-2.5 rounded border border-cyber-neon/10">
+                {m.body}
               </div>
             </div>
-            <div className="mt-2 text-sm whitespace-pre-wrap">{m.body}</div>
-          </div>
-        ))}
+          );
+        })}
       </CardContent>
     </Card>
   );
 }
 
-function MigratePanel() {
+export function MigratePanel() {
+  const [busy, setBusy] = useState(false);
   const snapshot = useMemo(() => {
     const ls = (k: string) => {
       try { return JSON.parse(localStorage.getItem(k) || "null"); } catch { return null; }
@@ -629,24 +807,43 @@ function MigratePanel() {
       <CardHeader>
         <CardTitle className="font-mono">Migrar dados do localStorage</CardTitle>
         <CardDescription>
-          Envia o snapshot deste navegador para o backend. Roda apenas uma vez por conteúdo (slugs duplicados são ignorados).
+          Envia o snapshot deste navegador para o backend SQLite. Roda apenas uma vez por conteúdo (dados existentes são atualizados com segurança).
         </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-3">
-        <div className="font-mono text-sm text-cyber-blue">
-          About: {counts.about} · Projetos: {counts.projects} · Posts: {counts.posts}
+      <CardContent className="space-y-4">
+        <div className="font-mono text-sm text-cyber-blue bg-cyber-black/50 p-3 rounded border border-cyber-neon/20">
+          Dados detectados no localStorage deste navegador:
+          <div className="mt-1 font-semibold text-cyber-neon">
+            Perfil (About): {counts.about} · Projetos: {counts.projects} · Posts: {counts.posts}
+          </div>
         </div>
         <Button
+          disabled={busy}
           onClick={async () => {
+            setBusy(true);
             try {
-              await api("/migrate/import", { method: "POST", json: snapshot });
-              toast({ title: "Importação concluída" });
+              const res = await api<any>("/migrate/import", { method: "POST", json: snapshot });
+              const c = res?.counts || {};
+              toast({
+                title: "Importação concluída!",
+                description: `Importados com sucesso: ${c.projects ?? counts.projects} projetos, ${c.posts ?? counts.posts} posts.`,
+              });
             } catch (e) {
-              toast({ title: "Erro", description: errMsg(e), variant: "destructive" });
+              toast({ title: "Erro na importação", description: errMsg(e), variant: "destructive" });
+            } finally {
+              setBusy(false);
             }
           }}
         >
-          <Send className="mr-2 h-4 w-4" /> Importar agora
+          {busy ? (
+            <>
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> Importando dados...
+            </>
+          ) : (
+            <>
+              <Send className="mr-2 h-4 w-4" /> Importar agora
+            </>
+          )}
         </Button>
       </CardContent>
     </Card>

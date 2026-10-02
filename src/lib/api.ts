@@ -6,7 +6,7 @@ export const API_BASE_URL: string = (import.meta.env.VITE_API_BASE_URL as string
 
 export class ApiError extends Error {
   constructor(public status: number, public body: any) {
-    super(typeof body === "string" ? body : body?.error || `HTTP ${status}`);
+    super(typeof body === "string" ? body : body?.error || body?.detail || `HTTP ${status}`);
   }
 }
 
