@@ -343,12 +343,12 @@ def delete_project(project_id: int) -> bool:
 def list_comments(status: Optional[str] = None) -> List[Dict[str, Any]]:
     with get_connection() as conn:
         cursor = conn.cursor()
-        if status:
+        if status and status.lower() not in ("all", "*", ""):
             cursor.execute(
                 "SELECT c.id, c.post_id, p.slug as post_slug, p.title as post_title, c.author_name, c.body, c.status, c.created_at, c.moderated_at "
                 "FROM comments c LEFT JOIN posts p ON p.id = c.post_id "
                 "WHERE c.status = ? ORDER BY c.created_at DESC",
-                (status,)
+                (status.lower(),)
             )
         else:
             cursor.execute(
@@ -371,6 +371,28 @@ def list_comments(status: Optional[str] = None) -> List[Dict[str, Any]]:
             }
             for r in rows
         ]
+
+def get_comments_counts() -> Dict[str, int]:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT status, count(*) as cnt FROM comments GROUP BY status")
+        rows = cursor.fetchall()
+        counts = {
+            "all": 0,
+            "pending": 0,
+            "approved": 0,
+            "rejected": 0,
+            "spam": 0
+        }
+        total = 0
+        for r in rows:
+            st = str(r["status"]).lower()
+            c = int(r["cnt"])
+            if st in counts:
+                counts[st] = c
+            total += c
+        counts["all"] = total
+        return counts
 
 def get_post_comments(slug_or_id: str, status: Optional[str] = "approved") -> List[Dict[str, Any]]:
     with get_connection() as conn:
@@ -443,12 +465,16 @@ def create_comment(
         }
 
 def update_comment_status(comment_id: str, new_status: str) -> bool:
+    new_status = new_status.lower().strip()
+    if new_status not in ("pending", "approved", "rejected", "spam"):
+        raise ValueError(f"Status inválido: {new_status}")
     ts = now_iso()
+    mod_at = ts if new_status != "pending" else None
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
             "UPDATE comments SET status = ?, moderated_at = ? WHERE id = ?",
-            (new_status, ts, comment_id)
+            (new_status, mod_at, comment_id)
         )
         conn.commit()
         return cursor.rowcount > 0

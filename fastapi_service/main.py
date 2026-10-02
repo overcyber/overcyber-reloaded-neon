@@ -108,6 +108,9 @@ class CommentCreateInput(BaseModel):
     def resolved_email(self) -> str:
         return (self.author_email or self.authorEmail or "").strip()
 
+class CommentStatusInput(BaseModel):
+    status: str = Field(..., description="pending, approved, rejected ou spam")
+
 class ContactInput(BaseModel):
     name: str = Field(..., min_length=1, max_length=120, description="Nome do remetente")
     email: str = Field(..., min_length=3, max_length=320, description="Email de contato")
@@ -443,9 +446,14 @@ def create_post_comment(slug_or_id: str, payload: CommentCreateInput):
         raise HTTPException(status_code=400, detail=str(e))
 
 @app.get("/api/comments")
-def list_comments(status: Optional[str] = Query(None, description="pending, approved, rejected ou spam"), token: str = Depends(verify_token)):
+def list_comments(status: Optional[str] = Query(None, description="pending, approved, rejected, spam ou all"), token: str = Depends(verify_token)):
     """Lista comentários para moderação administrativa (requer Bearer token)."""
     return db.list_comments(status)
+
+@app.get("/api/comments/counts")
+def get_comments_counts(token: str = Depends(verify_token)):
+    """Retorna contadores agrupados por status (requer Bearer token ou sessão)."""
+    return db.get_comments_counts()
 
 @app.post("/api/comments", status_code=status.HTTP_201_CREATED)
 def create_comment_general(payload: CommentCreateInput, token: str = Depends(verify_token)):
@@ -470,7 +478,10 @@ def create_comment_general(payload: CommentCreateInput, token: str = Depends(ver
 @app.post("/api/comments/{comment_id}/approve")
 def approve_comment(comment_id: str, token: str = Depends(verify_token)):
     """Aprova um comentário (requer Bearer token)."""
-    ok = db.update_comment_status(comment_id, "approved")
+    try:
+        ok = db.update_comment_status(comment_id, "approved")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     if not ok:
         raise HTTPException(status_code=404, detail="Comentário não encontrado")
     return {"ok": True, "id": comment_id, "status": "approved"}
@@ -478,7 +489,10 @@ def approve_comment(comment_id: str, token: str = Depends(verify_token)):
 @app.post("/api/comments/{comment_id}/reject")
 def reject_comment(comment_id: str, token: str = Depends(verify_token)):
     """Rejeita um comentário (requer Bearer token)."""
-    ok = db.update_comment_status(comment_id, "rejected")
+    try:
+        ok = db.update_comment_status(comment_id, "rejected")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     if not ok:
         raise HTTPException(status_code=404, detail="Comentário não encontrado")
     return {"ok": True, "id": comment_id, "status": "rejected"}
@@ -486,10 +500,37 @@ def reject_comment(comment_id: str, token: str = Depends(verify_token)):
 @app.post("/api/comments/{comment_id}/spam")
 def mark_spam_comment(comment_id: str, token: str = Depends(verify_token)):
     """Marca um comentário como spam (requer Bearer token)."""
-    ok = db.update_comment_status(comment_id, "spam")
+    try:
+        ok = db.update_comment_status(comment_id, "spam")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     if not ok:
         raise HTTPException(status_code=404, detail="Comentário não encontrado")
     return {"ok": True, "id": comment_id, "status": "spam"}
+
+@app.post("/api/comments/{comment_id}/pending")
+def mark_pending_comment(comment_id: str, token: str = Depends(verify_token)):
+    """Marca um comentário como pendente para moderação (requer Bearer token)."""
+    try:
+        ok = db.update_comment_status(comment_id, "pending")
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if not ok:
+        raise HTTPException(status_code=404, detail="Comentário não encontrado")
+    return {"ok": True, "id": comment_id, "status": "pending"}
+
+@app.put("/api/comments/{comment_id}/status")
+@app.patch("/api/comments/{comment_id}/status")
+def set_comment_status(comment_id: str, payload: CommentStatusInput, token: str = Depends(verify_token)):
+    """Atualiza o status de um comentário arbitrariamente entre pending, approved, rejected, spam (requer Bearer token)."""
+    target_status = payload.status.lower().strip()
+    try:
+        ok = db.update_comment_status(comment_id, target_status)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    if not ok:
+        raise HTTPException(status_code=404, detail="Comentário não encontrado")
+    return {"ok": True, "id": comment_id, "status": target_status}
 
 @app.delete("/api/comments/{comment_id}")
 def delete_comment(comment_id: str, token: str = Depends(verify_token)):

@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { api, ApiError } from "@/lib/api";
-import { Trash2, Check, X, Send, Plus, Save, RefreshCw, MailCheck, Mail, MessageSquare } from "lucide-react";
+import { Trash2, Check, X, Send, Plus, Save, RefreshCw, MailCheck, Mail, MessageSquare, RotateCcw, AlertTriangle } from "lucide-react";
 
 interface Me {
   userId: number;
@@ -480,30 +480,49 @@ function PostEditor({
 }
 
 export function CommentsPanel() {
-  const [status, setStatus] = useState<"pending" | "approved" | "rejected" | "spam">("pending");
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected" | "spam">("pending");
   const [items, setItems] = useState<CommentRow[]>([]);
-  const [pendingCount, setPendingCount] = useState<number>(0);
+  const [counts, setCounts] = useState<{
+    all: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+    spam: number;
+  }>({
+    all: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    spam: 0,
+  });
   const [loading, setLoading] = useState(false);
 
-  const loadPendingCount = async () => {
+  const loadCounts = async () => {
     try {
-      const pendingList = await api<CommentRow[]>("/comments?status=pending");
-      if (Array.isArray(pendingList)) {
-        setPendingCount(pendingList.length);
+      const res = await api<{
+        all: number;
+        pending: number;
+        approved: number;
+        rejected: number;
+        spam: number;
+      }>("/comments/counts");
+      if (res && typeof res.all === "number") {
+        setCounts(res);
       }
     } catch {
-      // Ignora erro de contagem silenciosamente
+      // Ignora erro de contagem silenciosamente se backend antigo
     }
   };
 
   const load = async () => {
     setLoading(true);
     try {
-      const list = await api<CommentRow[]>(`/comments?status=${status}`);
+      const q = filter === "all" ? "?status=all" : `?status=${filter}`;
+      const list = await api<CommentRow[]>(`/comments${q}`);
       setItems(Array.isArray(list) ? list : []);
-      loadPendingCount();
+      await loadCounts();
     } catch (e) {
-      toast({ title: "Erro", description: errMsg(e), variant: "destructive" });
+      toast({ title: "Erro ao buscar comentários", description: errMsg(e), variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -511,27 +530,58 @@ export function CommentsPanel() {
 
   useEffect(() => {
     load();
-  }, [status]);
+  }, [filter]);
 
-  const action = async (id: string, what: "approve" | "reject" | "spam" | "delete") => {
+  const action = async (id: string, what: "approve" | "reject" | "spam" | "pending" | "delete") => {
     try {
       if (what === "delete") {
         if (!confirm("Tem certeza que deseja excluir permanentemente este comentário?")) return;
         await api(`/comments/${id}`, { method: "DELETE", json: {} });
-        toast({ title: "Comentário excluído" });
+        toast({ title: "Comentário excluído com sucesso" });
       } else {
         await api(`/comments/${id}/${what}`, { method: "POST", json: {} });
         const labels: Record<string, string> = {
           approve: "Comentário aprovado",
           reject: "Comentário rejeitado",
           spam: "Marcado como spam",
+          pending: "Comentário movido para pendente",
         };
-        toast({ title: labels[what] || "Status atualizado" });
+        toast({ title: labels[what] || "Status atualizado com sucesso" });
       }
-      load();
+      await load();
     } catch (e) {
-      toast({ title: "Erro", description: errMsg(e), variant: "destructive" });
+      toast({ title: "Erro na operação", description: errMsg(e), variant: "destructive" });
     }
+  };
+
+  const renderStatusBadge = (st: string) => {
+    const s = (st || "").toLowerCase();
+    if (s === "approved") {
+      return (
+        <span className="px-2 py-0.5 text-xs font-mono font-bold rounded bg-green-500/20 text-green-400 border border-green-500/40">
+          APROVADO
+        </span>
+      );
+    }
+    if (s === "rejected") {
+      return (
+        <span className="px-2 py-0.5 text-xs font-mono font-bold rounded bg-red-500/20 text-red-400 border border-red-500/40">
+          REJEITADO
+        </span>
+      );
+    }
+    if (s === "spam") {
+      return (
+        <span className="px-2 py-0.5 text-xs font-mono font-bold rounded bg-orange-500/20 text-orange-400 border border-orange-500/40">
+          SPAM
+        </span>
+      );
+    }
+    return (
+      <span className="px-2 py-0.5 text-xs font-mono font-bold rounded bg-yellow-500/20 text-yellow-400 border border-yellow-500/40">
+        PENDENTE
+      </span>
+    );
   };
 
   return (
@@ -543,30 +593,64 @@ export function CommentsPanel() {
             Moderação de Comentários
           </CardTitle>
           <CardDescription>
-            {pendingCount > 0
-              ? `${pendingCount} comentário(s) aguardando sua moderação.`
-              : "Nenhum comentário pendente no momento."}
+            {counts.pending > 0
+              ? `${counts.pending} comentário(s) aguardando sua moderação (${counts.all} no total).`
+              : `Nenhum comentário pendente no momento (${counts.all} no total cadastrado).`}
           </CardDescription>
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="flex bg-cyber-black/80 border border-cyber-neon/30 p-1 rounded">
-            {(["pending", "approved", "rejected", "spam"] as const).map((s) => (
-              <button
-                key={s}
-                onClick={() => setStatus(s)}
-                className={`px-3 py-1 font-mono text-xs rounded transition-colors ${
-                  status === s
-                    ? "bg-cyber-neon/30 text-cyber-neon font-bold"
-                    : "text-cyber-blue hover:text-cyber-neon"
-                }`}
-              >
-                {s === "pending" && `Pendentes ${pendingCount > 0 ? `(${pendingCount})` : ""}`}
-                {s === "approved" && "Aprovados"}
-                {s === "rejected" && "Rejeitados"}
-                {s === "spam" && "Spam"}
-              </button>
-            ))}
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap bg-cyber-black/80 border border-cyber-neon/30 p-1 rounded gap-1">
+            <button
+              onClick={() => setFilter("pending")}
+              className={`px-3 py-1 font-mono text-xs rounded transition-colors ${
+                filter === "pending"
+                  ? "bg-yellow-500/30 text-yellow-300 font-bold border border-yellow-500/50"
+                  : "text-cyber-blue hover:text-yellow-400"
+              }`}
+            >
+              Pendentes ({counts.pending})
+            </button>
+            <button
+              onClick={() => setFilter("approved")}
+              className={`px-3 py-1 font-mono text-xs rounded transition-colors ${
+                filter === "approved"
+                  ? "bg-green-500/30 text-green-300 font-bold border border-green-500/50"
+                  : "text-cyber-blue hover:text-green-400"
+              }`}
+            >
+              Aprovados ({counts.approved})
+            </button>
+            <button
+              onClick={() => setFilter("rejected")}
+              className={`px-3 py-1 font-mono text-xs rounded transition-colors ${
+                filter === "rejected"
+                  ? "bg-red-500/30 text-red-300 font-bold border border-red-500/50"
+                  : "text-cyber-blue hover:text-red-400"
+              }`}
+            >
+              Rejeitados ({counts.rejected})
+            </button>
+            <button
+              onClick={() => setFilter("spam")}
+              className={`px-3 py-1 font-mono text-xs rounded transition-colors ${
+                filter === "spam"
+                  ? "bg-orange-500/30 text-orange-300 font-bold border border-orange-500/50"
+                  : "text-cyber-blue hover:text-orange-400"
+              }`}
+            >
+              Spam ({counts.spam})
+            </button>
+            <button
+              onClick={() => setFilter("all")}
+              className={`px-3 py-1 font-mono text-xs rounded transition-colors ${
+                filter === "all"
+                  ? "bg-cyber-neon/30 text-cyber-neon font-bold border border-cyber-neon/50"
+                  : "text-cyber-blue hover:text-cyber-neon"
+              }`}
+            >
+              Todos ({counts.all})
+            </button>
           </div>
 
           <Button size="sm" variant="outline" onClick={load} disabled={loading} title="Atualizar">
@@ -579,13 +663,14 @@ export function CommentsPanel() {
         {loading && <div className="text-sm font-mono text-cyber-blue/60">Carregando comentários...</div>}
         {!loading && items.length === 0 && (
           <div className="text-sm font-mono text-cyber-blue/60 py-6 text-center border border-dashed border-cyber-neon/20 rounded">
-            Nenhum comentário com status: <span className="text-cyber-neon font-bold">{status}</span>.
+            Nenhum comentário {filter === "all" ? "no banco de dados" : `com status: ${filter}`}.
           </div>
         )}
         {!loading && items.map((c) => (
           <div key={c.id} className="border border-cyber-neon/20 bg-cyber-black/40 p-3 rounded space-y-2">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyber-neon/10 pb-2">
-              <div className="min-w-0">
+              <div className="min-w-0 flex items-center gap-2 flex-wrap">
+                {renderStatusBadge(c.status)}
                 <div className="font-mono text-cyber-neon font-semibold text-sm truncate">
                   {c.authorName} <span className="text-xs text-cyber-blue/70">em</span> {c.postTitle || c.postSlug}
                 </div>
@@ -594,41 +679,55 @@ export function CommentsPanel() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1">
-                {status !== "approved" && (
+              <div className="flex flex-wrap items-center gap-1">
+                {c.status !== "approved" && (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="border-green-500/40 text-green-400 hover:bg-green-500/20 text-xs h-8"
+                    className="border-green-500/40 text-green-400 hover:bg-green-500/20 text-xs h-7 px-2"
                     onClick={() => action(c.id, "approve")}
+                    title="Aprovar comentário para exibição pública"
                   >
                     <Check className="h-3.5 w-3.5 mr-1" /> Aprovar
                   </Button>
                 )}
-                {status !== "rejected" && (
+                {c.status !== "rejected" && (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/20 text-xs h-8"
+                    className="border-red-500/40 text-red-400 hover:bg-red-500/20 text-xs h-7 px-2"
                     onClick={() => action(c.id, "reject")}
+                    title="Rejeitar comentário"
                   >
                     <X className="h-3.5 w-3.5 mr-1" /> Rejeitar
                   </Button>
                 )}
-                {status !== "spam" && (
+                {c.status !== "pending" && (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="border-orange-500/40 text-orange-400 hover:bg-orange-500/20 text-xs h-8"
-                    onClick={() => action(c.id, "spam")}
+                    className="border-yellow-500/40 text-yellow-400 hover:bg-yellow-500/20 text-xs h-7 px-2"
+                    onClick={() => action(c.id, "pending")}
+                    title="Voltar comentário para pendente"
                   >
-                    SPAM
+                    <RotateCcw className="h-3.5 w-3.5 mr-1" /> Pendente
+                  </Button>
+                )}
+                {c.status !== "spam" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-orange-500/40 text-orange-400 hover:bg-orange-500/20 text-xs h-7 px-2"
+                    onClick={() => action(c.id, "spam")}
+                    title="Marcar como SPAM"
+                  >
+                    <AlertTriangle className="h-3.5 w-3.5 mr-1" /> SPAM
                   </Button>
                 )}
                 <Button
                   size="sm"
                   variant="outline"
-                  className="border-red-500/40 text-red-400 hover:bg-red-500/20 text-xs h-8 px-2"
+                  className="border-red-600/40 text-red-500 hover:bg-red-600/20 text-xs h-7 px-2"
                   onClick={() => action(c.id, "delete")}
                   title="Excluir permanentemente"
                 >
