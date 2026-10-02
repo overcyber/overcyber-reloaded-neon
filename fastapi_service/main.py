@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List, Optional
-from fastapi import FastAPI, Depends, HTTPException, Query, status
+from fastapi import FastAPI, Depends, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -75,6 +75,9 @@ class ProjectUpdateInput(BaseModel):
     stars: Optional[int] = None
     forks: Optional[int] = None
     ord: Optional[int] = None
+
+class ProjectReadmeInput(BaseModel):
+    readme: str = Field(..., description="Conteúdo do README em Markdown")
 
 class CommentCreateInput(BaseModel):
     author_name: str = Field(..., min_length=1, max_length=80, description="Nome do autor")
@@ -214,6 +217,54 @@ def update_project(project_id: int, payload: ProjectUpdateInput, token: str = De
     if not updated:
         raise HTTPException(status_code=404, detail="Projeto não encontrado")
     return updated
+
+@app.get("/api/projects/{project_id}/readme")
+def get_project_readme(project_id: int, token: str = Depends(verify_token)):
+    """Obtém apenas o README de um projeto (requer Bearer token)."""
+    p = db.get_project(project_id)
+    if not p:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+    return {"id": p["id"], "title": p["title"], "readme": p["readme"]}
+
+@app.put("/api/projects/{project_id}/readme")
+@app.patch("/api/projects/{project_id}/readme")
+async def update_project_readme_endpoint(
+    project_id: int,
+    request: Request,
+    token: str = Depends(verify_token)
+):
+    """Atualiza o README.md de um projeto.
+    Aceita JSON ({"readme": "..."}) OU texto puro / markdown direto no body.
+    """
+    readme_content = ""
+    content_type = request.headers.get("content-type", "")
+    if "application/json" in content_type:
+        try:
+            data = await request.json()
+            if isinstance(data, dict) and "readme" in data:
+                readme_content = str(data["readme"])
+            elif isinstance(data, str):
+                readme_content = data
+            else:
+                raise HTTPException(status_code=422, detail="Campo 'readme' é obrigatório no JSON")
+        except HTTPException:
+            raise
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"JSON inválido: {str(e)}")
+    else:
+        body_bytes = await request.body()
+        readme_content = body_bytes.decode("utf-8", errors="replace")
+
+    updated = db.update_project_readme(project_id=project_id, readme=readme_content)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+    return {
+        "ok": True,
+        "id": updated["id"],
+        "title": updated["title"],
+        "readme": updated["readme"],
+        "updatedAt": updated["updatedAt"]
+    }
 
 @app.delete("/api/projects/{project_id}")
 def delete_project(project_id: int, token: str = Depends(verify_token)):

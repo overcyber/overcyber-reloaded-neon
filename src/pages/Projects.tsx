@@ -134,17 +134,16 @@ const Projects = () => {
                 {project.description}
               </p>
               <div className="flex flex-wrap gap-2 mb-4">
-                {Array.isArray(project.tags) ? project.tags.map((tag, index) => (
+                {(Array.isArray(project.tags)
+                  ? project.tags
+                  : (typeof project.tags === 'string' && project.tags.trim()
+                      ? project.tags.split(',')
+                      : [])
+                ).map((tag: string, index: number) => (
                   <Badge key={index} variant="outline" className="border-cyber-neon/50 text-cyber-neon">
-                    {tag}
+                    {String(tag).trim()}
                   </Badge>
-                )) : (
-                  project.tags.split(',').map((tag, index) => (
-                    <Badge key={index} variant="outline" className="border-cyber-neon/50 text-cyber-neon">
-                      {tag.trim()}
-                    </Badge>
-                  ))
-                )}
+                ))}
               </div>
               
               {expandedProject === project.id && (

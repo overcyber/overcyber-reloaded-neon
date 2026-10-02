@@ -258,6 +258,19 @@ def update_project(
         conn.commit()
     return get_project(project_id)
 
+def update_project_readme(project_id: int, readme: str) -> Optional[Dict[str, Any]]:
+    current = get_project(project_id)
+    if not current:
+        return None
+    ts = now_iso()
+    with get_connection() as conn:
+        conn.execute(
+            "UPDATE projects SET readme = ?, updated_at = ? WHERE id = ?",
+            (readme, ts, project_id)
+        )
+        conn.commit()
+    return get_project(project_id)
+
 def delete_project(project_id: int) -> bool:
     with get_connection() as conn:
         cursor = conn.cursor()

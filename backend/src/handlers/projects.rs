@@ -59,6 +59,43 @@ pub async fn update(
     Ok(Json(serde_json::json!({"ok":true})))
 }
 
+#[derive(serde::Deserialize)]
+pub struct ProjectReadmeInput {
+    pub readme: String,
+}
+
+pub async fn get_readme(
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+) -> AppResult<Json<serde_json::Value>> {
+    let conn = state.db.get()?;
+    let (title, readme): (String, String) = conn
+        .query_row("SELECT title, readme FROM projects WHERE id=?1", [id], |r| {
+            Ok((r.get(0)?, r.get(1)?))
+        })
+        .map_err(|_| AppError::NotFound)?;
+    Ok(Json(serde_json::json!({
+        "id": id,
+        "title": title,
+        "readme": readme
+    })))
+}
+
+pub async fn update_readme(
+    State(state): State<AppState>,
+    Path(id): Path<i64>,
+    Json(inp): Json<ProjectReadmeInput>,
+) -> AppResult<Json<serde_json::Value>> {
+    let n = state.db.get()?.execute(
+        "UPDATE projects SET readme=?1, updated_at=?2 WHERE id=?3",
+        params![inp.readme, Utc::now().to_rfc3339(), id],
+    )?;
+    if n == 0 {
+        return Err(AppError::NotFound);
+    }
+    Ok(Json(serde_json::json!({"ok":true,"id":id})))
+}
+
 pub async fn delete(
     State(state): State<AppState>,
     Path(id): Path<i64>,
