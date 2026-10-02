@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Overcyber - Blog</title>
+  <subtitle>Artigos sobre Inteligência Artificial, Engenharia de Software, Modelos de Decisão e Defesa Cibernética</subtitle>
+  <link href="https://overcyber.online/atom.xml" rel="self" type="application/atom+xml" />
+  <link href="https://overcyber.online/blog" rel="alternate" type="text/html" />
+  <id>https://overcyber.online/blog</id>
+  <updated>2026-10-01T18:51:44Z</updated>
+  <author>
+    <name>Claudio Henrique Marques</name>
+    <email>contato@overcyber.online</email>
+    <uri>https://overcyber.online</uri>
+  </author>
+  <generator uri="https://overcyber.online" version="1.0">Overcyber Feed Engine</generator>
+  <entry>
+    <title>Autonomous Defense Grid: Mesh Protocols Under Cyber Siege</title>
+    <link href="https://overcyber.online/blog/autonomous-defense-grid-mesh-protocols-under-cyber-siege" rel="alternate" type="text/html" />
+    <id>https://overcyber.online/blog/autonomous-defense-grid-mesh-protocols-under-cyber-siege</id>
+    <published>2026-10-01T18:51:44Z</published>
+    <updated>2026-10-01T18:51:44Z</updated>
+    <summary type="text">How decentralized mesh networks and zero-knowledge telemetry are reshaping subterranean digital warfare.</summary>
+    <content type="html"><![CDATA[<p><img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&amp;w=1374&amp;auto=format&amp;fit=crop" alt="Autonomous Defense Grid: Mesh Protocols Under Cyber Siege" style="max-width:100%;height:auto;" /></p>
+<p>As megacorporate surveillance architectures expand across the global grid, traditional boundary defenses are failing under the weight of automated telemetry harvesting and state-level intercept nodes. In response, a distributed cadre of autonomous systems engineers and underground operators has deployed resilient, self-healing mesh protocols designed to operate completely off-grid.</p>
+<p>These sovereign mesh topologies utilize localized radio-frequency ad-hoc arrays and peer-to-peer optical transceivers embedded into urban infrastructure. By ditching centralized DNS, IP registries, and cloud relays, data payloads are fragmented into encrypted micro-packets routed through dynamic hop paths that mutate every few milliseconds.</p>
+<p>At the core of this defensive paradigm lies zero-knowledge cryptographic verification. Every handshake between transient nodes occurs without exposing network topology or node identities. Even when corporate intrusion countermeasures sever major arterial links, the mesh automatically converges, rerouting vital traffic through subterranean conduits and air-gapped relay points.</p>
+<p>The line between enterprise network compliance and total digital sovereignty has dissolved. For those operating on the fringes of the modern net, decentralized mesh architecture is no longer an experimental hobby—it is the final bastion against absolute surveillance.</p>]]></content>
+    <author>
+      <name>Claudio Henrique Marques</name>
+      <email>contato@overcyber.online</email>
+      <uri>https://overcyber.online</uri>
+    </author>
+  </entry>
+  <entry>
+    <title>Night City&#x27;s Underground Tech Scene</title>
+    <link href="https://overcyber.online/blog/night-city-underground-tech" rel="alternate" type="text/html" />
+    <id>https://overcyber.online/blog/night-city-underground-tech</id>
+    <published>2025-05-05T09:13:00Z</published>
+    <updated>2025-05-05T09:13:00Z</updated>
+    <summary type="text">Exploring the hidden innovations emerging from the shadowy corners of tech culture.</summary>
+    <content type="html"><![CDATA[<p><img src="https://images.unsplash.com/photo-1620783770629-122b7f187703?q=80&amp;w=1374&amp;auto=format&amp;fit=crop" alt="Night City&#x27;s Underground Tech Scene" style="max-width:100%;height:auto;" /></p>
+<p>Beyond the gleaming corporate towers and official R&D labs, Night City's most revolutionary tech often emerges from unlikely places. Underground fabrication labs, operating in forgotten industrial zones, have become incubators for next-generation hardware that skirts the edge of legality.</p>
+<p>These 'basement innovators' create everything from custom neural interface mods to proprietary security bypass tools. Although corporations regularly raid these operations, the decentralized nature of the scene makes it impossible to suppress.</p>
+<p>Particularly noteworthy is the rise of 'mesh networks' operating outside standard NET infrastructure. These alternative communications channels use custom-modified hardware to create independent data transmission systems impervious to corporate surveillance.</p>
+<p>Whether you view these developments as dangerous lawlessness or necessary resistance against corporate control depends largely on which side of Night City's economic divide you call home.</p>]]></content>
+    <author>
+      <name>Claudio Henrique Marques</name>
+      <email>contato@overcyber.online</email>
+      <uri>https://overcyber.online</uri>
+    </author>
+  </entry>
+  <entry>
+    <title>Quantum Computing Breakthrough</title>
+    <link href="https://overcyber.online/blog/quantum-computing-breakthrough" rel="alternate" type="text/html" />
+    <id>https://overcyber.online/blog/quantum-computing-breakthrough</id>
+    <published>2025-04-28T16:45:00Z</published>
+    <updated>2025-04-28T16:45:00Z</updated>
+    <summary type="text">Arasaka researchers achieve stable quantum entanglement across unprecedented distances.</summary>
+    <content type="html"><![CDATA[<p><img src="https://images.unsplash.com/photo-1516110833967-0b5716ca1387?q=80&amp;w=1374&amp;auto=format&amp;fit=crop" alt="Quantum Computing Breakthrough" style="max-width:100%;height:auto;" /></p>
+<p>In a development that could reshape the foundations of computational science, Arasaka's Quantum Research Division announced yesterday that they have successfully maintained quantum entanglement across a distance of 500 kilometers. This shatters the previous record of 50 kilometers achieved at MIT last year.</p>
+<p>The implications for quantum networking are profound. Current quantum computers require extreme isolation and cooling to maintain their quantum states. The ability to transmit quantum information across significant distances could enable distributed quantum computing networks that vastly exceed the capabilities of any single machine.</p>
+<p>Arasaka's stock jumped 12% following the announcement, though competing tech giants questioned the verifiability of the claims given the secretive nature of the corporation's research facilities. Independent scientists have called for peer review and demonstration before the breakthrough can be confirmed.</p>
+<p>If verified, this technology would have immediate applications in ultra-secure communications, complex system modeling, and potentially even in the development of more sophisticated AI architectures.</p>]]></content>
+    <author>
+      <name>Claudio Henrique Marques</name>
+      <email>contato@overcyber.online</email>
+      <uri>https://overcyber.online</uri>
+    </author>
+  </entry>
+</feed>

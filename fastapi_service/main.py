@@ -10,6 +10,7 @@ from .config import (
     SESSION_MAX_AGE_SECONDS, SESSION_TIMEOUT_MINUTES
 )
 from .auth import verify_token, optional_verify_token
+from .atom import generate_atom_feed, sync_atom_file
 from . import db
 
 @asynccontextmanager
@@ -24,6 +25,10 @@ async def lifespan(app: FastAPI):
     cleaned = db.clean_expired_sessions()
     if cleaned:
         print(f"Sessões expiradas limpas: {cleaned}")
+    try:
+        sync_atom_file()
+    except Exception:
+        pass
     print("=" * 60)
     yield
 
@@ -271,7 +276,7 @@ def get_post(slug_or_id: str):
 def create_post(payload: PostCreateInput, token: str = Depends(verify_token)):
     """Cria um novo post no blog (requer Bearer token)."""
     try:
-        return db.create_post(
+        new_post = db.create_post(
             title=payload.title,
             slug=payload.slug,
             content=payload.content,
@@ -279,6 +284,8 @@ def create_post(payload: PostCreateInput, token: str = Depends(verify_token)):
             image=payload.image,
             status=payload.status or "draft",
         )
+        sync_atom_file()
+        return new_post
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erro ao criar post: {str(e)}")
 
@@ -297,6 +304,7 @@ def update_post(post_id: str, payload: PostUpdateInput, token: str = Depends(ver
     )
     if not updated:
         raise HTTPException(status_code=404, detail="Post não encontrado")
+    sync_atom_file()
     return updated
 
 @app.delete("/api/posts/{post_id}")
@@ -306,7 +314,26 @@ def delete_post(post_id: str, token: str = Depends(verify_token)):
     ok = db.delete_post(post_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Post não encontrado")
+    sync_atom_file()
     return {"ok": True, "deleted": post_id}
+
+# ─── ATOM & RSS FEEDS (AUTO-INCREMENTO AUTOMÁTICO) ─────────────────
+
+@app.get("/atom.xml")
+@app.get("/api/atom.xml")
+@app.get("/feed.xml")
+@app.get("/rss.xml")
+def get_atom_feed():
+    """Gera dinamicamente o feed Atom 1.0 com auto-incremento de postagens do blog."""
+    xml_content = generate_atom_feed()
+    return Response(
+        content=xml_content,
+        media_type="application/atom+xml; charset=utf-8",
+        headers={
+            "Cache-Control": "public, max-age=300",
+            "Content-Type": "application/atom+xml; charset=utf-8"
+        }
+    )
 
 # ─── PROJETOS ──────────────────────────────────────────────────────
 
