@@ -429,7 +429,12 @@ export const getProjectsContent = () => {
   // Convert admin data format to the format expected by the Projects page
   const storedProjects = loadStoredContent('admin-projects-data', []);
   
-  if (!storedProjects.length) {
+  if (!storedProjects.length || storedProjects.some((p: any) => p.title === "NeuraScan" || p.title === "CyberShield")) {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('admin-projects-data');
+      } catch {}
+    }
     return defaultProjects;
   }
   

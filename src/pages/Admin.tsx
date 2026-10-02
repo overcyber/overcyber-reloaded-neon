@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import AdminBackendPanel from "@/components/AdminBackendPanel";
 import { api, ApiError } from "@/lib/api";
+import { getProjectsContent } from "@/hooks/use-managed-content";
 
 // Admin authentication schema
 const authSchema = z.object({
@@ -215,45 +216,11 @@ const defaultSkillsData = {
   ]
 };
 
-// Sample Projects data — must match the 3 projects in use-managed-content.ts
-const defaultProjects = [
-  {
-    id: 1,
-    title: "NeuraScan",
-    description: "Advanced neural network-based vulnerability scanner with deep learning capabilities to identify zero-day exploits in web applications.",
-    tags: "Python, Machine Learning, Security",
-    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    github: "https://github.com/overcyber/neurascan",
-    live: "https://neurascan.io",
-    stars: 342,
-    forks: 87,
-    readme: "# NeuraScan: Next-Gen Vulnerability Scanner\n\n## Introduction\nNeuraScan is a revolutionary neural network-based vulnerability scanner that uses deep learning to identify potential zero-day exploits in web applications. By analyzing patterns in code and behavior, NeuraScan can predict vulnerabilities before they're officially discovered.",
-  },
-  {
-    id: 2,
-    title: "CyberShield",
-    description: "Enterprise-grade intrusion prevention system with real-time threat intelligence and automated response capabilities.",
-    tags: "Rust, Networking, Firewall",
-    image: "https://images.unsplash.com/photo-1488972685288-c3fd157d7c7a?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    github: "https://github.com/overcyber/cybershield",
-    live: "https://cybershield.dev",
-    stars: 765,
-    forks: 134,
-    readme: "# CyberShield\n\nCyberShield is a next-generation intrusion prevention system built for high-performance environments where security cannot be compromised.",
-  },
-  {
-    id: 3,
-    title: "QuantumCrypt",
-    description: "Post-quantum cryptographic library implementing advanced algorithms resistant to quantum computing attacks.",
-    tags: "C++, Cryptography, Quantum",
-    image: "https://images.unsplash.com/photo-1494891848038-7bd202a2afeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    github: "https://github.com/overcyber/quantumcrypt",
-    live: "",
-    stars: 531,
-    forks: 97,
-    readme: "# QuantumCrypt\n\n## Quantum-Resistant Cryptographic Library\n\nQuantumCrypt is a C++ library implementing advanced cryptographic algorithms designed to resist attacks from both classical and quantum computers.",
-  }
-];
+// Active Projects data loaded from use-managed-content (14 real projects)
+const defaultProjects = getProjectsContent().map((p: any) => ({
+  ...p,
+  tags: Array.isArray(p.tags) ? p.tags.join(', ') : (p.tags || ''),
+}));
 
 // Default blog posts
 const defaultBlogPosts = [
@@ -284,7 +251,12 @@ const loadData = (key: string, defaultValue: any) => {
   const saved = localStorage.getItem(key);
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      if (key === 'admin-projects-data' && Array.isArray(parsed) && parsed.some((p: any) => p.title === 'NeuraScan' || p.title === 'CyberShield')) {
+        localStorage.removeItem(key);
+        return defaultValue;
+      }
+      return parsed;
     } catch (err) {
       console.error(`Error parsing ${key} from localStorage:`, err);
     }
