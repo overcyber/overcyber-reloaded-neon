@@ -63,7 +63,25 @@ O feed Atom 1.0 (especificação RFC 4287) deve:
 
 ---
 
-## 3. Validação e Testes
-* Sintaxe validada com `python3 -m py_compile fastapi_service/*.py`.
-* Validação do XML gerado com parser `xml.etree.ElementTree` (0 erros de sintaxe XML).
-* Nginx testado com `sudo nginx -t` (100% OK).
+## 3. Validação e Testes Reais em Produção
+
+1. **Consulta Direta ao Feed Atom (`https://overcyber.online/atom.xml`):**
+   ```bash
+   curl -s -i "https://overcyber.online/atom.xml" | head -n 25
+   ```
+   * **Status:** `HTTP/2 200 OK`
+   * **Content-Type:** `application/atom+xml; charset=utf-8`
+   * **Content-Length:** ~73 KB com os 4 artigos completos e imagens.
+
+2. **Validação Estrutural com ElementTree:**
+   ```bash
+   python3 -c "import urllib.request, xml.etree.ElementTree as ET; req = urllib.request.Request('https://overcyber.online/atom.xml', headers={'User-Agent': 'Mozilla/5.0'}); xml = urllib.request.urlopen(req).read(); root = ET.fromstring(xml); print('ROOT:', root.tag); print('ENTRIES COUNT:', len(root.findall('{http://www.w3.org/2005/Atom}entry')))"
+   ```
+   * **Retorno:** `ROOT: {http://www.w3.org/2005/Atom}feed` | `ENTRIES COUNT: 4`
+
+3. **Teste de Auto-Incremento e Exclusão em Tempo Real:**
+   - Criação de post via `POST /api/posts`:
+     - O feed Atom passou automaticamente de **4 para 5 postagens**, tendo o novo post no topo.
+   - Exclusão do post via `DELETE /api/posts/by-id/{id}`:
+     - O feed Atom voltou automaticamente de **5 para 4 postagens**, sem qualquer necessidade de build ou reinício manual.
+
