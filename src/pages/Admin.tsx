@@ -235,26 +235,7 @@ const defaultProjects = getProjectsContent().map((p: any) => ({
 }));
 
 // Default blog posts
-const defaultBlogPosts = [
-  {
-    id: "1",
-    title: "Introdução à Segurança Cibernética",
-    slug: "introducao-a-seguranca-cibernetica",
-    excerpt: "Uma visão geral sobre os princípios fundamentais da segurança cibernética para iniciantes.",
-    content: "# Introdução à Segurança Cibernética\n\nA segurança cibernética é um campo em constante evolução que se concentra na proteção de sistemas computacionais, redes e dados contra ataques digitais. Este artigo apresenta os conceitos básicos que todos os profissionais de tecnologia deveriam conhecer.\n\n## Princípios Fundamentais\n\n1. **Confidencialidade**: Garantir que as informações sensíveis só possam ser acessadas por pessoas autorizadas.\n2. **Integridade**: Assegurar que os dados não sejam alterados de forma não autorizada.\n3. **Disponibilidade**: Garantir que sistemas e dados estejam acessíveis quando necessários.\n\n## Ameaças Comuns\n\n- Malware: vírus, worms, ransomware\n- Phishing e engenharia social\n- Ataques de força bruta\n- Injeção de SQL\n- Cross-Site Scripting (XSS)\n\n## Boas Práticas\n\n- Manter sistemas atualizados\n- Usar senhas fortes e gerenciadores de senhas\n- Implementar autenticação de dois fatores\n- Realizar backups regulares\n- Treinar usuários para reconhecer ameaças\n\nA segurança cibernética não é apenas uma questão técnica, mas também cultural. Organizações eficientes criam uma cultura de segurança onde todos os membros entendem seu papel na proteção dos recursos digitais.",
-    image: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    createdAt: "2023-01-15T10:30:00Z"
-  },
-  {
-    id: "2",
-    title: "Machine Learning Aplicado à Segurança de Redes",
-    slug: "machine-learning-aplicado-a-seguranca-de-redes",
-    excerpt: "Como algoritmos de aprendizado de máquina estão revolucionando a detecção de intrusões em redes.",
-    content: "# Machine Learning Aplicado à Segurança de Redes\n\nA aplicação de técnicas de machine learning na segurança de redes tem se mostrado uma abordagem poderosa para identificar e mitigar ameaças cibernéticas cada vez mais sofisticadas.\n\n## Por que Machine Learning?\n\nOs métodos tradicionais de segurança baseados em regras e assinaturas têm limitações significativas:\n\n- Não detectam ameaças desconhecidas (zero-day)\n- Requerem atualizações constantes\n- Geram muitos falsos positivos\n\nO machine learning pode superar essas limitações, identificando padrões anômalos e adaptando-se a novas ameaças.\n\n## Técnicas Mais Utilizadas\n\n### Supervisionadas\n- Random Forests para classificação de tráfego malicioso\n- Redes Neurais para análise de comportamentos suspeitos\n- SVM (Support Vector Machines) para detecção de anomalias\n\n### Não-supervisionadas\n- Clustering para agrupar comportamentos similares\n- Detecção de anomalias para identificar desvios de padrões normais\n- Autoencoders para redução dimensional e detecção de outliers\n\n## Desafios\n\n- Necessidade de grandes conjuntos de dados para treinamento\n- Balanceamento entre falsos positivos e falsos negativos\n- Adaptação a ambientes de rede em constante mudança\n- Interpretabilidade dos modelos para análise forense\n\n## Implementações Práticas\n\nSistemas modernos de detecção de intrusão (IDS) e sistemas de prevenção de intrusão (IPS) já incorporam algoritmos de ML para melhorar sua eficácia. Ferramentas como Darktrace, Vectra AI e Cisco Stealthwatch utilizam essas técnicas para proporcionar proteção em tempo real contra ameaças avançadas.",
-    image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
-    createdAt: "2023-02-22T14:45:00Z"
-  }
-];
+const defaultBlogPosts: any[] = [];
 
 // Helper function to load and save data from local storage
 const loadData = (key: string, defaultValue: any) => {
@@ -662,7 +643,7 @@ const Admin: React.FC = () => {
 
       // Blog posts
       const backendPosts = await loadFromBackend<any[]>('/posts');
-      if (backendPosts && backendPosts.length > 0) {
+      if (Array.isArray(backendPosts)) {
         setBlogPosts(backendPosts);
         saveData('blog-posts', backendPosts);
       }
@@ -714,12 +695,6 @@ const Admin: React.FC = () => {
       technologies: finalSkills.technologies.join(', '),
       awards: finalSkills.awards.join('\n')
     });
-
-    const finalProjects = loadData('admin-projects-data', defaultProjects);
-    setProjects(finalProjects);
-
-    const finalPosts = loadData('blog-posts', defaultBlogPosts);
-    setBlogPosts(finalPosts);
   };
 
   useEffect(() => {
@@ -1139,13 +1114,13 @@ const Admin: React.FC = () => {
         } catch {
           await api(`/posts/${id}`, { method: 'DELETE', json: {} });
         }
-        const updatedPosts = blogPosts.filter(post => post.id !== id);
+        const updatedPosts = blogPosts.filter(post => String(post.id) !== String(id) && post.slug !== id);
         setBlogPosts(updatedPosts);
         saveData('blog-posts', updatedPosts);
 
         try {
           const fresh = await loadFromBackend<any[]>('/posts');
-          if (fresh) {
+          if (Array.isArray(fresh)) {
             setBlogPosts(fresh);
             saveData('blog-posts', fresh);
           }

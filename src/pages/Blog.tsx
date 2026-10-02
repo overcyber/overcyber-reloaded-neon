@@ -17,33 +17,6 @@ interface BlogPost {
   createdAt: string;
 }
 
-const FALLBACK_POSTS = [
-  {
-    id: "1",
-    title: "Introdução à Segurança Cibernética",
-    slug: "introducao-a-seguranca-cibernetica",
-    excerpt: "Uma visão geral sobre os princípios fundamentais da segurança cibernética para iniciantes.",
-    content: "Conteúdo completo disponível após configurar no painel Admin.",
-    createdAt: "2025-01-15T10:30:00Z"
-  },
-  {
-    id: "2",
-    title: "Machine Learning Aplicado à Segurança de Redes",
-    slug: "machine-learning-aplicado-a-seguranca-de-redes",
-    excerpt: "Como algoritmos de aprendizado de máquina estão revolucionando a detecção de intrusões em redes.",
-    content: "Conteúdo completo disponível após configurar no painel Admin.",
-    createdAt: "2025-02-22T14:45:00Z"
-  },
-  {
-    id: "3",
-    title: "Defesa Cibernética nas Forças Armadas",
-    slug: "defesa-cibernetica-forcas-armadas",
-    excerpt: "O papel estratégico da defesa cibernética no contexto militar brasileiro.",
-    content: "Conteúdo completo disponível após configurar no painel Admin.",
-    createdAt: "2025-03-10T09:00:00Z"
-  }
-];
-
 export default function Blog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,12 +35,12 @@ export default function Blog() {
       })
       .catch(() => {});
 
-    // Carregar posts: tenta do backend primeiro, com fallback para localStorage
+    // Carregar posts: lê do backend e sincroniza cache
     const loadPosts = async () => {
       try {
         const data = await api<any[]>('/posts');
-        if (Array.isArray(data) && data.length > 0 && !cancelled) {
-          setPosts(data.map((p: any) => ({
+        if (Array.isArray(data) && !cancelled) {
+          const mapped = data.map((p: any) => ({
             id: String(p.id),
             title: p.title,
             slug: p.slug,
@@ -75,29 +48,30 @@ export default function Blog() {
             content: p.content || "",
             image: p.image || undefined,
             createdAt: p.createdAt || p.publishedAt || new Date().toISOString(),
-          })));
+          }));
+          setPosts(mapped);
+          try {
+            localStorage.setItem("blog-posts", JSON.stringify(mapped));
+          } catch {
+            // ignore
+          }
           setLoading(false);
           return;
         }
       } catch (err) {
-        console.warn("Backend /posts indisponível, usando fallback:", err);
+        console.warn("Backend /posts indisponível, usando cache local se houver:", err);
       }
 
       try {
         const storedPosts = localStorage.getItem("blog-posts");
         if (storedPosts && !cancelled) {
           const parsed = JSON.parse(storedPosts);
-          if (Array.isArray(parsed) && parsed.length > 0) {
+          if (Array.isArray(parsed)) {
             setPosts(parsed);
-          } else {
-            setPosts(FALLBACK_POSTS);
           }
-        } else if (!cancelled) {
-          setPosts(FALLBACK_POSTS);
         }
       } catch (error) {
         console.error("Failed to load blog posts:", error);
-        if (!cancelled) setPosts(FALLBACK_POSTS);
       } finally {
         if (!cancelled) setLoading(false);
       }
