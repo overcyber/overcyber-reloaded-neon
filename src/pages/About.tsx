@@ -31,7 +31,7 @@ const defaultAboutData = {
   email: "unixsolution@gmail.com",
   location: "Brasília, DF, Brasil",
   lattes: "https://lattes.cnpq.br/2915812289846388",
-  profileImage: "https://avatars.githubusercontent.com/u/583231",
+  profileImage: "https://avatars.githubusercontent.com/u/13219600?s=400&u=f39c54243239a31d120222c40a3939649e3ccbfd&v=4",
   researchFocus: [
     "Defesa Cibernética",
     "Guerra Cibernética",
@@ -172,20 +172,39 @@ const About = () => {
   
   // Carrega os dados do localStorage quando o componente montar
   useEffect(() => {
-    const savedAboutData = loadData('admin-about-data', defaultAboutData);
-    setAboutData(savedAboutData);
+    const rawAbout = loadData('admin-about-data', defaultAboutData);
+    setAboutData({
+      ...defaultAboutData,
+      ...(rawAbout || {}),
+      profileImage: rawAbout?.profileImage || defaultAboutData.profileImage,
+      researchFocus: Array.isArray(rawAbout?.researchFocus) && rawAbout.researchFocus.length > 0
+        ? rawAbout.researchFocus
+        : defaultAboutData.researchFocus,
+      languages: Array.isArray(rawAbout?.languages) && rawAbout.languages.length > 0
+        ? rawAbout.languages
+        : defaultAboutData.languages,
+    });
     
-    const savedEducationData = loadData('admin-education-data', defaultEducationData);
-    setEducationData(savedEducationData);
+    const rawEdu = loadData('admin-education-data', defaultEducationData);
+    setEducationData(Array.isArray(rawEdu) && rawEdu.length > 0 ? rawEdu : defaultEducationData);
     
-    const savedExperienceData = loadData('admin-experience-data', defaultExperienceData);
-    setExperienceData(savedExperienceData);
+    const rawExp = loadData('admin-experience-data', defaultExperienceData);
+    setExperienceData(Array.isArray(rawExp) && rawExp.length > 0 ? rawExp : defaultExperienceData);
     
-    const savedPublicationsData = loadData('admin-publications-data', defaultPublicationsData);
-    setPublicationsData(savedPublicationsData);
+    const rawPubs = loadData('admin-publications-data', defaultPublicationsData);
+    setPublicationsData({
+      articles: Array.isArray(rawPubs?.articles) && rawPubs.articles.length > 0 ? rawPubs.articles : defaultPublicationsData.articles,
+      conferences: Array.isArray(rawPubs?.conferences) && rawPubs.conferences.length > 0 ? rawPubs.conferences : defaultPublicationsData.conferences,
+      patents: Array.isArray(rawPubs?.patents) ? rawPubs.patents : [],
+    });
     
-    const savedSkillsData = loadData('admin-skills-data', defaultSkillsData);
-    setSkillsData(savedSkillsData);
+    const rawSkills = loadData('admin-skills-data', defaultSkillsData);
+    setSkillsData({
+      coreSkills: Array.isArray(rawSkills?.coreSkills) && rawSkills.coreSkills.length > 0 ? rawSkills.coreSkills : defaultSkillsData.coreSkills,
+      advancedSkills: Array.isArray(rawSkills?.advancedSkills) && rawSkills.advancedSkills.length > 0 ? rawSkills.advancedSkills : defaultSkillsData.advancedSkills,
+      technologies: Array.isArray(rawSkills?.technologies) && rawSkills.technologies.length > 0 ? rawSkills.technologies : defaultSkillsData.technologies,
+      awards: Array.isArray(rawSkills?.awards) && rawSkills.awards.length > 0 ? rawSkills.awards : defaultSkillsData.awards,
+    });
 
     // Carregar visibilidade de seções do backend
     fetch('/api/sections')
@@ -199,14 +218,16 @@ const About = () => {
       .then(data => {
         if (data && typeof data === 'object' && Object.keys(data).length > 0) {
           setAboutData(prev => ({
+            ...defaultAboutData,
             ...prev,
             ...data,
+            profileImage: data.profileImage || prev.profileImage || defaultAboutData.profileImage,
             researchFocus: (Array.isArray(data.researchFocus) && data.researchFocus.length > 0)
               ? data.researchFocus
-              : prev.researchFocus,
+              : (Array.isArray(prev.researchFocus) && prev.researchFocus.length > 0 ? prev.researchFocus : defaultAboutData.researchFocus),
             languages: (Array.isArray(data.languages) && data.languages.length > 0)
               ? data.languages
-              : prev.languages,
+              : (Array.isArray(prev.languages) && prev.languages.length > 0 ? prev.languages : defaultAboutData.languages),
           }));
         }
       })
@@ -215,36 +236,36 @@ const About = () => {
     fetch('/api/resume')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data) {
+        if (data && typeof data === 'object') {
           if (Array.isArray(data.education) && data.education.length > 0) setEducationData(data.education);
           if (Array.isArray(data.experience) && data.experience.length > 0) setExperienceData(data.experience);
           if (data.publications && typeof data.publications === 'object') {
             setPublicationsData(prev => ({
-              articles: (data.publications.articles && data.publications.articles.length > 0)
+              articles: (Array.isArray(data.publications.articles) && data.publications.articles.length > 0)
                 ? data.publications.articles
-                : prev.articles,
-              conferences: (data.publications.conferences && data.publications.conferences.length > 0)
+                : (Array.isArray(prev.articles) && prev.articles.length > 0 ? prev.articles : defaultPublicationsData.articles),
+              conferences: (Array.isArray(data.publications.conferences) && data.publications.conferences.length > 0)
                 ? data.publications.conferences
-                : prev.conferences,
-              patents: (data.publications.patents && data.publications.patents.length > 0)
+                : (Array.isArray(prev.conferences) && prev.conferences.length > 0 ? prev.conferences : defaultPublicationsData.conferences),
+              patents: Array.isArray(data.publications.patents)
                 ? data.publications.patents
                 : (prev.patents || []),
             }));
           }
           if (data.skills && typeof data.skills === 'object') {
             setSkillsData(prev => ({
-              coreSkills: (data.skills.coreSkills && data.skills.coreSkills.length > 0)
+              coreSkills: (Array.isArray(data.skills.coreSkills) && data.skills.coreSkills.length > 0)
                 ? data.skills.coreSkills
-                : prev.coreSkills,
-              advancedSkills: (data.skills.advancedSkills && data.skills.advancedSkills.length > 0)
+                : (Array.isArray(prev.coreSkills) && prev.coreSkills.length > 0 ? prev.coreSkills : defaultSkillsData.coreSkills),
+              advancedSkills: (Array.isArray(data.skills.advancedSkills) && data.skills.advancedSkills.length > 0)
                 ? data.skills.advancedSkills
-                : prev.advancedSkills,
-              technologies: (data.skills.technologies && data.skills.technologies.length > 0)
+                : (Array.isArray(prev.advancedSkills) && prev.advancedSkills.length > 0 ? prev.advancedSkills : defaultSkillsData.advancedSkills),
+              technologies: (Array.isArray(data.skills.technologies) && data.skills.technologies.length > 0)
                 ? data.skills.technologies
-                : prev.technologies,
-              awards: (data.skills.awards && data.skills.awards.length > 0)
+                : (Array.isArray(prev.technologies) && prev.technologies.length > 0 ? prev.technologies : defaultSkillsData.technologies),
+              awards: (Array.isArray(data.skills.awards) && data.skills.awards.length > 0)
                 ? data.skills.awards
-                : prev.awards,
+                : (Array.isArray(prev.awards) && prev.awards.length > 0 ? prev.awards : defaultSkillsData.awards),
             }));
           }
         }
@@ -353,13 +374,13 @@ const About = () => {
               <div>
                 <h3 className="text-xl text-white font-mono mb-2">RESEARCH FOCUS // <span className="text-cyber-neon">ACTIVE DOMAINS</span></h3>
                 <div className="flex flex-wrap gap-2">
-                  {aboutData.researchFocus.map((focus, index) => (
+                  {(aboutData?.researchFocus || []).map((focus, index) => (
                     <Badge key={index} className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50">{focus}</Badge>
                   ))}
                 </div>
               </div>
 
-              {aboutData.languages && aboutData.languages.length > 0 && (
+              {aboutData?.languages && Array.isArray(aboutData.languages) && aboutData.languages.length > 0 && (
               <div>
                 <h3 className="text-xl text-white font-mono mb-2">LANGUAGES // <span className="text-cyber-neon">PROFICIENCY</span></h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -383,19 +404,16 @@ const About = () => {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-6">
-                {educationData.map((edu, index) => (
+                {(educationData || []).map((edu, index) => (
                   <div key={index} className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
                     <div className="flex justify-between items-start">
                       <h3 className="text-xl text-white font-mono">{edu.title}</h3>
                       <Badge className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50">{edu.period}</Badge>
-{/*                       <Badge className="bg-purple-900/30 text-purple-400 border border-purple-500/50">{edu.period}</Badge> */}
-
-
                     </div>
                     {edu.institution && <p className="text-cyber-blue mt-1">{edu.institution}</p>}
                     {edu.description && <p className="mt-3 text-cyber-blue/80">{edu.description}</p>}
                     
-                    {edu.certifications && (
+                    {Array.isArray(edu.certifications) && edu.certifications.length > 0 && (
                       <div className="mt-3 space-y-2">
                         {edu.certifications.map((cert, idx) => (
                           <p key={idx} className="text-cyber-blue/80">
@@ -417,7 +435,7 @@ const About = () => {
               <CardTitle className="text-2xl text-cyber-neon font-mono">03 // PROFESSIONAL PROTOCOLS</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {experienceData.map((exp, index) => (
+              {(experienceData || []).map((exp, index) => (
                 <div key={index} className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
                   <div className="flex justify-between items-start">
                     <h3 className="text-xl text-white font-mono">{exp.title}</h3>
@@ -425,7 +443,7 @@ const About = () => {
                   </div>
                   <p className="text-cyber-blue mt-1">{exp.company}</p>
                   <div className="mt-3 space-y-2">
-                    {exp.duties.map((duty, idx) => (
+                    {(exp.duties || []).map((duty, idx) => (
                       <p key={idx} className="text-cyber-blue/80">
                         <span className="text-cyber-neon">•</span> {duty}
                       </p>
@@ -447,7 +465,7 @@ const About = () => {
                 <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
                   <h3 className="text-xl text-white font-mono mb-2">Artigos em Periódicos</h3>
                   <ul className="space-y-4">
-                    {publicationsData.articles.map((article, index) => (
+                    {(publicationsData?.articles || []).map((article, index) => (
                       <li key={index} className="border-l-2 border-cyber-blue pl-4 py-1">
                         <p className="text-cyber-blue font-mono">{article.year}</p>
                         <p className="text-white">{article.title}</p>
@@ -460,7 +478,7 @@ const About = () => {
                 <div className="bg-cyber-black/40 border border-cyber-neon/30 p-4 rounded-md">
                   <h3 className="text-xl text-white font-mono mb-2">Conferências Internacionais</h3>
                   <ul className="space-y-4">
-                    {publicationsData.conferences.map((conf, index) => (
+                    {(publicationsData?.conferences || []).map((conf, index) => (
                       <li key={index} className="border-l-2 border-cyber-orange pl-4 py-1">
                         <p className="text-cyber-orange font-mono">{conf.year}</p>
                         <p className="text-white">{conf.title}</p>
@@ -469,8 +487,6 @@ const About = () => {
                     ))}
                   </ul>
                 </div>
-                
-
               </div>
             </CardContent>
           </Card>
@@ -485,7 +501,7 @@ const About = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <h3 className="text-xl text-white font-mono">Core Skills</h3>
-                  {skillsData.coreSkills.map((skill) => (
+                  {(skillsData?.coreSkills || []).map((skill) => (
                     <div key={skill.name} className="space-y-1">
                       <div className="flex justify-between">
                         <span className="text-cyber-blue font-mono">{skill.name}</span>
@@ -507,7 +523,7 @@ const About = () => {
                 
                 <div className="space-y-4">
                   <h3 className="text-xl text-white font-mono">Advanced Skills</h3>
-                  {skillsData.advancedSkills.map((skill) => (
+                  {(skillsData?.advancedSkills || []).map((skill) => (
                     <div key={skill.name} className="space-y-1">
                       <div className="flex justify-between">
                         <span className="text-cyber-blue font-mono">{skill.name}</span>
@@ -531,7 +547,7 @@ const About = () => {
               <div>
                 <h3 className="text-xl text-white font-mono mb-4">Languages & Technologies</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                  {skillsData.technologies.map((tech, index) => (
+                  {(skillsData?.technologies || []).map((tech, index) => (
                     <Badge key={index} className="bg-cyber-neon/20 text-cyber-neon border border-cyber-neon/50 p-2">{tech}</Badge>
                   ))}
                 </div>
@@ -540,7 +556,7 @@ const About = () => {
               <div>
                 <h3 className="text-xl text-white font-mono mb-4">Certifications & Awards</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {skillsData.awards.map((award, index) => (
+                  {(skillsData?.awards || []).map((award, index) => (
                     <div key={index} className="bg-cyber-black/40 border border-cyber-neon/30 p-3 rounded-md flex bg-cyber-black bg-cyber-grid  items-center">
                       <Award size={24} className="text-cyber-orange mr-3" />
                       <span className="text-cyber-blue">{award}</span>

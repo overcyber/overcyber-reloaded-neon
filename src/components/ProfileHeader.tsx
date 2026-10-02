@@ -28,7 +28,7 @@ const ProfileHeader = () => {
       {/* Profile image with cyber effects */}
       <div className={`absolute inset-0 ${glitching ? 'animate-glitch' : ''}`}
         style={{
-          backgroundImage: "url('https://avatars.githubusercontent.com/u/583231')",
+          backgroundImage: "url('https://avatars.githubusercontent.com/u/13219600?s=400&u=f39c54243239a31d120222c40a3939649e3ccbfd&v=4')",
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           filter: glitching ? 'hue-rotate(90deg)' : 'none',

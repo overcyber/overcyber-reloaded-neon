@@ -622,7 +622,7 @@ def get_about():
     return data
 
 @app.put("/api/about")
-def update_about(payload: Dict[str, Any], token: str = Depends(verify_token)):
+def update_about(payload: Dict[str, Any] = Body(...), token: str = Depends(verify_token)):
     """Atualiza dados da seção Sobre/Perfil (requer Bearer token)."""
     return db.update_about(payload)
 

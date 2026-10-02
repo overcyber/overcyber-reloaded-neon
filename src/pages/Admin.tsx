@@ -99,7 +99,7 @@ const defaultAboutData = {
   email: "unixsolution@gmail.com",
   location: "Brasília, DF, Brasil",
   lattes: "https://lattes.cnpq.br/2915812289846388",
-  profileImage: "https://avatars.githubusercontent.com/u/583231",
+  profileImage: "https://avatars.githubusercontent.com/u/13219600?s=400&u=f39c54243239a31d120222c40a3939649e3ccbfd&v=4",
   researchFocus: [
     "Defesa Cibernética",
     "Guerra Cibernética",
@@ -303,9 +303,10 @@ async function loadFromBackend<T>(path: string): Promise<T | null> {
 
 // Helper functions for data formatting
 function formatEducationData(data: any) {
+  if (!Array.isArray(data)) return '';
   return data.map((item: any) => {
-    let text = `${item.title} | ${item.period} | ${item.institution || ''} | ${item.description || ''}`;
-    if (item.certifications) {
+    let text = `${item.title || ''} | ${item.period || ''} | ${item.institution || ''} | ${item.description || ''}`;
+    if (Array.isArray(item.certifications) && item.certifications.length > 0) {
       text += ` | ${item.certifications.join('; ')}`;
     }
     return text;
@@ -331,8 +332,10 @@ function parseEducationData(text: string) {
 }
 
 function formatExperienceData(data: any) {
+  if (!Array.isArray(data)) return '';
   return data.map((item: any) => {
-    return `${item.title} | ${item.period} | ${item.company} | ${item.duties.join('; ')}`;
+    const duties = Array.isArray(item.duties) ? item.duties.join('; ') : (item.duties || '');
+    return `${item.title || ''} | ${item.period || ''} | ${item.company || ''} | ${duties}`;
   }).join('\n');
 }
 
@@ -349,20 +352,23 @@ function parseExperienceData(text: string) {
 }
 
 function formatArticlesData(data: any) {
+  if (!Array.isArray(data)) return '';
   return data.map((item: any) => {
-    return `${item.year} | ${item.title} | ${item.journal}`;
+    return `${item.year || ''} | ${item.title || ''} | ${item.journal || ''}`;
   }).join('\n');
 }
 
 function formatConferencesData(data: any) {
+  if (!Array.isArray(data)) return '';
   return data.map((item: any) => {
-    return `${item.year} | ${item.title} | ${item.conference}`;
+    return `${item.year || ''} | ${item.title || ''} | ${item.conference || ''}`;
   }).join('\n');
 }
 
 function formatPatentsData(data: any) {
+  if (!Array.isArray(data)) return '';
   return data.map((item: any) => {
-    return `${item.year} | ${item.title} | ${item.number}`;
+    return `${item.year || ''} | ${item.title || ''} | ${item.number || ''}`;
   }).join('\n');
 }
 
@@ -396,8 +402,9 @@ function parsePublicationsData(articles: string, conferences: string, patents: s
 }
 
 function formatSkillsData(data: any) {
+  if (!Array.isArray(data)) return '';
   return data.map((item: any) => {
-    return `${item.name} | ${item.level}`;
+    return `${item.name || ''} | ${item.level ?? 0}`;
   }).join('\n');
 }
 

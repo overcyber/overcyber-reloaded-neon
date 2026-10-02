@@ -27,7 +27,7 @@ export const getAboutContent = () => {
   "email": "unixsolution@gmail.com",
   "location": "Brasília, DF, Brasil",
   "lattes": "https://lattes.cnpq.br/2915812289846388",
-  "profileImage": "https://avatars.githubusercontent.com/u/583231",
+  "profileImage": "https://avatars.githubusercontent.com/u/13219600?s=400&u=f39c54243239a31d120222c40a3939649e3ccbfd&v=4",
   "researchFocus": [
     "Defesa Cibernética",
     "Guerra Cibernética",
