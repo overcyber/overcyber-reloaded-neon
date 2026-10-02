@@ -10,6 +10,8 @@ import { ArrowLeft, FileText, Calendar, AlertTriangle, MessageSquare, Send } fro
 import { api, ApiError } from "@/lib/api";
 import { requestAndSolvePow } from "@/lib/pow";
 import { toast } from "@/components/ui/use-toast";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface BlogPost {
   id: string;
@@ -156,13 +158,6 @@ export default function BlogPost() {
     }
   };
 
-  const formatContent = (content: string) =>
-    content.split("\n").map((line, index) => (
-      <p key={index} className="mb-4 font-mono text-foreground/90">
-        {line}
-      </p>
-    ));
-
   if (loading) {
     return (
       <Layout title="LOADING DATA">
@@ -231,7 +226,85 @@ export default function BlogPost() {
             </div>
           )}
 
-          <div className="space-y-4 font-mono">{formatContent(post.content)}</div>
+          <div className="font-mono leading-relaxed text-foreground/90">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h1: ({ ...props }) => (
+                  <h1 className="text-2xl sm:text-3xl font-bold font-mono text-cyber-neon border-b border-cyber-neon/30 pb-2 mt-8 mb-4 tracking-wide" {...props} />
+                ),
+                h2: ({ ...props }) => (
+                  <h2 className="text-xl sm:text-2xl font-bold font-mono text-cyber-neon mt-8 mb-3 border-l-4 border-cyber-neon pl-3 bg-cyber-black/40 py-1" {...props} />
+                ),
+                h3: ({ ...props }) => (
+                  <h3 className="text-lg sm:text-xl font-bold font-mono text-cyber-blue mt-6 mb-2" {...props} />
+                ),
+                h4: ({ ...props }) => (
+                  <h4 className="text-base font-bold font-mono text-cyber-blue/90 mt-4 mb-1" {...props} />
+                ),
+                p: ({ ...props }) => (
+                  <p className="font-mono text-foreground/90 mb-4 leading-relaxed text-sm sm:text-base text-justify sm:text-left" {...props} />
+                ),
+                blockquote: ({ ...props }) => (
+                  <blockquote className="border-l-4 border-cyber-neon bg-cyber-black/70 p-4 my-5 font-mono text-sm text-cyber-blue/90 rounded-r shadow-[0_0_15px_rgba(0,255,157,0.06)] border-y border-r border-cyber-neon/20 not-italic" {...props} />
+                ),
+                code: ({ inline, className, children, ...props }: any) => {
+                  const match = /language-(\w+)/.exec(className || "");
+                  return !inline ? (
+                    <div className="relative my-4 rounded-md overflow-hidden border border-cyber-neon/40 shadow-[0_0_20px_rgba(0,255,157,0.08)]">
+                      <div className="bg-cyber-black/90 px-4 py-1.5 text-[11px] font-mono text-cyber-neon/70 border-b border-cyber-neon/20 flex justify-between items-center">
+                        <span>{match ? match[1].toUpperCase() : "TERMINAL // CODE"}</span>
+                        <span className="text-[10px] text-cyber-blue/50">OVERCYBER SYNAPSE</span>
+                      </div>
+                      <pre className="overflow-x-auto bg-cyber-black/95 p-4 text-xs sm:text-sm font-mono text-cyber-blue/95 leading-relaxed scrollbar-none">
+                        <code className={className} {...props}>
+                          {children}
+                        </code>
+                      </pre>
+                    </div>
+                  ) : (
+                    <code className="font-mono text-xs sm:text-sm bg-cyber-black/80 text-cyber-neon border border-cyber-neon/30 px-1.5 py-0.5 rounded font-semibold" {...props}>
+                      {children}
+                    </code>
+                  );
+                },
+                ul: ({ ...props }) => (
+                  <ul className="list-disc list-inside space-y-1.5 mb-4 font-mono text-sm sm:text-base text-foreground/90 pl-2 marker:text-cyber-neon" {...props} />
+                ),
+                ol: ({ ...props }) => (
+                  <ol className="list-decimal list-inside space-y-1.5 mb-4 font-mono text-sm sm:text-base text-foreground/90 pl-2 marker:text-cyber-neon font-semibold" {...props} />
+                ),
+                li: ({ ...props }) => (
+                  <li className="leading-relaxed text-foreground/90 font-mono" {...props} />
+                ),
+                table: ({ ...props }) => (
+                  <div className="my-6 overflow-x-auto rounded border border-cyber-neon/30 shadow-[0_0_15px_rgba(0,255,157,0.05)]">
+                    <table className="w-full border-collapse text-xs sm:text-sm font-mono" {...props} />
+                  </div>
+                ),
+                th: ({ ...props }) => (
+                  <th className="border-b border-cyber-neon/30 bg-cyber-neon/15 px-3 py-2 text-left font-mono font-bold text-cyber-neon uppercase tracking-wider" {...props} />
+                ),
+                td: ({ ...props }) => (
+                  <td className="border-b border-cyber-neon/15 bg-cyber-black/40 px-3 py-2 font-mono text-foreground/90" {...props} />
+                ),
+                hr: ({ ...props }) => (
+                  <hr className="border-t border-cyber-neon/30 my-8" {...props} />
+                ),
+                a: ({ ...props }) => (
+                  <a className="text-cyber-neon underline underline-offset-4 hover:text-cyber-blue transition-colors font-mono font-semibold" target="_blank" rel="noopener noreferrer" {...props} />
+                ),
+                strong: ({ ...props }) => (
+                  <strong className="font-bold text-cyber-neon font-mono" {...props} />
+                ),
+                em: ({ ...props }) => (
+                  <em className="italic text-cyber-blue font-mono" {...props} />
+                ),
+              }}
+            >
+              {post.content}
+            </ReactMarkdown>
+          </div>
 
           <div className="mt-8 pt-4 border-t border-primary/20 flex justify-between">
             <div className="text-xs font-mono text-primary/50">REF_ID: {post.id}</div>

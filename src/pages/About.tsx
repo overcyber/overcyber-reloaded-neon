@@ -123,27 +123,39 @@ const defaultPublicationsData = {
 
 const defaultSkillsData = {
   coreSkills: [
-    { name: "Defesa Cibernética", level: 92 },
-    { name: "Segurança da Informação", level: 90 },
-    { name: "Linux/Unix", level: 88 },
-    { name: "Redes de Computadores", level: 85 }
+    { name: "Defesa Cibernética", level: 95 },
+    { name: "Segurança da Informação", level: 92 },
+    { name: "Linux / Unix", level: 90 },
+    { name: "Redes de Computadores & Protocolos", level: 88 },
+    { name: "Resposta a Incidentes & Forense Digital", level: 88 },
+    { name: "Engenharia Reversa & Análise de Binários", level: 85 }
   ],
   advancedSkills: [
-    { name: "Inteligência Artificial / ML", level: 78 },
-    { name: "Ciência de Dados", level: 75 },
-    { name: "Docker / Microsserviços", level: 72 },
-    { name: "OSINT / Pentest", level: 80 }
+    { name: "Inteligência Artificial & Machine Learning", level: 82 },
+    { name: "Arquitetura de LLMs & RAG", level: 85 },
+    { name: "Ciência de Dados & Telemetria de Redes", level: 80 },
+    { name: "OSINT & Testes de Intrusão (Pentest)", level: 82 },
+    { name: "Docker & Orquestração de Microsserviços", level: 78 },
+    { name: "Criptografia Aplicada & Protocolos Seguros", level: 85 }
   ],
   technologies: [
-    "Python", "Linux", "Docker", "Windows Server", 
-    "Machine Learning", "LLM", "Redes", "Firewall",
-    "Criptografia", "Análise de Dados", "R", "OSINT"
+    "Python", "C/C++", "Rust", "Linux (Kernel & Sysadmin)",
+    "Docker & Containers", "Windows Server & AD",
+    "Machine Learning & Deep Learning", "LLMs & RAG (vLLM, Ollama, LangChain)",
+    "Redes & Firewalls (IPTables, pfSense)", "Suricata & Snort (NIDS)",
+    "Wireshark & Telemetria Zeek/Bro", "Criptografia & PKI",
+    "Análise de Dados & Pandas/NumPy", "R & Estatística",
+    "OSINT & Threat Intelligence", "Ghidra & IDA Pro (Engenharia Reversa)"
   ],
   awards: [
     "SANS FOR500 Windows Forensics Analysis — 2025",
-    "Core NetWars Tournament 7 — SANS — 2022",
     "Guardião Cibernético 7.0 — Exército Brasileiro — 2025",
-    "CEH v7 Certified — EC-Council — 2013"
+    "CyberShield — Exercício Ibero-Americano de Defesa Cibernética — 2025",
+    "Core NetWars Tournament 7 — SANS — 2022",
+    "OSCE (Offensive Security Certified Expert) — 2020",
+    "Curso de Guerra Cibernética (800h) — CComGEx/Exército — 2019",
+    "CEH v7 Certified — EC-Council — 2013",
+    "Prêmio de Melhor Trabalho de Mestrado — UnB"
   ]
 };
 

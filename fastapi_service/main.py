@@ -1,7 +1,7 @@
 import secrets
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List, Optional, Union
-from fastapi import FastAPI, Depends, HTTPException, Query, Request, Response, status
+from fastapi import FastAPI, Depends, HTTPException, Query, Request, Response, status, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
@@ -632,7 +632,7 @@ def get_resume():
     return db.get_resume()
 
 @app.put("/api/resume/{section}")
-def update_resume_section(section: str, payload: Any, token: str = Depends(verify_token)):
+def update_resume_section(section: str, payload: Any = Body(...), token: str = Depends(verify_token)):
     """Atualiza uma seção do currículo (requer Bearer token)."""
     try:
         return db.update_resume_section(section, payload)
