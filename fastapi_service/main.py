@@ -432,15 +432,14 @@ def get_post_comments(
 @app.post("/api/posts/{slug_or_id}/comments", status_code=status.HTTP_201_CREATED)
 def create_post_comment(slug_or_id: str, payload: CommentCreateInput):
     """Cria um comentário em um post específico (endpoint público). Aguarda moderação."""
-    if payload.website:
-        return {"status": "ok", "detail": "Comentário processado"}
+    initial_status = "spam" if (payload.website and payload.website.strip()) else "pending"
     try:
         return db.create_comment(
             post_slug_or_id=slug_or_id,
             author_name=payload.resolved_name,
             body=payload.body,
             author_email=payload.resolved_email,
-            status="pending"
+            status=initial_status
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))

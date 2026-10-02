@@ -287,7 +287,6 @@ function CommentForm({ slug, onPosted }: { slug: string; onPosted: () => void })
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [body, setBody] = useState("");
-  const [website, setWebsite] = useState(""); // honeypot
   const [busy, setBusy] = useState(false);
 
   return (
@@ -300,7 +299,7 @@ function CommentForm({ slug, onPosted }: { slug: string; onPosted: () => void })
           const pow = await requestAndSolvePow();
           await api(`/posts/${slug}/comments`, {
             method: "POST",
-            json: { authorName: name, authorEmail: email, body, website, pow },
+            json: { authorName: name, authorEmail: email, body, pow },
           });
           toast({ title: "Comentário enviado", description: "Aguardando moderação." });
           setName("");
@@ -335,16 +334,6 @@ function CommentForm({ slug, onPosted }: { slug: string; onPosted: () => void })
           <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required maxLength={320} />
         </div>
       </div>
-      {/* honeypot — não exibir */}
-      <input
-        type="text"
-        name="website"
-        autoComplete="off"
-        tabIndex={-1}
-        value={website}
-        onChange={(e) => setWebsite(e.target.value)}
-        style={{ position: "absolute", left: "-10000px", width: 1, height: 1, opacity: 0 }}
-      />
       <div>
         <Label className="font-mono text-xs text-primary">MESSAGE</Label>
         <Textarea value={body} onChange={(e) => setBody(e.target.value)} required minLength={2} maxLength={4000} rows={4} />

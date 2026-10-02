@@ -480,7 +480,7 @@ function PostEditor({
 }
 
 export function CommentsPanel() {
-  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected" | "spam">("pending");
+  const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected" | "spam">("all");
   const [items, setItems] = useState<CommentRow[]>([]);
   const [counts, setCounts] = useState<{
     all: number;
@@ -594,13 +594,23 @@ export function CommentsPanel() {
           </CardTitle>
           <CardDescription>
             {counts.pending > 0
-              ? `${counts.pending} comentário(s) aguardando sua moderação (${counts.all} no total).`
-              : `Nenhum comentário pendente no momento (${counts.all} no total cadastrado).`}
+              ? `${counts.pending} comentário(s) aguardando sua moderação (${counts.all} no total cadastrado).`
+              : `Total de ${counts.all} comentário(s) no sistema (0 pendentes no momento).`}
           </CardDescription>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex flex-wrap bg-cyber-black/80 border border-cyber-neon/30 p-1 rounded gap-1">
+            <button
+              onClick={() => setFilter("all")}
+              className={`px-3 py-1 font-mono text-xs rounded transition-colors ${
+                filter === "all"
+                  ? "bg-cyber-neon/30 text-cyber-neon font-bold border border-cyber-neon/50"
+                  : "text-cyber-blue hover:text-cyber-neon"
+              }`}
+            >
+              Todos ({counts.all})
+            </button>
             <button
               onClick={() => setFilter("pending")}
               className={`px-3 py-1 font-mono text-xs rounded transition-colors ${
@@ -640,16 +650,6 @@ export function CommentsPanel() {
               }`}
             >
               Spam ({counts.spam})
-            </button>
-            <button
-              onClick={() => setFilter("all")}
-              className={`px-3 py-1 font-mono text-xs rounded transition-colors ${
-                filter === "all"
-                  ? "bg-cyber-neon/30 text-cyber-neon font-bold border border-cyber-neon/50"
-                  : "text-cyber-blue hover:text-cyber-neon"
-              }`}
-            >
-              Todos ({counts.all})
             </button>
           </div>
 
