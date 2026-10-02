@@ -251,6 +251,14 @@ def list_posts(
         status = "published"
     return db.list_posts(status)
 
+@app.get("/api/posts/by-id/{post_id}")
+def get_post_by_id(post_id: str):
+    """Busca post por ID ou slug (compatibilidade com chamadas by-id do admin)."""
+    post = db.get_post(post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="Post não encontrado")
+    return post
+
 @app.get("/api/posts/{slug_or_id}")
 def get_post(slug_or_id: str):
     """Busca post por slug ou id (endpoint público)."""
@@ -275,8 +283,9 @@ def create_post(payload: PostCreateInput, token: str = Depends(verify_token)):
         raise HTTPException(status_code=400, detail=f"Erro ao criar post: {str(e)}")
 
 @app.put("/api/posts/{post_id}")
+@app.put("/api/posts/by-id/{post_id}")
 def update_post(post_id: str, payload: PostUpdateInput, token: str = Depends(verify_token)):
-    """Atualiza um post existente no blog (requer Bearer token)."""
+    """Atualiza um post existente no blog (requer Bearer token ou sessão ativa)."""
     updated = db.update_post(
         post_id=post_id,
         title=payload.title,
@@ -291,8 +300,9 @@ def update_post(post_id: str, payload: PostUpdateInput, token: str = Depends(ver
     return updated
 
 @app.delete("/api/posts/{post_id}")
+@app.delete("/api/posts/by-id/{post_id}")
 def delete_post(post_id: str, token: str = Depends(verify_token)):
-    """Remove um post do blog (requer Bearer token)."""
+    """Remove um post do blog (requer Bearer token ou sessão ativa)."""
     ok = db.delete_post(post_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Post não encontrado")
@@ -306,6 +316,7 @@ def list_projects(visibility: Optional[str] = Query(None)):
     return db.list_projects(visibility=visibility)
 
 @app.get("/api/projects/{project_id}")
+@app.get("/api/projects/by-id/{project_id}")
 def get_project(project_id: str):
     """Obtém detalhes de um projeto por ID numérico ou slug (endpoint público)."""
     p = db.get_project(project_id)
@@ -337,6 +348,7 @@ def create_project(payload: ProjectCreateInput, token: str = Depends(verify_toke
         raise HTTPException(status_code=400, detail=f"Erro ao criar projeto: {str(e)}")
 
 @app.put("/api/projects/{project_id}")
+@app.put("/api/projects/by-id/{project_id}")
 def update_project(project_id: str, payload: ProjectUpdateInput, token: str = Depends(verify_token)):
     """Atualiza um projeto existente por ID ou slug (requer Bearer token)."""
     current = db.get_project(project_id)
@@ -417,6 +429,7 @@ async def update_project_readme_endpoint(
     }
 
 @app.delete("/api/projects/{project_id}")
+@app.delete("/api/projects/by-id/{project_id}")
 def delete_project(project_id: str, token: str = Depends(verify_token)):
     """Remove um projeto do portfólio por ID ou slug (requer Bearer token)."""
     p = db.get_project(project_id)

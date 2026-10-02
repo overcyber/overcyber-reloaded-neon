@@ -111,6 +111,7 @@ def update_post(
     if not current:
         return None
     
+    real_id = str(current["id"])
     new_title = title if title is not None else current["title"]
     new_slug = slug if slug is not None else current["slug"]
     new_content = content if content is not None else current["content"]
@@ -129,15 +130,22 @@ def update_post(
         conn.execute(
             "UPDATE posts SET title = ?, slug = ?, excerpt = ?, content = ?, image = ?, status = ?, published_at = ?, updated_at = ? "
             "WHERE id = ?",
-            (new_title, new_slug, new_excerpt, new_content, new_image, new_status, new_published_at, ts, post_id)
+            (new_title, new_slug, new_excerpt, new_content, new_image, new_status, new_published_at, ts, real_id)
         )
         conn.commit()
-    return get_post(post_id)
+    return get_post(real_id)
 
 def delete_post(post_id: str) -> bool:
+    current = get_post(post_id)
+    if not current:
+        return False
+    real_id = str(current["id"])
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM posts WHERE id = ?", (post_id,))
+        cursor.execute("DELETE FROM comments WHERE post_id = ?", (real_id,))
+        if current.get("slug"):
+            cursor.execute("DELETE FROM comments WHERE post_id = ?", (str(current["slug"]),))
+        cursor.execute("DELETE FROM posts WHERE id = ?", (real_id,))
         conn.commit()
         return cursor.rowcount > 0
 

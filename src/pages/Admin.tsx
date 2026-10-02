@@ -996,22 +996,35 @@ const Admin: React.FC = () => {
   const deleteProject = async (id: number) => {
     if (confirm("Are you sure you want to delete this project?")) {
       try {
-        await api(`/projects/${id}`, { method: 'DELETE', json: {} });
+        try {
+          await api(`/projects/${id}`, { method: 'DELETE', json: {} });
+        } catch {
+          await api(`/projects/by-id/${id}`, { method: 'DELETE', json: {} });
+        }
         const updated = projects.filter(p => p.id !== id);
         setProjects(updated);
         saveData('admin-projects-data', updated);
+
+        try {
+          const fresh = await loadFromBackend<any[]>('/projects');
+          if (fresh) {
+            setProjects(fresh);
+            saveData('admin-projects-data', fresh);
+          }
+        } catch {
+          // ignore
+        }
+
         toast({
           title: "Projeto excluído",
-          description: "Removido do backend + cache local.",
+          description: "Removido do backend com sucesso.",
         });
-      } catch {
-        // Fallback: remove from localStorage only
-        const updated = projects.filter(p => p.id !== id);
-        setProjects(updated);
-        saveData('admin-projects-data', updated);
+      } catch (err: any) {
+        console.error("Erro ao excluir projeto:", err);
         toast({
-          title: "Projeto excluído (offline)",
-          description: "Removido apenas do cache local (backend offline).",
+          title: "Erro ao excluir projeto",
+          description: err?.message || "Não foi possível excluir o projeto do backend.",
+          variant: "destructive",
         });
       }
     }
@@ -1055,7 +1068,11 @@ const Admin: React.FC = () => {
       
       if (currentBlogPost) {
         // Edit existing post
-        await api(`/posts/by-id/${currentBlogPost.id}`, { method: 'PUT', json: payload });
+        try {
+          await api(`/posts/by-id/${currentBlogPost.id}`, { method: 'PUT', json: payload });
+        } catch {
+          await api(`/posts/${currentBlogPost.id}`, { method: 'PUT', json: payload });
+        }
         toast({
           title: "Post atualizado",
           description: `"${data.title}" foi atualizado no backend.`,
@@ -1074,7 +1091,7 @@ const Admin: React.FC = () => {
         setBlogPosts(updated);
         saveData('blog-posts', updated);
       }
-    } catch (err) {
+    } catch (err: any) {
       // Fallback: save to localStorage only
       if (currentBlogPost) {
         const updatedPosts = blogPosts.map(post => 
@@ -1117,21 +1134,35 @@ const Admin: React.FC = () => {
   const deleteBlogPost = async (id: string) => {
     if (confirm("Tem certeza que deseja excluir este post?")) {
       try {
-        await api(`/posts/by-id/${id}`, { method: 'DELETE', json: {} });
+        try {
+          await api(`/posts/by-id/${id}`, { method: 'DELETE', json: {} });
+        } catch {
+          await api(`/posts/${id}`, { method: 'DELETE', json: {} });
+        }
         const updatedPosts = blogPosts.filter(post => post.id !== id);
         setBlogPosts(updatedPosts);
         saveData('blog-posts', updatedPosts);
+
+        try {
+          const fresh = await loadFromBackend<any[]>('/posts');
+          if (fresh) {
+            setBlogPosts(fresh);
+            saveData('blog-posts', fresh);
+          }
+        } catch {
+          // ignore
+        }
+
         toast({
           title: "Post excluído",
-          description: "Removido do backend + cache local.",
+          description: "Removido do backend com sucesso.",
         });
-      } catch {
-        const updatedPosts = blogPosts.filter(post => post.id !== id);
-        setBlogPosts(updatedPosts);
-        saveData('blog-posts', updatedPosts);
+      } catch (err: any) {
+        console.error("Erro ao excluir post:", err);
         toast({
-          title: "Post excluído (offline)",
-          description: "Removido apenas do cache local (backend offline).",
+          title: "Erro ao excluir post",
+          description: err?.message || "Não foi possível excluir o post do backend.",
+          variant: "destructive",
         });
       }
     }

@@ -344,9 +344,16 @@ function PostsPanel() {
         image: p.image || null,
         status: p.status,
       };
-      const saved = p.id
-        ? await api<BlogPost>(`/posts/by-id/${p.id}`, { method: "PUT", json: payload })
-        : await api<BlogPost>(`/posts`, { method: "POST", json: payload });
+      let saved: BlogPost;
+      if (p.id) {
+        try {
+          saved = await api<BlogPost>(`/posts/by-id/${p.id}`, { method: "PUT", json: payload });
+        } catch {
+          saved = await api<BlogPost>(`/posts/${p.id}`, { method: "PUT", json: payload });
+        }
+      } else {
+        saved = await api<BlogPost>(`/posts`, { method: "POST", json: payload });
+      }
       toast({ title: "Post salvo", description: `${saved.title} (${saved.status})` });
       setEditing(null);
       load();
@@ -391,10 +398,15 @@ function PostsPanel() {
                     onClick={async () => {
                       if (!confirm("Excluir post?")) return;
                       try {
-                        await api(`/posts/by-id/${p.id}`, { method: "DELETE", json: {} });
+                        try {
+                          await api(`/posts/by-id/${p.id}`, { method: "DELETE", json: {} });
+                        } catch {
+                          await api(`/posts/${p.id}`, { method: "DELETE", json: {} });
+                        }
+                        toast({ title: "Post excluído", description: `"${p.title}" removido com sucesso.` });
                         load();
                       } catch (e) {
-                        toast({ title: "Erro", description: errMsg(e), variant: "destructive" });
+                        toast({ title: "Erro ao excluir", description: errMsg(e), variant: "destructive" });
                       }
                     }}
                   >
