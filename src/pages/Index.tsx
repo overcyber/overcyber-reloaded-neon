@@ -93,7 +93,7 @@ const Index = () => {
             <div className="w-full my-6">
               <GlitchEffect>
                 <h1 className="text-4xl md:text-5xl font-bold text-center cyber-glow font-mono uppercase tracking-wide">
-                  HENRIQUE <span className="text-accent">//</span> OVERCYBER
+                  Claudio Henrique Marques
                 </h1>
               </GlitchEffect>
             </div>

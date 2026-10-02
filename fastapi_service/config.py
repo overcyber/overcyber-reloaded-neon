@@ -40,3 +40,10 @@ else:
 
 API_HOST = os.environ.get("API_HOST", "192.168.10.14")
 API_PORT = int(os.environ.get("API_PORT", "8800"))
+
+# Documentação Swagger / OpenAPI (habilitada por padrão; pode ser alterada via ENABLE_DOCS=false)
+ENABLE_DOCS = os.environ.get("ENABLE_DOCS", "true").lower() in ("true", "1", "yes")
+DOCS_URL = "/docs" if ENABLE_DOCS else None
+REDOC_URL = "/redoc" if ENABLE_DOCS else None
+OPENAPI_URL = "/openapi.json" if ENABLE_DOCS else None
+

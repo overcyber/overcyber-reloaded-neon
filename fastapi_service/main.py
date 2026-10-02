@@ -5,7 +5,7 @@ from fastapi import FastAPI, Depends, HTTPException, Query, Request, Response, s
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from .config import API_TOKEN, CORS_ORIGINS, API_HOST, API_PORT
+from .config import API_TOKEN, CORS_ORIGINS, API_HOST, API_PORT, DOCS_URL, REDOC_URL, OPENAPI_URL, ENABLE_DOCS
 from .auth import verify_token, optional_verify_token
 from . import db
 
@@ -15,6 +15,7 @@ async def lifespan(app: FastAPI):
     print("OVERCYBER FASTAPI GATEWAY INICIADO")
     print(f"API Port: {API_PORT}")
     print(f"Token de Autenticação (Bearer) configurado: {'sim' if bool(API_TOKEN) else 'não'}")
+    print(f"Swagger / Docs: {'Habilitado (/docs)' if ENABLE_DOCS else 'Desabilitado'}")
     print(f"CORS Origins: {CORS_ORIGINS}")
     print("=" * 60)
     yield
@@ -23,6 +24,9 @@ app = FastAPI(
     title="Overcyber Management API",
     description="API REST autônoma para gerenciamento automatizado de Blog, Projetos, Comentários e Mensagens.",
     version="1.0.0",
+    docs_url=DOCS_URL,
+    redoc_url=REDOC_URL,
+    openapi_url=OPENAPI_URL,
     lifespan=lifespan,
 )
 

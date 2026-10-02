@@ -50,6 +50,15 @@ def parse_frontmatter(content: str):
                     frontmatter[k] = v
     return frontmatter, body
 
+def clean_post_body(body: str) -> str:
+    # Remove qualquer seção de 'Sugestão de imagem' e tudo abaixo dela
+    pattern = r'(?i)\n*---*\s*\n*##\s*Sugest[ãa]o\s+de\s+imagem[\s\S]*$'
+    cleaned = re.sub(pattern, '', body)
+    if cleaned == body:
+        pattern2 = r'(?i)\n*##\s*Sugest[ãa]o\s+de\s+imagem[\s\S]*$'
+        cleaned = re.sub(pattern2, '', body)
+    return cleaned.strip()
+
 def publish_all():
     headers = {
         "Authorization": f"Bearer {API_TOKEN}",
@@ -66,6 +75,7 @@ def publish_all():
 
         raw_text = fpath.read_text(encoding="utf-8")
         fm, body = parse_frontmatter(raw_text)
+        body = clean_post_body(body)
 
         title = fm.get("title", fpath.stem)
         slug = item["slug"]
