@@ -10,21 +10,25 @@ use crate::AppState;
 pub async fn list(State(state): State<AppState>) -> AppResult<Json<Vec<Project>>> {
     let conn = state.db.get()?;
     let mut stmt = conn.prepare(
-        "SELECT id,title,description,tags,image,github,live,stars,forks,readme,ord FROM projects ORDER BY ord, id",
+        "SELECT id,title,slug,description,tags,image,github,live,stars,forks,visibility,status,source_repos,readme,ord FROM projects ORDER BY ord, id",
     )?;
     let rows = stmt.query_map([], |r| {
         Ok(Project {
             id: r.get(0)?,
             title: r.get(1)?,
-            description: r.get(2)?,
-            tags: r.get(3)?,
-            image: r.get(4)?,
-            github: r.get(5)?,
-            live: r.get(6)?,
-            stars: r.get(7)?,
-            forks: r.get(8)?,
-            readme: r.get(9)?,
-            ord: r.get(10)?,
+            slug: r.get(2)?,
+            description: r.get(3)?,
+            tags: r.get(4)?,
+            image: r.get(5)?,
+            github: r.get(6)?,
+            live: r.get(7)?,
+            stars: r.get(8)?,
+            forks: r.get(9)?,
+            visibility: r.get(10)?,
+            status: r.get(11)?,
+            source_repos: r.get(12)?,
+            readme: r.get(13)?,
+            ord: r.get(14)?,
         })
     })?;
     Ok(Json(rows.collect::<Result<Vec<_>, _>>()?))

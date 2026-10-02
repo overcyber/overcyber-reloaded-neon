@@ -1,0 +1,174 @@
+[
+  {
+    "title": "Adversarial CyberSec — Coevolutionary Cyber MARL",
+    "slug": "adversarial-cybersec",
+    "status": "Pesquisa avançada / sistema funcional com componentes distribuídos experimentais",
+    "visibility": "private",
+    "source_repositories": [
+      "overcyber/adve-c-sec-tese"
+    ],
+    "site_stars": 0,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/adversarial-cybersec.webp"
+  },
+  {
+    "title": "NeoAlice + SuperBrain — Persistent Cognitive Agent",
+    "slug": "neoalice-superbrain",
+    "status": "Protótipo integrado / pesquisa aplicada",
+    "visibility": "private",
+    "source_repositories": [
+      "overcyber/neoalice-superbrain"
+    ],
+    "site_stars": 1,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/neoalice-superbrain.webp"
+  },
+  {
+    "title": "QSim — Distributed Quantum Simulation Platform",
+    "slug": "qsim",
+    "status": "Pesquisa ativa; fases 1–4 reportadas como entregues, aceleradores em validação",
+    "visibility": "public",
+    "source_repositories": [
+      "overcyber/qsim"
+    ],
+    "site_stars": 0,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/qsim.webp"
+  },
+  {
+    "title": "Crypto Monitor Platform — Streaming Market Analytics",
+    "slug": "crypto-monitor-platform",
+    "status": "Plataforma ativa / desenvolvimento avançado",
+    "visibility": "public",
+    "source_repositories": [
+      "overcyber/crypto-monitor-platform"
+    ],
+    "site_stars": 1,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/crypto-monitor-platform.webp"
+  },
+  {
+    "title": "Docling Qdrant RAG Harness — Advanced Retrieval Infrastructure",
+    "slug": "docling-qdrant-rag-harness",
+    "status": "Harness funcional e documentado",
+    "visibility": "public",
+    "source_repositories": [
+      "overcyber/docling-qdrant-rag-harness"
+    ],
+    "site_stars": 1,
+    "site_forks": 2,
+    "image_asset_expected": "/projects/docling-qdrant-rag-harness.webp"
+  },
+  {
+    "title": "OSCEN — Open Source Cognitive Embodied Neuromorphic",
+    "slug": "oscen",
+    "status": "Pesquisa experimental / arquitetura em consolidação",
+    "visibility": "private",
+    "source_repositories": [
+      "overcyber/OSCEN"
+    ],
+    "site_stars": 0,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/oscen.webp"
+  },
+  {
+    "title": "Red-MPPO Evaluation Harness — Auditable Autonomous Security Research",
+    "slug": "red-mppo-evaluation",
+    "status": "Pesquisa operacional / avaliação controlada",
+    "visibility": "private",
+    "source_repositories": [
+      "overcyber/red-MPPO-testing_full",
+      "overcyber/red-MPPO-testing_model"
+    ],
+    "site_stars": 0,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/red-mppo-evaluation.webp"
+  },
+  {
+    "title": "Ruadan — Adaptive Kali Enumeration Orchestrator",
+    "slug": "ruadan",
+    "status": "Ferramenta funcional + painel web experimental",
+    "visibility": "public + private companion",
+    "source_repositories": [
+      "overcyber/ruadan",
+      "overcyber/ruadan-control-panel"
+    ],
+    "site_stars": 2,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/ruadan.webp"
+  },
+  {
+    "title": "AEGIS Architecture Viewer — Cyber Defense System Model",
+    "slug": "aegis-architecture",
+    "status": "Viewer funcional / blueprint de infraestrutura com módulos ainda em evolução",
+    "visibility": "private",
+    "source_repositories": [
+      "overcyber/aegis-architecture",
+      "overcyber/aegis-architecture-viewer",
+      "overcyber/aegis-refatora-o"
+    ],
+    "site_stars": 0,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/aegis-architecture.webp"
+  },
+  {
+    "title": "Gemini SuperBrain Memory — Persistent Memory Extension",
+    "slug": "gemini-superbrain-memory",
+    "status": "Extensão funcional / open source",
+    "visibility": "public",
+    "source_repositories": [
+      "overcyber/gemini-superbrain-memory"
+    ],
+    "site_stars": 0,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/gemini-superbrain-memory.webp"
+  },
+  {
+    "title": "Artemis NetFlow — Interactive Flow Analysis Workbench",
+    "slug": "artemis-netflow",
+    "status": "Ferramenta funcional / utilitário analítico",
+    "visibility": "private",
+    "source_repositories": [
+      "overcyber/artemis-netflow"
+    ],
+    "site_stars": 0,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/artemis-netflow.webp"
+  },
+  {
+    "title": "NEXUS — Local Multi-Agent Systems Course & Lab",
+    "slug": "minicurso-multiagents",
+    "status": "Material didático completo / laboratório reproduzível",
+    "visibility": "public",
+    "source_repositories": [
+      "overcyber/minicurso-mult-agents"
+    ],
+    "site_stars": 0,
+    "site_forks": 2,
+    "image_asset_expected": "/projects/minicurso-multiagents.webp"
+  },
+  {
+    "title": "CyberGuardian — Early Adversarial Cybersecurity Research",
+    "slug": "cyberguardian",
+    "status": "Protótipo histórico / predecessor da arquitetura atual",
+    "visibility": "private",
+    "source_repositories": [
+      "overcyber/CyberGuardian"
+    ],
+    "site_stars": 0,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/cyberguardian.webp"
+  },
+  {
+    "title": "Unknown-SO — Linux Hardening & Privacy Research Archive",
+    "slug": "unknown-so",
+    "status": "Arquivo legado / curadoria experimental",
+    "visibility": "private",
+    "source_repositories": [
+      "overcyber/Unknown-SO"
+    ],
+    "site_stars": 0,
+    "site_forks": 0,
+    "image_asset_expected": "/projects/unknown-so.webp"
+  }
+]

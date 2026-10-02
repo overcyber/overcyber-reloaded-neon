@@ -4,6 +4,8 @@ use serde::{Deserialize, Serialize};
 pub struct Project {
     pub id: i64,
     pub title: String,
+    #[serde(default)]
+    pub slug: Option<String>,
     pub description: String,
     pub tags: String,
     pub image: String,
@@ -11,6 +13,12 @@ pub struct Project {
     pub live: Option<String>,
     pub stars: i64,
     pub forks: i64,
+    #[serde(default)]
+    pub visibility: Option<String>,
+    #[serde(default)]
+    pub status: Option<String>,
+    #[serde(default)]
+    pub source_repos: Option<String>,
     pub readme: String,
     pub ord: i64,
 }

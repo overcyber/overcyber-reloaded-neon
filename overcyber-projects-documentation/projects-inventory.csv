@@ -1,0 +1,15 @@
+ord,slug,title,status,visibility,repositories,stars,forks
+1,adversarial-cybersec,Adversarial CyberSec — Coevolutionary Cyber MARL,Pesquisa avançada / sistema funcional com componentes distribuídos experimentais,private,overcyber/adve-c-sec-tese,0,0
+2,neoalice-superbrain,NeoAlice + SuperBrain — Persistent Cognitive Agent,Protótipo integrado / pesquisa aplicada,private,overcyber/neoalice-superbrain,1,0
+3,qsim,QSim — Distributed Quantum Simulation Platform,"Pesquisa ativa; fases 1–4 reportadas como entregues, aceleradores em validação",public,overcyber/qsim,0,0
+4,crypto-monitor-platform,Crypto Monitor Platform — Streaming Market Analytics,Plataforma ativa / desenvolvimento avançado,public,overcyber/crypto-monitor-platform,1,0
+5,docling-qdrant-rag-harness,Docling Qdrant RAG Harness — Advanced Retrieval Infrastructure,Harness funcional e documentado,public,overcyber/docling-qdrant-rag-harness,1,2
+6,oscen,OSCEN — Open Source Cognitive Embodied Neuromorphic,Pesquisa experimental / arquitetura em consolidação,private,overcyber/OSCEN,0,0
+7,red-mppo-evaluation,Red-MPPO Evaluation Harness — Auditable Autonomous Security Research,Pesquisa operacional / avaliação controlada,private,overcyber/red-MPPO-testing_full | overcyber/red-MPPO-testing_model,0,0
+8,ruadan,Ruadan — Adaptive Kali Enumeration Orchestrator,Ferramenta funcional + painel web experimental,public + private companion,overcyber/ruadan | overcyber/ruadan-control-panel,2,0
+9,aegis-architecture,AEGIS Architecture Viewer — Cyber Defense System Model,Viewer funcional / blueprint de infraestrutura com módulos ainda em evolução,private,overcyber/aegis-architecture | overcyber/aegis-architecture-viewer | overcyber/aegis-refatora-o,0,0
+10,gemini-superbrain-memory,Gemini SuperBrain Memory — Persistent Memory Extension,Extensão funcional / open source,public,overcyber/gemini-superbrain-memory,0,0
+11,artemis-netflow,Artemis NetFlow — Interactive Flow Analysis Workbench,Ferramenta funcional / utilitário analítico,private,overcyber/artemis-netflow,0,0
+12,minicurso-multiagents,NEXUS — Local Multi-Agent Systems Course & Lab,Material didático completo / laboratório reproduzível,public,overcyber/minicurso-mult-agents,0,2
+13,cyberguardian,CyberGuardian — Early Adversarial Cybersecurity Research,Protótipo histórico / predecessor da arquitetura atual,private,overcyber/CyberGuardian,0,0
+14,unknown-so,Unknown-SO — Linux Hardening & Privacy Research Archive,Arquivo legado / curadoria experimental,private,overcyber/Unknown-SO,0,0
