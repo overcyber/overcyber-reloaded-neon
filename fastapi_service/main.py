@@ -129,6 +129,8 @@ class LoginInput(BaseModel):
 # ─── ROTAS GERAIS ──────────────────────────────────────────────────
 
 @app.get("/")
+@app.get("/api")
+@app.get("/api/")
 def root(token: str = Depends(verify_token)):
     return {
         "service": "Overcyber FastAPI Gateway",
