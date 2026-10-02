@@ -329,6 +329,23 @@ def run_tests():
     except Exception as e:
         log_test("CRUD Projetos", False, str(e))
 
+    # 13. Teste do Endpoint de Migração (localStorage import)
+    print("\n--- Verificando Endpoint de Migração (/api/migrate/import) ---")
+    try:
+        r_mig = session.post(
+            f"{BASE_URL}/api/migrate/import",
+            json={
+                "about": None,
+                "resume": {},
+                "projects": [],
+                "posts": []
+            },
+            timeout=10
+        )
+        log_test("POST /api/migrate/import", r_mig.status_code == 200 and "counts" in r_mig.json(), f"Retorno: {r_mig.json()}")
+    except Exception as e:
+        log_test("POST /api/migrate/import", False, str(e))
+
     print(f"\n============================================================")
     print(f" RESULTADO FINAL: {passed_tests} PASSOU | {failed_tests} FALHOU")
     print(f"============================================================\n")
