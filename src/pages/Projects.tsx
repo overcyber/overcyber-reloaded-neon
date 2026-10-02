@@ -100,33 +100,49 @@ const Projects = () => {
             key={project.id} 
             className="neo-blur border border-cyber-neon/30 overflow-hidden transition-all duration-300 hover:border-cyber-neon/70"
           >
-            <AspectRatio ratio={16/9}>
-              <img 
-                src={project.image} 
-                alt={project.title} 
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-cyber-black via-cyber-black/70 to-transparent"></div>
-            </AspectRatio>
+            {project.image ? (
+              <AspectRatio ratio={16/9}>
+                <img 
+                  src={project.image} 
+                  alt={project.title} 
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-cyber-black via-cyber-black/70 to-transparent"></div>
+              </AspectRatio>
+            ) : null}
             
             <CardHeader className="pb-2">
               <div className="flex justify-between items-start">
                 <CardTitle className="text-xl text-white font-mono tracking-tight flex items-center">
-                  <FileCode size={18} className="text-cyber-neon mr-2" />
-                  {project.title}
+                  <FileCode size={18} className="text-cyber-neon mr-2 shrink-0" />
+                  <span>{project.title}</span>
                 </CardTitle>
                 
-                <div className="flex items-center space-x-2 text-sm">
+                <div className="flex items-center space-x-2 text-sm shrink-0 ml-2">
                   <span className="flex items-center text-cyber-orange">
                     <Star size={14} className="mr-1" />
-                    {project.stars}
+                    {project.stars || 0}
                   </span>
                   <span className="flex items-center text-cyber-blue">
                     <GitFork size={14} className="mr-1" />
-                    {project.forks}
+                    {project.forks || 0}
                   </span>
                 </div>
               </div>
+              {(project.status || project.visibility === 'private') && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {project.status && (
+                    <Badge variant="outline" className="border-cyber-orange/60 text-cyber-orange font-mono text-xs">
+                      {project.status}
+                    </Badge>
+                  )}
+                  {project.visibility === 'private' && (
+                    <Badge variant="outline" className="border-red-500/60 text-red-400 font-mono text-xs">
+                      PRIVATE
+                    </Badge>
+                  )}
+                </div>
+              )}
             </CardHeader>
             
             <CardContent className="pb-2">

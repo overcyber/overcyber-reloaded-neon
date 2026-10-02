@@ -141,79 +141,129 @@ def delete_post(post_id: str) -> bool:
 
 # ─── PROJECTS ──────────────────────────────────────────────────────
 
-def list_projects() -> List[Dict[str, Any]]:
-    with get_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute(
-            "SELECT id, title, description, tags, image, github, live, stars, forks, readme, ord, created_at, updated_at "
-            "FROM projects ORDER BY ord ASC, id ASC"
-        )
-        rows = cursor.fetchall()
-        return [
-            {
-                "id": r["id"],
-                "title": r["title"],
-                "description": r["description"],
-                "tags": r["tags"],
-                "image": r["image"],
-                "github": r["github"],
-                "live": r["live"],
-                "stars": r["stars"],
-                "forks": r["forks"],
-                "readme": r["readme"],
-                "ord": r["ord"],
-                "createdAt": r["created_at"],
-                "updatedAt": r["updated_at"],
-            }
-            for r in rows
-        ]
+def parse_tags(tags_val: Any) -> List[str]:
+    if isinstance(tags_val, list):
+        return [str(t).strip() for t in tags_val if str(t).strip()]
+    if isinstance(tags_val, str) and tags_val.strip():
+        if tags_val.strip().startswith("[") and tags_val.strip().endswith("]"):
+            try:
+                parsed = json.loads(tags_val)
+                if isinstance(parsed, list):
+                    return [str(t).strip() for t in parsed if str(t).strip()]
+            except Exception:
+                pass
+        return [t.strip() for t in tags_val.split(",") if t.strip()]
+    return []
 
-def get_project(project_id: int) -> Optional[Dict[str, Any]]:
+def format_tags_for_storage(tags_val: Any) -> str:
+    if isinstance(tags_val, list):
+        return ", ".join([str(t).strip() for t in tags_val if str(t).strip()])
+    if isinstance(tags_val, str):
+        return tags_val.strip()
+    return ""
+
+def parse_json_list(val: Any) -> List[str]:
+    if isinstance(val, list):
+        return [str(x) for x in val]
+    if isinstance(val, str) and val.strip():
+        try:
+            parsed = json.loads(val)
+            if isinstance(parsed, list):
+                return [str(x) for x in parsed]
+        except Exception:
+            pass
+        return [x.strip() for x in val.split(",") if x.strip()]
+    return []
+
+def format_json_list_for_storage(val: Any) -> str:
+    if isinstance(val, list):
+        return json.dumps([str(x) for x in val], ensure_ascii=False)
+    if isinstance(val, str) and val.strip():
+        if val.strip().startswith("["):
+            return val.strip()
+        items = [x.strip() for x in val.split(",") if x.strip()]
+        return json.dumps(items, ensure_ascii=False)
+    return "[]"
+
+def _row_to_project(r: Any) -> Dict[str, Any]:
+    keys = r.keys() if hasattr(r, "keys") else []
+    pid = r["id"]
+    slug = r["slug"] if "slug" in keys and r["slug"] else f"project-{pid}"
+    visibility = r["visibility"] if "visibility" in keys and r["visibility"] else "public"
+    status_str = r["status"] if "status" in keys and r["status"] else ""
+    source_repos_raw = r["source_repos"] if "source_repos" in keys and r["source_repos"] else "[]"
+    
+    return {
+        "id": pid,
+        "slug": slug,
+        "title": r["title"],
+        "description": r["description"],
+        "tags": parse_tags(r["tags"]),
+        "image": r["image"],
+        "github": r["github"],
+        "live": r["live"],
+        "stars": r["stars"],
+        "forks": r["forks"],
+        "visibility": visibility,
+        "status": status_str,
+        "source_repos": parse_json_list(source_repos_raw),
+        "readme": r["readme"],
+        "ord": r["ord"],
+        "createdAt": r["created_at"],
+        "updatedAt": r["updated_at"],
+    }
+
+def list_projects(visibility: Optional[str] = None) -> List[Dict[str, Any]]:
     with get_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT id, title, description, tags, image, github, live, stars, forks, readme, ord, created_at, updated_at "
-            "FROM projects WHERE id = ?",
-            (project_id,)
-        )
+        if visibility:
+            cursor.execute(
+                "SELECT * FROM projects WHERE visibility = ? ORDER BY ord ASC, id ASC",
+                (visibility,)
+            )
+        else:
+            cursor.execute("SELECT * FROM projects ORDER BY ord ASC, id ASC")
+        rows = cursor.fetchall()
+        return [_row_to_project(r) for r in rows]
+
+def get_project(project_id_or_slug: Any) -> Optional[Dict[str, Any]]:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        if isinstance(project_id_or_slug, int) or (isinstance(project_id_or_slug, str) and project_id_or_slug.isdigit()):
+            cursor.execute("SELECT * FROM projects WHERE id = ?", (int(project_id_or_slug),))
+        else:
+            cursor.execute("SELECT * FROM projects WHERE slug = ? OR id = ?", (str(project_id_or_slug), str(project_id_or_slug)))
         r = cursor.fetchone()
         if not r:
             return None
-        return {
-            "id": r["id"],
-            "title": r["title"],
-            "description": r["description"],
-            "tags": r["tags"],
-            "image": r["image"],
-            "github": r["github"],
-            "live": r["live"],
-            "stars": r["stars"],
-            "forks": r["forks"],
-            "readme": r["readme"],
-            "ord": r["ord"],
-            "createdAt": r["created_at"],
-            "updatedAt": r["updated_at"],
-        }
+        return _row_to_project(r)
 
 def create_project(
     title: str,
+    slug: Optional[str] = None,
     description: str = "",
-    tags: str = "",
+    tags: Any = "",
     image: str = "",
     github: str = "",
     live: Optional[str] = None,
-    readme: str = "",
     stars: int = 0,
     forks: int = 0,
+    visibility: str = "public",
+    status: str = "",
+    source_repos: Any = None,
+    readme: str = "",
     ord: int = 0
 ) -> Dict[str, Any]:
     ts = now_iso()
+    stored_tags = format_tags_for_storage(tags)
+    stored_repos = format_json_list_for_storage(source_repos)
+    final_slug = slug.strip() if slug and slug.strip() else title.lower().replace(" ", "-")
     with get_connection() as conn:
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO projects(title, description, tags, image, github, live, stars, forks, readme, ord, created_at, updated_at) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-            (title, description, tags, image, github, live, stars, forks, readme, ord, ts, ts)
+            "INSERT INTO projects(slug, title, description, tags, image, github, live, stars, forks, visibility, status, source_repos, readme, ord, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            (final_slug, title, description, stored_tags, image, github, live, stars, forks, visibility, status, stored_repos, readme, ord, ts, ts)
         )
         conn.commit()
         project_id = cursor.lastrowid
@@ -221,39 +271,47 @@ def create_project(
 
 def update_project(
     project_id: int,
+    slug: Optional[str] = None,
     title: Optional[str] = None,
     description: Optional[str] = None,
-    tags: Optional[str] = None,
+    tags: Optional[Any] = None,
     image: Optional[str] = None,
     github: Optional[str] = None,
     live: Optional[str] = None,
-    readme: Optional[str] = None,
     stars: Optional[int] = None,
     forks: Optional[int] = None,
+    visibility: Optional[str] = None,
+    status: Optional[str] = None,
+    source_repos: Optional[Any] = None,
+    readme: Optional[str] = None,
     ord: Optional[int] = None
 ) -> Optional[Dict[str, Any]]:
     current = get_project(project_id)
     if not current:
         return None
     
+    new_slug = slug if slug is not None else current["slug"]
     new_title = title if title is not None else current["title"]
     new_description = description if description is not None else current["description"]
-    new_tags = tags if tags is not None else current["tags"]
+    new_tags = format_tags_for_storage(tags) if tags is not None else format_tags_for_storage(current["tags"])
     new_image = image if image is not None else current["image"]
     new_github = github if github is not None else current["github"]
     new_live = live if live is not None else current["live"]
-    new_readme = readme if readme is not None else current["readme"]
     new_stars = stars if stars is not None else current["stars"]
     new_forks = forks if forks is not None else current["forks"]
+    new_visibility = visibility if visibility is not None else current["visibility"]
+    new_status = status if status is not None else current["status"]
+    new_repos = format_json_list_for_storage(source_repos) if source_repos is not None else format_json_list_for_storage(current["source_repos"])
+    new_readme = readme if readme is not None else current["readme"]
     new_ord = ord if ord is not None else current["ord"]
     
     ts = now_iso()
     with get_connection() as conn:
         conn.execute(
-            "UPDATE projects SET title = ?, description = ?, tags = ?, image = ?, github = ?, live = ?, "
-            "stars = ?, forks = ?, readme = ?, ord = ?, updated_at = ? WHERE id = ?",
-            (new_title, new_description, new_tags, new_image, new_github, new_live,
-             new_stars, new_forks, new_readme, new_ord, ts, project_id)
+            "UPDATE projects SET slug = ?, title = ?, description = ?, tags = ?, image = ?, github = ?, live = ?, "
+            "stars = ?, forks = ?, visibility = ?, status = ?, source_repos = ?, readme = ?, ord = ?, updated_at = ? WHERE id = ?",
+            (new_slug, new_title, new_description, new_tags, new_image, new_github, new_live,
+             new_stars, new_forks, new_visibility, new_status, new_repos, new_readme, new_ord, ts, project_id)
         )
         conn.commit()
     return get_project(project_id)

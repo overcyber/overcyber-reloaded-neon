@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from fastapi import FastAPI, Depends, HTTPException, Query, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
@@ -54,26 +54,34 @@ class PostUpdateInput(BaseModel):
 
 class ProjectCreateInput(BaseModel):
     title: str = Field(..., min_length=1)
+    slug: Optional[str] = None
     description: Optional[str] = ""
-    tags: Optional[str] = ""
+    tags: Optional[Union[List[str], str]] = ""
     image: Optional[str] = ""
     github: Optional[str] = ""
     live: Optional[str] = None
-    readme: Optional[str] = ""
     stars: Optional[int] = 0
     forks: Optional[int] = 0
+    visibility: Optional[str] = "public"
+    status: Optional[str] = ""
+    source_repos: Optional[Union[List[str], str]] = []
+    readme: Optional[str] = ""
     ord: Optional[int] = 0
 
 class ProjectUpdateInput(BaseModel):
     title: Optional[str] = None
+    slug: Optional[str] = None
     description: Optional[str] = None
-    tags: Optional[str] = None
+    tags: Optional[Union[List[str], str]] = None
     image: Optional[str] = None
     github: Optional[str] = None
     live: Optional[str] = None
-    readme: Optional[str] = None
     stars: Optional[int] = None
     forks: Optional[int] = None
+    visibility: Optional[str] = None
+    status: Optional[str] = None
+    source_repos: Optional[Union[List[str], str]] = None
+    readme: Optional[str] = None
     ord: Optional[int] = None
 
 class ProjectReadmeInput(BaseModel):
@@ -167,13 +175,13 @@ def delete_post(post_id: str, token: str = Depends(verify_token)):
 # ─── PROJETOS ──────────────────────────────────────────────────────
 
 @app.get("/api/projects")
-def list_projects(token: str = Depends(verify_token)):
-    """Lista todos os projetos do portfólio (requer Bearer token)."""
-    return db.list_projects()
+def list_projects(visibility: Optional[str] = Query(None), token: str = Depends(verify_token)):
+    """Lista todos os projetos do portfólio (requer Bearer token). Filtro opcional por visibility."""
+    return db.list_projects(visibility=visibility)
 
 @app.get("/api/projects/{project_id}")
-def get_project(project_id: int, token: str = Depends(verify_token)):
-    """Obtém detalhes de um projeto (requer Bearer token)."""
+def get_project(project_id: str, token: str = Depends(verify_token)):
+    """Obtém detalhes de um projeto por ID numérico ou slug (requer Bearer token)."""
     p = db.get_project(project_id)
     if not p:
         raise HTTPException(status_code=404, detail="Projeto não encontrado")
@@ -185,33 +193,44 @@ def create_project(payload: ProjectCreateInput, token: str = Depends(verify_toke
     try:
         return db.create_project(
             title=payload.title,
+            slug=payload.slug,
             description=payload.description or "",
-            tags=payload.tags or "",
+            tags=payload.tags if payload.tags is not None else "",
             image=payload.image or "",
             github=payload.github or "",
             live=payload.live,
-            readme=payload.readme or "",
             stars=payload.stars or 0,
             forks=payload.forks or 0,
+            visibility=payload.visibility or "public",
+            status=payload.status or "",
+            source_repos=payload.source_repos if payload.source_repos is not None else [],
+            readme=payload.readme or "",
             ord=payload.ord or 0,
         )
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Erro ao criar projeto: {str(e)}")
 
 @app.put("/api/projects/{project_id}")
-def update_project(project_id: int, payload: ProjectUpdateInput, token: str = Depends(verify_token)):
-    """Atualiza um projeto existente (requer Bearer token)."""
+def update_project(project_id: str, payload: ProjectUpdateInput, token: str = Depends(verify_token)):
+    """Atualiza um projeto existente por ID ou slug (requer Bearer token)."""
+    current = db.get_project(project_id)
+    if not current:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
     updated = db.update_project(
-        project_id=project_id,
+        project_id=current["id"],
+        slug=payload.slug,
         title=payload.title,
         description=payload.description,
         tags=payload.tags,
         image=payload.image,
         github=payload.github,
         live=payload.live,
-        readme=payload.readme,
         stars=payload.stars,
         forks=payload.forks,
+        visibility=payload.visibility,
+        status=payload.status,
+        source_repos=payload.source_repos,
+        readme=payload.readme,
         ord=payload.ord,
     )
     if not updated:
@@ -219,23 +238,27 @@ def update_project(project_id: int, payload: ProjectUpdateInput, token: str = De
     return updated
 
 @app.get("/api/projects/{project_id}/readme")
-def get_project_readme(project_id: int, token: str = Depends(verify_token)):
-    """Obtém apenas o README de um projeto (requer Bearer token)."""
+def get_project_readme(project_id: str, token: str = Depends(verify_token)):
+    """Obtém apenas o README de um projeto por ID ou slug (requer Bearer token)."""
     p = db.get_project(project_id)
     if not p:
         raise HTTPException(status_code=404, detail="Projeto não encontrado")
-    return {"id": p["id"], "title": p["title"], "readme": p["readme"]}
+    return {"id": p["id"], "slug": p["slug"], "title": p["title"], "readme": p["readme"]}
 
 @app.put("/api/projects/{project_id}/readme")
 @app.patch("/api/projects/{project_id}/readme")
 async def update_project_readme_endpoint(
-    project_id: int,
+    project_id: str,
     request: Request,
     token: str = Depends(verify_token)
 ):
-    """Atualiza o README.md de um projeto.
+    """Atualiza o README.md de um projeto por ID ou slug.
     Aceita JSON ({"readme": "..."}) OU texto puro / markdown direto no body.
     """
+    p = db.get_project(project_id)
+    if not p:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+
     readme_content = ""
     content_type = request.headers.get("content-type", "")
     if "application/json" in content_type:
@@ -255,24 +278,28 @@ async def update_project_readme_endpoint(
         body_bytes = await request.body()
         readme_content = body_bytes.decode("utf-8", errors="replace")
 
-    updated = db.update_project_readme(project_id=project_id, readme=readme_content)
+    updated = db.update_project_readme(project_id=p["id"], readme=readme_content)
     if not updated:
         raise HTTPException(status_code=404, detail="Projeto não encontrado")
     return {
         "ok": True,
         "id": updated["id"],
+        "slug": updated["slug"],
         "title": updated["title"],
         "readme": updated["readme"],
         "updatedAt": updated["updatedAt"]
     }
 
 @app.delete("/api/projects/{project_id}")
-def delete_project(project_id: int, token: str = Depends(verify_token)):
-    """Remove um projeto do portfólio (requer Bearer token)."""
-    ok = db.delete_project(project_id)
+def delete_project(project_id: str, token: str = Depends(verify_token)):
+    """Remove um projeto do portfólio por ID ou slug (requer Bearer token)."""
+    p = db.get_project(project_id)
+    if not p:
+        raise HTTPException(status_code=404, detail="Projeto não encontrado")
+    ok = db.delete_project(p["id"])
     if not ok:
         raise HTTPException(status_code=404, detail="Projeto não encontrado")
-    return {"ok": True, "deleted": project_id}
+    return {"ok": True, "deleted": p["id"], "slug": p["slug"]}
 
 # ─── COMENTÁRIOS (ADMINISTRAÇÃO & CRIAÇÃO) ─────────────────────────
 
