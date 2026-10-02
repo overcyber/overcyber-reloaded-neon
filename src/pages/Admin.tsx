@@ -13,10 +13,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Lock, Save, Edit, Plus, Image, FileText, Trash2, AlertTriangle, Settings, MessageSquare, Mail } from "lucide-react";
+import { Lock, Save, Edit, Plus, Image, FileText, Trash2, AlertTriangle, Settings } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import AdminBackendPanel, { CommentsPanel, InboxPanel } from "@/components/AdminBackendPanel";
+import AdminBackendPanel from "@/components/AdminBackendPanel";
 import { api, ApiError } from "@/lib/api";
 import { getProjectsContent } from "@/hooks/use-managed-content";
 
@@ -1235,20 +1235,6 @@ const Admin: React.FC = () => {
               BLOG
             </TabsTrigger>
             <TabsTrigger
-              value="comments"
-              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none flex items-center gap-1"
-            >
-              <MessageSquare size={14} className="mr-1" />
-              COMENTÁRIOS
-            </TabsTrigger>
-            <TabsTrigger
-              value="messages"
-              className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none flex items-center gap-1"
-            >
-              <Mail size={14} className="mr-1" />
-              MENSAGENS
-            </TabsTrigger>
-            <TabsTrigger
               value="backend"
               className="data-[state=active]:bg-cyber-neon/20 data-[state=active]:text-cyber-neon data-[state=active]:shadow-none"
             >
@@ -1825,14 +1811,6 @@ const Admin: React.FC = () => {
                 </Table>
               </CardContent>
             </Card>
-          </TabsContent>
-
-          <TabsContent value="comments">
-            <CommentsPanel />
-          </TabsContent>
-
-          <TabsContent value="messages">
-            <InboxPanel />
           </TabsContent>
 
           <TabsContent value="backend">
