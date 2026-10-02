@@ -82,6 +82,18 @@ O usuário relatou que ao tentar apagar postagens do blog através da interface 
    # Retorno: ✓ built in 8.91s
    ```
 3. **Deploy e Teste de Exclusão em Produção:**
-   - Commit & push para o repositório Git.
-   - Sincronização e reinício do serviço `overcyber-fastapi.service` na VPS Oracle.
-   - Execução de teste de chamada de API e verificação no SQLite.
+   - Commit & push para o repositório Git (`1e69782`).
+   - Sincronização e reinício do serviço `overcyber-fastapi.service` na VPS Oracle (PID 1988941 ativo).
+   - **Teste Real 1 - Exclusão de post pelo ID legado (`/api/posts/by-id/{id}`):**
+     ```bash
+     curl -s -X DELETE -H "Authorization: Bearer ovc_c5r_..." \
+       "https://overcyber.online/api/posts/by-id/86315e8e-5557-4065-abd9-62f414eba256"
+     ```
+     **Resultado:** `{"ok":true,"deleted":"86315e8e-5557-4065-abd9-62f414eba256"}` (Status 200 OK).
+     **Verificação no SQLite da VPS:** Post `86315e8e-5557-4065-abd9-62f414eba256` foi 100% removido da tabela `posts`.
+   - **Teste Real 2 - Ciclo completo (criação, edição e exclusão via `/by-id/`):**
+     1. Post temporário criado via `POST /api/posts` -> Retornou ID `5ec93f14-5940-4095-b8ec-1cc160c5d372`.
+     2. Post atualizado via `PUT /api/posts/by-id/5ec93f14-5940-4095-b8ec-1cc160c5d372` -> Título alterado com sucesso (Status 200 OK).
+     3. Post excluído via `DELETE /api/posts/by-id/5ec93f14-5940-4095-b8ec-1cc160c5d372` -> `{"ok":true,"deleted":"5ec93f14-5940-4095-b8ec-1cc160c5d372"}` (Status 200 OK).
+     4. Consulta pública via `GET /api/posts/5ec93f14-5940-4095-b8ec-1cc160c5d372` -> Retornou `HTTP 404 {"detail":"Post não encontrado"}`.
+
