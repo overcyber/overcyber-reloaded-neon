@@ -1,3 +1,4 @@
+import secrets
 from contextlib import asynccontextmanager
 from typing import Any, Dict, List, Optional, Union
 from fastapi import FastAPI, Depends, HTTPException, Query, Request, status
@@ -88,12 +89,33 @@ class ProjectReadmeInput(BaseModel):
     readme: str = Field(..., description="Conteúdo do README em Markdown")
 
 class CommentCreateInput(BaseModel):
-    author_name: str = Field(..., min_length=1, max_length=80, description="Nome do autor")
+    author_name: Optional[str] = Field(None, max_length=80, description="Nome do autor")
+    authorName: Optional[str] = Field(None, max_length=80, description="Nome do autor (camelCase)")
     body: str = Field(..., min_length=2, max_length=4000, description="Texto do comentário")
     author_email: Optional[str] = Field("", description="Email do autor")
-    post_slug: Optional[str] = Field(None, description="Slug do post alvo (quando enviado via /api/comments)")
-    post_id: Optional[str] = Field(None, description="ID do post alvo (quando enviado via /api/comments)")
+    authorEmail: Optional[str] = Field("", description="Email do autor (camelCase)")
+    post_slug: Optional[str] = Field(None, description="Slug do post alvo")
+    post_id: Optional[str] = Field(None, description="ID do post alvo")
     status: Optional[str] = Field("approved", description="pending, approved, rejected ou spam")
+    website: Optional[str] = Field("", description="Honeypot")
+    pow: Optional[Any] = Field(None, description="Proof of work")
+
+    @property
+    def resolved_name(self) -> str:
+        return (self.author_name or self.authorName or "Anônimo").strip()
+
+    @property
+    def resolved_email(self) -> str:
+        return (self.author_email or self.authorEmail or "").strip()
+
+class ContactInput(BaseModel):
+    name: str = Field(..., min_length=1, max_length=120, description="Nome do remetente")
+    email: str = Field(..., min_length=3, max_length=320, description="Email de contato")
+    subject: Optional[str] = Field("", max_length=200, description="Assunto")
+    body: str = Field(..., min_length=2, max_length=5000, description="Mensagem")
+    website: Optional[str] = Field("", description="Honeypot")
+    pow: Optional[Any] = Field(None, description="Proof of work")
+
 
 
 # ─── ROTAS GERAIS ──────────────────────────────────────────────────
@@ -309,19 +331,27 @@ def delete_project(project_id: str, token: str = Depends(verify_token)):
 # ─── COMENTÁRIOS (ADMINISTRAÇÃO & CRIAÇÃO) ─────────────────────────
 
 @app.get("/api/posts/{slug_or_id}/comments")
-def get_post_comments(slug_or_id: str, status: Optional[str] = Query(None), token: str = Depends(verify_token)):
-    """Lista comentários de um post (requer Bearer token)."""
+def get_post_comments(
+    slug_or_id: str,
+    status: Optional[str] = Query(None),
+    token: Optional[str] = Depends(optional_verify_token)
+):
+    """Lista comentários de um post (público para status=approved; requer token para ver outros status)."""
+    if not token and not status:
+        status = "approved"
     return db.get_post_comments(slug_or_id, status)
 
 @app.post("/api/posts/{slug_or_id}/comments", status_code=status.HTTP_201_CREATED)
-def create_post_comment(slug_or_id: str, payload: CommentCreateInput, token: str = Depends(verify_token)):
-    """Cria um comentário em um post específico (requer Bearer token)."""
+def create_post_comment(slug_or_id: str, payload: CommentCreateInput):
+    """Cria um comentário em um post específico (endpoint público)."""
+    if payload.website:
+        return {"status": "ok", "detail": "Comentário processado"}
     try:
         return db.create_comment(
             post_slug_or_id=slug_or_id,
-            author_name=payload.author_name,
+            author_name=payload.resolved_name,
             body=payload.body,
-            author_email=payload.author_email,
+            author_email=payload.resolved_email,
             status=payload.status or "approved"
         )
     except ValueError as e:
@@ -408,6 +438,41 @@ def delete_message(msg_id: str, token: str = Depends(verify_token)):
     if not ok:
         raise HTTPException(status_code=404, detail="Mensagem não encontrada")
     return {"ok": True, "deleted": msg_id}
+
+@app.post("/api/contact", status_code=status.HTTP_201_CREATED)
+def submit_contact(payload: ContactInput):
+    """Envia uma mensagem de contato pelo formulário público do site."""
+    # Honeypot
+    if payload.website:
+        return {"status": "ok", "message": "Mensagem recebida"}
+    try:
+        return db.create_contact_message(
+            name=payload.name,
+            email=payload.email,
+            subject=payload.subject or "",
+            body=payload.body,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Erro ao salvar mensagem: {str(e)}")
+
+# ─── PROOF OF WORK ─────────────────────────────────────────────────
+
+@app.get("/api/pow/challenge")
+def pow_challenge():
+    """Gera desafio Proof-of-Work para formulários públicos (contato e comentários)."""
+    nonce = secrets.token_hex(16)
+    diff = 8
+    ts = db.now_iso()
+    try:
+        with db.get_connection() as conn:
+            conn.execute(
+                "INSERT INTO pow_challenges(nonce, difficulty, issued_at) VALUES (?, ?, ?)",
+                (nonce, diff, ts)
+            )
+            conn.commit()
+    except Exception:
+        pass
+    return {"nonce": nonce, "difficulty": diff}
 
 # ─── VISIBILIDADE DE SEÇÕES ────────────────────────────────────────
 

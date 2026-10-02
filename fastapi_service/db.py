@@ -495,6 +495,26 @@ def delete_contact_message(msg_id: str) -> bool:
         conn.commit()
         return cursor.rowcount > 0
 
+def create_contact_message(name: str, email: str, subject: str, body: str, ip_hash: str = "") -> Dict[str, Any]:
+    msg_id = str(uuid.uuid4())
+    ts = now_iso()
+    with get_connection() as conn:
+        conn.execute(
+            "INSERT INTO contact_messages(id, name, email, subject, body, ip_hash, created_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (msg_id, name, email, subject or "", body, ip_hash, ts)
+        )
+        conn.commit()
+    return {
+        "id": msg_id,
+        "name": name,
+        "email": email,
+        "subject": subject,
+        "body": body,
+        "createdAt": ts,
+        "readAt": None,
+    }
+
 # ─── SECTIONS CONFIG ───────────────────────────────────────────────
 
 DEFAULT_SECTIONS = {
