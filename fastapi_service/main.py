@@ -5,7 +5,10 @@ from fastapi import FastAPI, Depends, HTTPException, Query, Request, Response, s
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
-from .config import API_TOKEN, CORS_ORIGINS, API_HOST, API_PORT, DOCS_URL, REDOC_URL, OPENAPI_URL, ENABLE_DOCS
+from .config import (
+    API_TOKEN, CORS_ORIGINS, API_HOST, API_PORT, DOCS_URL, REDOC_URL, OPENAPI_URL, ENABLE_DOCS,
+    SESSION_MAX_AGE_SECONDS, SESSION_TIMEOUT_MINUTES
+)
 from .auth import verify_token, optional_verify_token
 from . import db
 
@@ -16,7 +19,11 @@ async def lifespan(app: FastAPI):
     print(f"API Port: {API_PORT}")
     print(f"Token de Autenticação (Bearer) configurado: {'sim' if bool(API_TOKEN) else 'não'}")
     print(f"Swagger / Docs: {'Habilitado (/docs)' if ENABLE_DOCS else 'Desabilitado'}")
+    print(f"Tempo de Sessão Admin: {SESSION_TIMEOUT_MINUTES} minutos ({SESSION_MAX_AGE_SECONDS}s)")
     print(f"CORS Origins: {CORS_ORIGINS}")
+    cleaned = db.clean_expired_sessions()
+    if cleaned:
+        print(f"Sessões expiradas limpas: {cleaned}")
     print("=" * 60)
     yield
 
@@ -176,7 +183,7 @@ def auth_login(payload: LoginInput, response: Response):
         httponly=True,
         samesite="lax",
         path="/",
-        max_age=7 * 86400
+        max_age=SESSION_MAX_AGE_SECONDS
     )
     response.set_cookie(
         key="csrf",
@@ -184,7 +191,7 @@ def auth_login(payload: LoginInput, response: Response):
         httponly=False,
         samesite="lax",
         path="/",
-        max_age=7 * 86400
+        max_age=SESSION_MAX_AGE_SECONDS
     )
     return {
         "ok": True,

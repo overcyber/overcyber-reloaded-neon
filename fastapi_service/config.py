@@ -47,3 +47,8 @@ DOCS_URL = "/docs" if ENABLE_DOCS else None
 REDOC_URL = "/redoc" if ENABLE_DOCS else None
 OPENAPI_URL = "/openapi.json" if ENABLE_DOCS else None
 
+# Tempo máximo de sessão do Admin: 90 minutos (90 * 60 = 5400 segundos)
+SESSION_TIMEOUT_MINUTES = int(os.environ.get("SESSION_TIMEOUT_MINUTES", "90"))
+SESSION_MAX_AGE_SECONDS = int(os.environ.get("SESSION_MAX_AGE_SECONDS", str(SESSION_TIMEOUT_MINUTES * 60)))
+
+

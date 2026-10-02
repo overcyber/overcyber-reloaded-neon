@@ -681,11 +681,12 @@ def verify_admin_login(username: str, password: str) -> Optional[Dict[str, Any]]
 def create_session(user_id: int, ip_hash: str = "", ua_hash: str = "") -> Dict[str, str]:
     import secrets
     from datetime import datetime, timezone, timedelta
+    from .config import SESSION_TIMEOUT_MINUTES
     sid = secrets.token_hex(32)
     csrf = secrets.token_hex(32)
     now = datetime.now(timezone.utc)
     created_at = now.strftime("%Y-%m-%dT%H:%M:%SZ")
-    expires_at = (now + timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    expires_at = (now + timedelta(minutes=SESSION_TIMEOUT_MINUTES)).strftime("%Y-%m-%dT%H:%M:%SZ")
     
     with get_connection() as conn:
         conn.execute(
@@ -695,6 +696,15 @@ def create_session(user_id: int, ip_hash: str = "", ua_hash: str = "") -> Dict[s
         )
         conn.commit()
     return {"sid": sid, "csrf": csrf}
+
+def clean_expired_sessions() -> int:
+    now_ts = now_iso()
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM sessions WHERE expires_at <= ?", (now_ts,))
+        deleted = cursor.rowcount
+        conn.commit()
+        return deleted
 
 def get_session_user(sid: str) -> Optional[Dict[str, Any]]:
     if not sid:

@@ -745,6 +745,32 @@ const Admin: React.FC = () => {
     checkSession();
   }, []);
 
+  // Monitorar tempo limite da sessão (máximo 90 minutos) a cada 60 segundos
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const interval = setInterval(async () => {
+      try {
+        const me = await api("/auth/me");
+        if (!me || typeof me !== "object" || !me.userId) {
+          setIsAuthenticated(false);
+          toast({
+            title: "Sessão Expirada",
+            description: "O tempo limite de 90 minutos da sessão expirou. Faça login novamente.",
+            variant: "destructive",
+          });
+        }
+      } catch {
+        setIsAuthenticated(false);
+        toast({
+          title: "Sessão Expirada",
+          description: "O tempo limite de 90 minutos da sessão expirou. Faça login novamente.",
+          variant: "destructive",
+        });
+      }
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
+
   // Authentication via backend API
   const onAuthSubmit = async (data: AuthFormValues) => {
     // Check rate limiting
