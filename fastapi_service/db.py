@@ -532,3 +532,62 @@ def update_sections(new_values: Dict[str, bool]) -> Dict[str, bool]:
         )
         conn.commit()
     return current
+
+# ─── ABOUT & RESUME ────────────────────────────────────────────────
+
+def get_about() -> Optional[Dict[str, Any]]:
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT data_json FROM about WHERE id = 1")
+        r = cursor.fetchone()
+        if not r or not r["data_json"]:
+            return None
+        try:
+            return json.loads(r["data_json"])
+        except Exception:
+            return None
+
+def update_about(data: Dict[str, Any]) -> Dict[str, Any]:
+    s = json.dumps(data)
+    ts = now_iso()
+    with get_connection() as conn:
+        conn.execute(
+            "INSERT INTO about(id, data_json, updated_at) VALUES (1, ?, ?) "
+            "ON CONFLICT(id) DO UPDATE SET data_json = excluded.data_json, updated_at = excluded.updated_at",
+            (s, ts)
+        )
+        conn.commit()
+    return data
+
+RESUME_SECTIONS = ["education", "experience", "publications", "skills"]
+
+def get_resume() -> Dict[str, Any]:
+    out: Dict[str, Any] = {}
+    with get_connection() as conn:
+        cursor = conn.cursor()
+        for s in RESUME_SECTIONS:
+            cursor.execute("SELECT data_json FROM resume WHERE section = ?", (s,))
+            r = cursor.fetchone()
+            if r and r["data_json"]:
+                try:
+                    out[s] = json.loads(r["data_json"])
+                except Exception:
+                    out[s] = None
+            else:
+                out[s] = None
+    return out
+
+def update_resume_section(section: str, data: Any) -> Any:
+    if section not in RESUME_SECTIONS:
+        raise ValueError(f"Seção inválida: {section}")
+    s = json.dumps(data)
+    ts = now_iso()
+    with get_connection() as conn:
+        conn.execute(
+            "INSERT INTO resume(section, data_json, updated_at) VALUES (?, ?, ?) "
+            "ON CONFLICT(section) DO UPDATE SET data_json = excluded.data_json, updated_at = excluded.updated_at",
+            (section, s, ts)
+        )
+        conn.commit()
+    return data
+

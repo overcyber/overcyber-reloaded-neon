@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .config import API_TOKEN, CORS_ORIGINS, API_HOST, API_PORT
-from .auth import verify_token
+from .auth import verify_token, optional_verify_token
 from . import db
 
 @asynccontextmanager
@@ -121,13 +121,18 @@ def healthz():
 # ─── BLOG POSTS ────────────────────────────────────────────────────
 
 @app.get("/api/posts")
-def list_posts(status: Optional[str] = Query(None, description="Filtro por status: draft ou published"), token: str = Depends(verify_token)):
-    """Lista posts do blog (requer Bearer token)."""
+def list_posts(
+    status: Optional[str] = Query(None, description="Filtro por status: draft ou published"),
+    token: Optional[str] = Depends(optional_verify_token)
+):
+    """Lista posts do blog (público para published; requer token para ver drafts)."""
+    if not token and not status:
+        status = "published"
     return db.list_posts(status)
 
 @app.get("/api/posts/{slug_or_id}")
-def get_post(slug_or_id: str, token: str = Depends(verify_token)):
-    """Busca post por slug ou id (requer Bearer token)."""
+def get_post(slug_or_id: str):
+    """Busca post por slug ou id (endpoint público)."""
     post = db.get_post(slug_or_id)
     if not post:
         raise HTTPException(status_code=404, detail="Post não encontrado")
@@ -175,13 +180,13 @@ def delete_post(post_id: str, token: str = Depends(verify_token)):
 # ─── PROJETOS ──────────────────────────────────────────────────────
 
 @app.get("/api/projects")
-def list_projects(visibility: Optional[str] = Query(None), token: str = Depends(verify_token)):
-    """Lista todos os projetos do portfólio (requer Bearer token). Filtro opcional por visibility."""
+def list_projects(visibility: Optional[str] = Query(None)):
+    """Lista todos os projetos do portfólio (endpoint público). Filtro opcional por visibility."""
     return db.list_projects(visibility=visibility)
 
 @app.get("/api/projects/{project_id}")
-def get_project(project_id: str, token: str = Depends(verify_token)):
-    """Obtém detalhes de um projeto por ID numérico ou slug (requer Bearer token)."""
+def get_project(project_id: str):
+    """Obtém detalhes de um projeto por ID numérico ou slug (endpoint público)."""
     p = db.get_project(project_id)
     if not p:
         raise HTTPException(status_code=404, detail="Projeto não encontrado")
@@ -238,8 +243,8 @@ def update_project(project_id: str, payload: ProjectUpdateInput, token: str = De
     return updated
 
 @app.get("/api/projects/{project_id}/readme")
-def get_project_readme(project_id: str, token: str = Depends(verify_token)):
-    """Obtém apenas o README de um projeto por ID ou slug (requer Bearer token)."""
+def get_project_readme(project_id: str):
+    """Obtém o README de um projeto por ID ou slug (endpoint público)."""
     p = db.get_project(project_id)
     if not p:
         raise HTTPException(status_code=404, detail="Projeto não encontrado")
@@ -407,11 +412,40 @@ def delete_message(msg_id: str, token: str = Depends(verify_token)):
 # ─── VISIBILIDADE DE SEÇÕES ────────────────────────────────────────
 
 @app.get("/api/sections")
-def get_sections(token: str = Depends(verify_token)):
-    """Consulta a visibilidade de seções do site (requer Bearer token)."""
+def get_sections():
+    """Consulta a visibilidade de seções do site (endpoint público)."""
     return db.get_sections()
 
 @app.put("/api/sections")
 def update_sections(payload: Dict[str, bool], token: str = Depends(verify_token)):
     """Atualiza a visibilidade das seções do site (requer Bearer token)."""
     return db.update_sections(payload)
+
+# ─── SOBRE & RESUMO (ABOUT / RESUME) ───────────────────────────────
+
+@app.get("/api/about")
+def get_about():
+    """Consulta dados da seção Sobre/Perfil (endpoint público)."""
+    data = db.get_about()
+    if data is None:
+        return {}
+    return data
+
+@app.put("/api/about")
+def update_about(payload: Dict[str, Any], token: str = Depends(verify_token)):
+    """Atualiza dados da seção Sobre/Perfil (requer Bearer token)."""
+    return db.update_about(payload)
+
+@app.get("/api/resume")
+def get_resume():
+    """Consulta dados de currículo: educação, experiência, publicações e skills (endpoint público)."""
+    return db.get_resume()
+
+@app.put("/api/resume/{section}")
+def update_resume_section(section: str, payload: Any, token: str = Depends(verify_token)):
+    """Atualiza uma seção do currículo (requer Bearer token)."""
+    try:
+        return db.update_resume_section(section, payload)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+

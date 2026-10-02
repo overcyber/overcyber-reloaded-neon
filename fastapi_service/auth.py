@@ -22,3 +22,12 @@ def verify_token(credentials: HTTPAuthorizationCredentials | None = Depends(secu
         )
     
     return credentials.credentials
+
+def optional_verify_token(credentials: HTTPAuthorizationCredentials | None = Depends(security)) -> str | None:
+    """Verifica se o header Authorization: Bearer <TOKEN> corresponde ao API_TOKEN, sem gerar erro caso ausente."""
+    if not credentials or not credentials.credentials:
+        return None
+    import secrets
+    if secrets.compare_digest(credentials.credentials, API_TOKEN):
+        return credentials.credentials
+    return None
